@@ -256,6 +256,238 @@ export async function listFilterableCities(): Promise<string[]> {
   }
 }
 
+/**
+ * Full read model for the property detail page. Carries everything the
+ * `/[locale]/properties/[slug]` route needs in a single round-trip:
+ * core fields, every image (ordered, with hero flag), and the joined
+ * amenities (grouped on the client by category).
+ */
+export type PropertyImage = {
+  id: string;
+  blob_url: string;
+  width: number;
+  height: number;
+  alt_ar: string;
+  alt_en: string;
+  position: number;
+  is_hero: boolean;
+};
+
+export type PropertyAmenity = {
+  key: string;
+  label_ar: string;
+  label_en: string;
+  icon: string;
+  category: string | null;
+};
+
+export type PropertyDetail = {
+  id: string;
+  slug: string;
+  title_ar: string;
+  title_en: string;
+  description_ar: string;
+  description_en: string;
+  type: PropertySummary['type'];
+  status: PropertySummary['status'];
+  price_sar: number;
+  price_negotiable: boolean;
+  area_sqm: number;
+  bedrooms: number;
+  bathrooms: number;
+  city: string;
+  district: string | null;
+  plot_number: string | null;
+  street_width_m: number | null;
+  facade: 'north' | 'south' | 'east' | 'west' | 'corner' | null;
+  lat: number | null;
+  lng: number | null;
+  google_maps_url: string | null;
+  created_at: string;
+  updated_at: string;
+  images: PropertyImage[];
+  amenities: PropertyAmenity[];
+};
+
+/**
+ * Fetch a single live property by URL slug for the detail page.
+ *
+ * Returns `null` when:
+ *   - no row matches (RLS hides drafts and soft-deleted rows from anon)
+ *   - Supabase is unreachable (build-time placeholder URL, transient
+ *     network error) — the caller renders `notFound()` so a real 404 is
+ *     emitted rather than a 200 with empty state (SEO rule from the
+ *     plan: missing properties must not poison the index).
+ *
+ * Images come back ordered by `position` (admin-controllable in Phase 3);
+ * the hero is also flagged via `is_hero` so the gallery / OpenGraph
+ * generator can prioritise it without a second sort.
+ */
+export async function getPropertyBySlug(slug: string): Promise<PropertyDetail | null> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from('properties')
+      .select(
+        `
+        id, slug, title_ar, title_en, description_ar, description_en,
+        type, status, price_sar, price_negotiable, area_sqm,
+        bedrooms, bathrooms, city, district, plot_number, street_width_m,
+        facade, lat, lng, google_maps_url, created_at, updated_at,
+        property_images ( id, blob_url, width, height, alt_ar, alt_en, position, is_hero ),
+        property_amenities (
+          amenities ( key, label_ar, label_en, icon, category )
+        )
+      `,
+      )
+      .eq('slug', slug)
+      .order('position', { ascending: true, referencedTable: 'property_images' })
+      .maybeSingle();
+
+    if (error) {
+      console.warn('[getPropertyBySlug] supabase returned error:', error.message);
+      return null;
+    }
+    if (!data) return null;
+
+    type Row = {
+      id: string;
+      slug: string;
+      title_ar: string;
+      title_en: string;
+      description_ar: string;
+      description_en: string;
+      type: PropertyDetail['type'];
+      status: PropertyDetail['status'];
+      price_sar: number | string;
+      price_negotiable: boolean;
+      area_sqm: number | string;
+      bedrooms: number;
+      bathrooms: number;
+      city: string;
+      district: string | null;
+      plot_number: string | null;
+      street_width_m: number | null;
+      facade: PropertyDetail['facade'];
+      lat: number | string | null;
+      lng: number | string | null;
+      google_maps_url: string | null;
+      created_at: string;
+      updated_at: string;
+      property_images: unknown;
+      property_amenities: unknown;
+    };
+    const row = data as unknown as Row;
+
+    return {
+      id: row.id,
+      slug: row.slug,
+      title_ar: row.title_ar,
+      title_en: row.title_en,
+      description_ar: row.description_ar,
+      description_en: row.description_en,
+      type: row.type,
+      status: row.status,
+      price_sar: Number(row.price_sar),
+      price_negotiable: row.price_negotiable,
+      area_sqm: Number(row.area_sqm),
+      bedrooms: row.bedrooms,
+      bathrooms: row.bathrooms,
+      city: row.city,
+      district: row.district ?? null,
+      plot_number: row.plot_number ?? null,
+      street_width_m: row.street_width_m ?? null,
+      facade: row.facade ?? null,
+      lat: row.lat == null ? null : Number(row.lat),
+      lng: row.lng == null ? null : Number(row.lng),
+      google_maps_url: row.google_maps_url ?? null,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      images: normaliseImages(row.property_images),
+      amenities: normaliseAmenities(row.property_amenities),
+    };
+  } catch (err) {
+    console.warn(
+      '[getPropertyBySlug] supabase fetch failed (will 404):',
+      err instanceof Error ? err.message : err,
+    );
+    return null;
+  }
+}
+
+/**
+ * Slugs of all live properties for `generateStaticParams`. Returns an
+ * empty array on failure (build still succeeds — the catalog already
+ * tolerates an empty Supabase, and the slug pages will be generated
+ * on-demand by ISR once Supabase comes back).
+ */
+export async function listLivePropertySlugs(): Promise<string[]> {
+  try {
+    const supabase = await createSupabaseServerClient();
+    const { data, error } = await supabase.from('properties').select('slug');
+    if (error || !data) return [];
+    return (data as unknown as Array<{ slug: string }>)
+      .map((row) => row.slug)
+      .filter((slug): slug is string => typeof slug === 'string' && slug.length > 0);
+  } catch {
+    return [];
+  }
+}
+
+function normaliseImages(raw: unknown): PropertyImage[] {
+  if (!Array.isArray(raw)) return [];
+  const out: PropertyImage[] = [];
+  for (const entry of raw) {
+    if (!entry || typeof entry !== 'object') continue;
+    const r = entry as Record<string, unknown>;
+    if (
+      typeof r.id !== 'string' ||
+      typeof r.blob_url !== 'string' ||
+      typeof r.width !== 'number' ||
+      typeof r.height !== 'number'
+    )
+      continue;
+    out.push({
+      id: r.id,
+      blob_url: r.blob_url,
+      width: r.width,
+      height: r.height,
+      alt_ar: typeof r.alt_ar === 'string' ? r.alt_ar : '',
+      alt_en: typeof r.alt_en === 'string' ? r.alt_en : '',
+      position: typeof r.position === 'number' ? r.position : 0,
+      is_hero: r.is_hero === true,
+    });
+  }
+  // Hero first, then by position ascending. PostgREST already sorts by
+  // position via the .order() above, but we re-sort defensively so the
+  // gallery component never has to think about ordering.
+  out.sort((a, b) => {
+    if (a.is_hero !== b.is_hero) return a.is_hero ? -1 : 1;
+    return a.position - b.position;
+  });
+  return out;
+}
+
+function normaliseAmenities(raw: unknown): PropertyAmenity[] {
+  if (!Array.isArray(raw)) return [];
+  const out: PropertyAmenity[] = [];
+  for (const entry of raw) {
+    if (!entry || typeof entry !== 'object') continue;
+    const nested = (entry as Record<string, unknown>).amenities;
+    if (!nested || typeof nested !== 'object') continue;
+    const a = nested as Record<string, unknown>;
+    if (typeof a.key !== 'string') continue;
+    out.push({
+      key: a.key,
+      label_ar: typeof a.label_ar === 'string' ? a.label_ar : a.key,
+      label_en: typeof a.label_en === 'string' ? a.label_en : a.key,
+      icon: typeof a.icon === 'string' ? a.icon : 'check',
+      category: typeof a.category === 'string' ? a.category : null,
+    });
+  }
+  return out;
+}
+
 function pickHeroImage(images: unknown): PropertySummary['hero_image'] {
   if (!Array.isArray(images)) return null;
   const hero = images.find((img) => (img as ImageRow)?.is_hero === true) ?? images[0];

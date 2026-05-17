@@ -60,6 +60,9 @@ export default defineConfig({
         'src/components/public/PropertyCard.tsx',
         'src/components/public/FilterBar.tsx',
         'src/components/public/Pagination.tsx',
+        // Property detail components — visual / interactive, covered by
+        // Playwright in PR 2.7 (per docs/SESSION_HANDOFF.md PR 2.4 plan).
+        'src/components/public/property-detail/**',
         'src/lib/data/**',
         'src/app/**/{layout,page,not-found,error,global-error,opengraph-image,sitemap,robots,manifest}.{ts,tsx}',
         'src/app/**/route.{ts,tsx}',

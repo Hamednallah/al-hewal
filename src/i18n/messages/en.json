@@ -101,6 +101,70 @@
         "sold": "Sold"
       }
     },
+    "propertyDetail": {
+      "back": "Back to all properties",
+      "startingPrice": "Starting Price",
+      "negotiable": "Price negotiable",
+      "locationFallback": "{city}",
+      "locationWithDistrict": "{district}, {city}",
+      "gallery": {
+        "openLightbox": "Open photo {index} in lightbox",
+        "morePhotos": "+{count} photos",
+        "previous": "Previous photo",
+        "next": "Next photo",
+        "close": "Close gallery",
+        "counter": "{current} of {total}",
+        "noImages": "Images coming soon"
+      },
+      "specs": {
+        "title": "Property highlights",
+        "bedrooms": "Bedrooms",
+        "bathrooms": "Bathrooms",
+        "area": "Built area",
+        "areaValue": "{value} m²",
+        "plot": "Plot number",
+        "streetWidth": "Street width",
+        "streetWidthValue": "{value} m",
+        "facade": "Facade",
+        "facadeNorth": "North",
+        "facadeSouth": "South",
+        "facadeEast": "East",
+        "facadeWest": "West",
+        "facadeCorner": "Corner"
+      },
+      "brief": {
+        "title": "Project Brief"
+      },
+      "amenities": {
+        "title": "Premium Amenities",
+        "category": {
+          "interior": "Interior",
+          "exterior": "Exterior",
+          "smart": "Smart Home",
+          "safety": "Safety & Compliance",
+          "other": "Other"
+        }
+      },
+      "contact": {
+        "title": "Schedule a Viewing",
+        "body": "Speak with our sales advisors about {title}. Replies usually within an hour during business hours.",
+        "whatsapp": "WhatsApp Inquiry",
+        "call": "Call Now",
+        "whatsappAria": "Open WhatsApp chat about {title}",
+        "callAria": "Call sales about {title}",
+        "messageTemplate": "Hello Al Hewal, I'd like more information about {title} ({url})."
+      },
+      "map": {
+        "title": "Location Overview",
+        "loading": "Loading map…",
+        "fallback": "Map preview unavailable. Coordinates: {lat}, {lng}.",
+        "openInMaps": "Open in Google Maps"
+      },
+      "metadata": {
+        "titleTemplate": "{title} | Al Hewal",
+        "description": "{title} — {summary} Located in {location}. Starting price {price}."
+      }
+    },
     "footer": {
       "tagline": "We build quality... and shape the future",
       "about": "Al Hewal Real Estate Development and Investment Company — a Saudi developer crafting residential and investment projects to the highest quality standards, backed by a full one-year maintenance warranty.",
