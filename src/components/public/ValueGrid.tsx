@@ -40,7 +40,10 @@ export async function ValueGrid({ locale }: { locale: Locale }) {
         <ul className="grid grid-cols-1 gap-px bg-charcoal/10 md:grid-cols-3">
           {ITEMS.map(({ key, marker }) => (
             <li key={key} className="bg-canvas flex flex-col gap-4 p-8 md:p-10">
-              <p className="text-brass-500 text-xs font-bold uppercase tracking-[0.3em]">
+              {/* CLAUDE.md rule: brass on light = banned (1.9:1 contrast).
+                  Use teal-forest-700 (#002b2b on #f9f9f9 = 17:1) for the
+                  numbered marker on the canvas card. */}
+              <p className="text-teal-forest-700 text-xs font-bold uppercase tracking-[0.3em]">
                 {marker}
               </p>
               <h3 className="text-charcoal text-xl font-semibold leading-snug md:text-2xl">
