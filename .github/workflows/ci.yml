@@ -21,7 +21,11 @@ env:
   NEXT_PUBLIC_SUPABASE_URL: https://abcdefghij.supabase.co
   NEXT_PUBLIC_SUPABASE_ANON_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
   SUPABASE_SERVICE_ROLE_KEY: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
-  NEXT_PUBLIC_WHATSAPP_PHONE: '9665XXXXXXXX'
+  # Digits-only E.164 phone the runtime env Proxy will accept. Was
+  # `9665XXXXXXXX` (the env.ts example) which failed the regex when
+  # `pnpm start` boots for Playwright and the WhatsApp track route
+  # eagerly validates env on first request.
+  NEXT_PUBLIC_WHATSAPP_PHONE: '966500000000'
   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: AIzaSyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 jobs:
@@ -94,7 +98,7 @@ jobs:
   e2e:
     name: Playwright (chromium)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     needs: verify
 
     steps:
@@ -120,8 +124,12 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Run Playwright (chromium smoke)
-        run: pnpm exec playwright test --project=chromium
+      # Run BOTH the chromium functional project AND the a11y axe-core
+      # scan project (added in PR 2.7). Combined into a single
+      # `playwright test` invocation so the dev server (started by
+      # the shared webServer config) is launched only once.
+      - name: Run Playwright (chromium + a11y)
+        run: pnpm exec playwright test --project=chromium --project=a11y
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4

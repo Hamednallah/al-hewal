@@ -62,7 +62,10 @@ export async function FilterBar({ locale, filters, cities }: FilterBarProps) {
             <Button type="submit" variant="primary" size="md">
               {t('apply')}
             </Button>
-            <Button asChild variant="ghost" size="md">
+            {/* Outline (not ghost). Ghost renders text-canvas which is
+                invisible against FilterBar's bg-canvas-raised — caught
+                by axe color-contrast in PR 2.7. */}
+            <Button asChild variant="outline" size="md">
               <Link href="/properties" prefetch={false}>
                 {t('clear')}
               </Link>

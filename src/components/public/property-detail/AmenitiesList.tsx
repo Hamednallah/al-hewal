@@ -39,7 +39,9 @@ export async function AmenitiesList({ amenities, locale }: AmenitiesListProps) {
           if (!items || items.length === 0) return null;
           return (
             <div key={cat}>
-              <h3 className="text-brass-600 mb-3 text-[11px] tracking-[0.3em] uppercase">
+              {/* Category headings sit on bg-canvas — brass fails AA
+                  contrast there. Use teal-forest-700 (17:1) instead. */}
+              <h3 className="text-teal-forest-700 mb-3 text-[11px] tracking-[0.3em] uppercase">
                 {t(`category.${cat}`)}
               </h3>
               <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">

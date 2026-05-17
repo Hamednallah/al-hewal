@@ -78,7 +78,10 @@ export async function PropertyCard({ property, className, priority = false }: Pr
             {t(`type.${property.type}`)} · {districtLabel}
           </p>
           <h3 className="text-charcoal text-xl font-semibold leading-tight md:text-2xl">{title}</h3>
-          <p className="text-brass-600 text-base font-bold">
+          {/* Brass on light fails AA (CLAUDE.md). Price is body text,
+              not a decorative accent — use teal-forest-700 for the
+              required 4.5:1 ratio. */}
+          <p className="text-teal-forest-700 text-base font-bold">
             {t('priceFrom', { price: formatPrice(property.price_sar, locale) })}
           </p>
           <SpecsBar
