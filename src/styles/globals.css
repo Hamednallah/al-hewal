@@ -53,12 +53,17 @@
 
   --color-success: #1b5e20;
 
-  /* --- Typography --------------------------------------------------------- */
+  /* --- Typography --------------------------------------------------------- *
+   * --font-sans-loaded and --font-arabic-loaded are CSS variables emitted   *
+   * by next/font (see src/lib/fonts.ts) and attached to <html> by           *
+   * [locale]/layout.tsx. If a font fails to load, falls back to the system  *
+   * stacks below.                                                          */
   --font-sans:
-    'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    sans-serif;
+    var(--font-sans-loaded, 'IBM Plex Sans'), ui-sans-serif, system-ui, -apple-system,
+    BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-arabic:
-    'IBM Plex Sans Arabic', 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    var(--font-arabic-loaded, 'IBM Plex Sans Arabic'), 'IBM Plex Sans', ui-sans-serif, system-ui,
+    -apple-system, sans-serif;
 
   /* --- Layout system ----------------------------------------------------- */
   /* All radii are 0 — sharp architectural rectangles, no rounded corners. */

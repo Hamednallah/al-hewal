@@ -6,6 +6,7 @@ import type { ReactNode } from 'react';
 
 import '@/styles/globals.css';
 
+import { ibmPlexSans, ibmPlexSansArabic } from '@/lib/fonts';
 import { getDirection, type Locale, routing } from '@/i18n/routing';
 
 export const dynamicParams = false;
@@ -81,7 +82,12 @@ export default async function LocaleLayout({
   const dir = getDirection(typedLocale);
 
   return (
-    <html lang={typedLocale} dir={dir} suppressHydrationWarning>
+    <html
+      lang={typedLocale}
+      dir={dir}
+      className={`${ibmPlexSans.variable} ${ibmPlexSansArabic.variable}`}
+      suppressHydrationWarning
+    >
       <body>
         <NextIntlClientProvider locale={typedLocale} messages={messages}>
           {children}
