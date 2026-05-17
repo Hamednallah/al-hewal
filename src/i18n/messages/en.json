@@ -20,7 +20,21 @@
     },
     "common": {
       "languageSwitch": "العربية",
-      "skipToContent": "Skip to main content"
+      "skipToContent": "Skip to main content",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu"
+    },
+    "footer": {
+      "tagline": "We build quality... and shape the future",
+      "about": "Al Hewal Real Estate Development and Investment Company — a Saudi developer crafting residential and investment projects to the highest quality standards, backed by a full one-year maintenance warranty.",
+      "sectionExplore": "Explore",
+      "sectionCompany": "Company",
+      "sectionContact": "Contact",
+      "linkProperties": "Properties",
+      "linkAbout": "About",
+      "linkContact": "Contact",
+      "whatsapp": "Contact via WhatsApp",
+      "rights": "© {year} Al Hewal Real Estate Development & Investment Company. All rights reserved."
     }
   },
   "admin": {
