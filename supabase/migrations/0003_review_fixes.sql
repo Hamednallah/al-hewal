@@ -98,8 +98,13 @@ create trigger touch_leads_updated
   for each row execute function public.touch_updated_at();
 
 -- ---- #5: featured_order constraints -----------------------------------------
-alter table public.properties
-  drop constraint if exists properties_featured_order_check;
+-- The CHECK constraint is NEW (0001 left featured_order unconstrained),
+-- so we just ADD it. Earlier drafts had a defensive
+-- `drop constraint if exists` here; that emitted a noisy
+-- PostgreSQL NOTICE on every fresh apply because the constraint never
+-- existed to begin with. Supabase tracks applied migrations via
+-- supabase_migrations.schema_migrations, so an ADD CONSTRAINT here
+-- runs exactly once and idempotency tooling is unnecessary.
 alter table public.properties
   add constraint properties_featured_order_check
     check (featured_order is null or featured_order >= 0);
