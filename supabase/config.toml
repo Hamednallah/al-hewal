@@ -1,0 +1,88 @@
+# =============================================================================
+# Al Hewal - Supabase local development configuration
+#
+# Linked production project ref is stored in supabase/.temp/project-ref
+# (gitignored). Run `supabase link --project-ref <ref>` once after cloning.
+# =============================================================================
+
+# A string used to distinguish different Supabase projects on the same host.
+# Must be lowercase, alphanumeric, and dashes only.
+project_id = "al-hewal"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[db.seed]
+enabled = true
+sql_paths = ["./seed.sql"]
+
+[realtime]
+enabled = true
+
+[studio]
+enabled = true
+port = 54323
+api_url = "http://127.0.0.1"
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = false
+file_size_limit = "8MiB"
+# Storage is intentionally disabled. Image storage uses Vercel Blob
+# instead of Supabase Storage to keep the Supabase egress budget for
+# database queries only.
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/ar/auth/callback", "http://localhost:3000/en/auth/callback"]
+jwt_expiry = 3600
+enable_signup = false              # No public signup. Admins are invite-only.
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+minimum_password_length = 12       # Enforced for the admin password set after invite acceptance.
+password_requirements = "lower_upper_letters_digits_symbols"
+
+[auth.email]
+enable_signup = false
+double_confirm_changes = true
+enable_confirmations = true
+secure_password_change = true
+
+[auth.email.template.invite]
+subject = "You have been invited to Al Hewal Admin"
+content_path = "./templates/invite.html"
+
+[auth.mfa]
+max_enrolled_factors = 5
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+
+[edge_runtime]
+enabled = false                    # No edge functions in Phase 1.
+policy = "oneshot"
+inspector_port = 8083
+
+[analytics]
+enabled = false                    # Vercel + Sentry handle telemetry.
