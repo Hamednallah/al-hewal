@@ -1,0 +1,25 @@
+# ============================================================================
+# Al Hewal - pnpm workspace configuration
+#
+# This file is the source of truth for which transitive native-binary
+# dependencies are permitted to run their install / postinstall scripts.
+#
+# Default policy (.npmrc -> ignore-scripts=true) blocks ALL scripts. Every
+# entry below was approved manually after reviewing the dependency's
+# maintainer, download count, recency, and whether the script is strictly
+# necessary (see docs/DEPENDENCY_AUDIT.md).
+#
+# DO NOT ADD a new entry without:
+#   1. Documenting WHY in docs/DEPENDENCY_AUDIT.md (which package pulled
+#      it in, what the install script does, what fails without it)
+#   2. A security-review approval in the PR
+#
+# To approve a new entry, run:
+#   corepack pnpm approve-builds <pkg-name>
+# pnpm will append it here automatically. Then commit the diff.
+# ============================================================================
+allowBuilds:
+  '@parcel/watcher': true     # next-intl -> native file watcher; HMR falls back to polling without it
+  '@swc/core': true            # next-intl -> native compiler; falls back to wasm-SWC (slower) without it
+  sharp: true                  # next -> libvips image optimization for next/image (REQUIRED)
+  unrs-resolver: true          # eslint-config-next -> Rust TS module resolver for ESLint
