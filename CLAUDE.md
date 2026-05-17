@@ -10,8 +10,11 @@ Al Hewal is a Saudi real-estate developer. This repository delivers their
 bilingual (Arabic / English) corporate website and admin Command Center.
 Production target: Vercel, Supabase, and Vercel Blob — all on free tiers.
 
-The full approved implementation plan lives at
-`C:\Users\bino9\.claude\plans\lets-build-the-al-hewal-soft-horizon.md`.
+The full approved implementation plan lives in the repo at
+[`docs/plan/MASTER_PLAN.md`](docs/plan/MASTER_PLAN.md) (mirrored from
+the assistant's home-dir copy so it travels with the code). Project
+memories live at [`docs/agent-memory/`](docs/agent-memory/) — see the
+README there for which copy is canonical and how to sync.
 
 ## Hard rules
 

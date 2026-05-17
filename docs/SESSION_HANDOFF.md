@@ -180,23 +180,36 @@ helper; the rest of the components get covered by Playwright in PR 2.7.
 
 ## 4 — Critical context the next session MUST know
 
-### 4a. Working agreement / preferences (saved as project memories)
+### 4a. Working agreement / preferences (project memories)
 
-These are at `C:\Users\bino9\.claude\projects\d--Work-Projects-AL-Hewal\memory\`
-and auto-load into your context at session start. Confirm they loaded:
+Canonical in-repo copies live at
+[`docs/agent-memory/`](agent-memory/) — same content as the
+home-dir auto-load source, version-controlled so they survive any
+machine being replaced. See
+[`docs/agent-memory/README.md`](agent-memory/README.md) for the
+mirror-sync mechanics.
 
-- `MEMORY.md` — index of all memories
-- `feedback_hand_held_setup.md` — every external-service setup must be click-by-click with URLs and exact form values (user is new to Vercel/Supabase tooling)
-- `feedback_monitor_ci.md` — after every push, use `gh run watch` to block on CI; report failures without waiting for the user
-- `feedback_pushback_on_reviews.md` — when team-review docs appear at project root, write a disposition doc and push back on items where you're correct
-- `feedback_github_check_names.md` — quote the literal job display name in setup docs, never the YAML job key
-- `project_al_hewal_overview.md` — high-level project context
-- `project_arabic_first_routing.md` — `localeDetection: false` is intentional; don't re-enable
-- `project_seed_local_only.md` — `supabase/seed.sql` is LOCAL ONLY; the deployed catalog stays empty until Phase 3 admin uploads real properties
+- [`MEMORY.md`](agent-memory/MEMORY.md) — index of all memories
+- [`feedback_hand_held_setup.md`](agent-memory/feedback_hand_held_setup.md) — every external-service setup must be click-by-click with URLs and exact form values (user is new to Vercel/Supabase tooling)
+- [`feedback_monitor_ci.md`](agent-memory/feedback_monitor_ci.md) — after every push, use `gh run watch` to block on CI; report failures without waiting for the user
+- [`feedback_pushback_on_reviews.md`](agent-memory/feedback_pushback_on_reviews.md) — when team-review docs appear at project root, write a disposition doc and push back on items where you're correct
+- [`feedback_github_check_names.md`](agent-memory/feedback_github_check_names.md) — quote the literal job display name in setup docs, never the YAML job key
+- [`project_al_hewal_overview.md`](agent-memory/project_al_hewal_overview.md) — high-level project context
+- [`project_arabic_first_routing.md`](agent-memory/project_arabic_first_routing.md) — `localeDetection: false` is intentional; don't re-enable
+- [`project_seed_local_only.md`](agent-memory/project_seed_local_only.md) — `supabase/seed.sql` is LOCAL ONLY; the deployed catalog stays empty until Phase 3 admin uploads real properties
+
+The assistant's session loader still reads the home-dir copies at
+`C:\Users\bino9\.claude\projects\d--Work-Projects-AL-Hewal\memory\`
+automatically — those remain authoritative for the assistant, the
+in-repo copies are authoritative for humans and any other tooling.
 
 ### 4b. Plan file
 
-`C:\Users\bino9\.claude\plans\lets-build-the-al-hewal-soft-horizon.md` — the approved Phase 1-5 plan plus Phase 6 (go-live) decisions. Read for any "why" question.
+[`docs/plan/MASTER_PLAN.md`](plan/MASTER_PLAN.md) — the approved
+Phase 1-5 plan plus Phase 6 (go-live) decisions. Read for any "why"
+question. (Mirror of the home-dir copy at
+`C:\Users\bino9\.claude\plans\lets-build-the-al-hewal-soft-horizon.md`;
+see [`docs/plan/README.md`](plan/README.md) for sync mechanics.)
 
 ### 4c. Design source of truth
 
@@ -309,14 +322,14 @@ and delete the local branch as before.
 
 | Question                                                              | File / command                                                                           |
 | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| "Why was decision X made?"                                            | `C:\Users\bino9\.claude\plans\lets-build-the-al-hewal-soft-horizon.md`                   |
+| "Why was decision X made?"                                            | [`docs/plan/MASTER_PLAN.md`](plan/MASTER_PLAN.md)                                        |
 | "What's the design token for Y?"                                      | `src/styles/globals.css` `@theme` block, fallback to `…/al_hewal_architectura/DESIGN.md` |
 | "What does the screen look like?"                                     | `…/stitch_alhewal_bilingual_corporate_website/<page-name>/screen.png`                    |
 | "Why is migration X-Y like that?"                                     | `docs/DB_REVIEW_RESPONSE.md`                                                             |
 | "How do I set up Supabase / Vercel / branch protection / Socket.dev?" | `docs/PHASE_1_SUMMARY.md` §A-D                                                           |
 | "What needs to happen after deploy?"                                  | `docs/POST_DEPLOY_CHECKLIST.md`                                                          |
 | "What deps are installed and why?"                                    | `docs/DEPENDENCY_AUDIT.md`                                                               |
-| "Which user preferences must I follow?"                               | the 4 `feedback_*.md` memories                                                           |
+| "Which user preferences must I follow?"                               | [`docs/agent-memory/`](agent-memory/) — the 4 `feedback_*.md` files                      |
 | "What's the current state of CI?"                                     | `gh run list --branch main --limit 5`                                                    |
 | "What changed in the last session?"                                   | `git log --oneline -10`                                                                  |
 

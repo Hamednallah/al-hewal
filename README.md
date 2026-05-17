@@ -23,8 +23,12 @@ in progress — 4 of 8 sub-PRs merged.
 [`docs/SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) **first**. It's
 the entire context needed to pick up without re-reading chat history.
 
-See the approved planning document at
-`C:\Users\bino9\.claude\plans\lets-build-the-al-hewal-soft-horizon.md`.
+The approved master plan is committed at
+[`docs/plan/MASTER_PLAN.md`](docs/plan/MASTER_PLAN.md). The agent's
+project memories — working agreements, locked decisions, project
+context — are mirrored at
+[`docs/agent-memory/`](docs/agent-memory/) for any new contributor
+or session.
 
 ## Tech Stack
 
