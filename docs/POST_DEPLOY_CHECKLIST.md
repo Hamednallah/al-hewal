@@ -59,7 +59,7 @@ sitemap as accepted.
 1. Visit `https://al-hewal.com/robots.txt` in any browser.
 2. Verify it allows public pages and blocks `/admin/*`, `/auth/*`,
    `/api/*`.
-3. If wrong, the file is generated from `src/app/[locale]/robots.ts` —
+3. If wrong, the file is generated from `src/app/robots.ts` —
    tell me what changed and I'll patch it.
 
 ---

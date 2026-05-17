@@ -1,5 +1,15 @@
 # Al Hewal — Implementation Plan
 
+> **Status — 2026-05-18**
+> Phase 1 ✅ shipped (`v0.1.1`) · Phase 2 ✅ shipped (`v0.2.0`)
+> Phase 3 (Admin Command Center) next. PR breakdown lives in
+> [`../SESSION_HANDOFF.md`](../SESSION_HANDOFF.md) §3.
+> What actually landed per phase:
+> Phase 1 → [`../PHASE_1_SUMMARY.md`](../PHASE_1_SUMMARY.md);
+> Phase 2 → [`../PHASE_2_SUMMARY.md`](../PHASE_2_SUMMARY.md).
+> This plan file is the source of intent — phase summaries are the
+> source of truth for what shipped vs what was deferred.
+
 ## Context
 
 Al Hewal is a Saudi real-estate developer that wants a production-grade bilingual (AR/EN) corporate website to showcase residential projects, capture WhatsApp leads (the primary conversion metric), and give administrators a Command Center for inventory, leads, and analytics. The Google Stitch mockups (10 screens) and the locked design system in `stitch_alhewal_bilingual_corporate_website/al_hewal_architectura/DESIGN.md` are the visual source of truth — sharp 0px corners, Forest Teal #002B2B + Brass #D4B982 palette, IBM Plex Sans / IBM Plex Sans Arabic, asymmetric architectural grid. The deliverable goes to a real KSA client and will be reviewed by a strict senior lead; "exact design, clean architecture, robust testing" is non-negotiable.
