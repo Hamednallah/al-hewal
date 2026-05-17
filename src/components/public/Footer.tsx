@@ -11,15 +11,14 @@ import { type Locale } from '@/i18n/routing';
  * a Contact / WhatsApp CTA on the right. Mobile collapses to a single
  * column stack.
  *
- * The WhatsApp link uses `wa.me/<phone>` directly. Phase 2.5 introduces
- * `/api/whatsapp/track` for server-recorded clicks; this footer button
- * will swap to that URL in that PR. For now the direct link works and
- * keeps the footer functional even when the API route is not yet live.
+ * The WhatsApp CTA routes through `/api/whatsapp/track` (PR 2.5) so
+ * footer clicks land in the leads + whatsapp_clicks tables for the
+ * analytics dashboard. Plain `<a>` (not next-intl `<Link>`) because
+ * the locale segment must NOT prefix `/api`.
  */
 export async function Footer({ locale }: { locale: Locale }) {
   const t = await getTranslations({ locale, namespace: 'public.footer' });
   const tBrand = await getTranslations({ locale, namespace: 'public.brand' });
-  const whatsappPhone = process.env.NEXT_PUBLIC_WHATSAPP_PHONE ?? '';
   const year = new Date().getFullYear();
 
   return (
@@ -72,16 +71,14 @@ export async function Footer({ locale }: { locale: Locale }) {
           <p className="text-brass-400 mb-4 text-xs uppercase tracking-[0.3em]">
             {t('sectionContact')}
           </p>
-          {whatsappPhone ? (
-            <a
-              href={`https://wa.me/${whatsappPhone}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-brass-400 text-teal-forest-700 hover:bg-canvas inline-flex items-center px-6 py-3 text-sm font-bold uppercase tracking-[0.1em] transition-colors"
-            >
-              {t('whatsapp')}
-            </a>
-          ) : null}
+          <a
+            href={`/api/whatsapp/track?locale=${locale}`}
+            rel="noopener noreferrer"
+            data-event="whatsapp-click"
+            className="bg-brass-400 text-teal-forest-700 hover:bg-canvas inline-flex items-center px-6 py-3 text-sm font-bold uppercase tracking-[0.1em] transition-colors"
+          >
+            {t('whatsapp')}
+          </a>
         </div>
       </div>
       <div className="border-brass-400/10 border-t">

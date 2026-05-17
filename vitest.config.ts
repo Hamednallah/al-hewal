@@ -64,6 +64,14 @@ export default defineConfig({
         // Playwright in PR 2.7 (per docs/SESSION_HANDOFF.md PR 2.4 plan).
         'src/components/public/property-detail/**',
         'src/lib/data/**',
+        // PR 2.5 — integration-heavy wrappers around Supabase / Upstash
+        // / the Next runtime. The pure-logic siblings (pii.ts, ip.ts,
+        // whatsapp.ts) ARE measured; these are exercised by Playwright
+        // in PR 2.7 because mocking them in vitest produces tests that
+        // assert on the mocks rather than on real behaviour.
+        'src/lib/audit.ts',
+        'src/lib/ratelimit.ts',
+        'src/lib/cache.ts',
         'src/app/**/{layout,page,not-found,error,global-error,opengraph-image,sitemap,robots,manifest}.{ts,tsx}',
         'src/app/**/route.{ts,tsx}',
       ],

@@ -192,7 +192,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<P
               <div className="md:sticky md:top-28">
                 <ContactCard
                   title={title}
-                  url={url}
+                  slug={slug}
                   whatsappPhone={whatsappPhone}
                   locale={typedLocale}
                 />
@@ -227,7 +227,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<P
 
       <MobileContactBar
         title={title}
-        url={url}
+        slug={slug}
         whatsappPhone={whatsappPhone}
         locale={typedLocale}
       />

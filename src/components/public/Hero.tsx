@@ -49,8 +49,17 @@ export async function Hero({ locale }: { locale: Locale }) {
           <Button asChild variant="secondary" size="lg">
             <Link href="/properties">{t('ctaProjects')}</Link>
           </Button>
+          {/* Hero WhatsApp CTA goes through the tracked endpoint
+              (PR 2.5) so the home-page click is captured as a lead.
+              Plain <a> because the locale segment must NOT prefix /api. */}
           <Button asChild variant="ghost" size="lg">
-            <Link href="/contact">{t('ctaContact')}</Link>
+            <a
+              href={`/api/whatsapp/track?locale=${locale}`}
+              rel="noopener noreferrer"
+              data-event="whatsapp-click"
+            >
+              {t('ctaContact')}
+            </a>
           </Button>
         </div>
       </div>
