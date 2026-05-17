@@ -13,7 +13,11 @@ process.env.NEXT_PUBLIC_SITE_URL ??= 'http://localhost:3000';
 process.env.NEXT_PUBLIC_SUPABASE_URL ??= 'https://example.supabase.co';
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ??= 'a'.repeat(60);
 process.env.SUPABASE_SERVICE_ROLE_KEY ??= 's'.repeat(60);
-process.env.NEXT_PUBLIC_WHATSAPP_PHONE ??= '966500000000';
+// FORCE-overwrite (not ??=) because the CI workflow sets this to the
+// example placeholder `9665XXXXXXXX`, which fails the digits-only
+// regex in env.ts, AND because whatsapp.test.ts asserts on this exact
+// value. Test determinism wins over the local .env fallback here.
+process.env.NEXT_PUBLIC_WHATSAPP_PHONE = '966500000000';
 
 import '@testing-library/jest-dom/vitest';
 
