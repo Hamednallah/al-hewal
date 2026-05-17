@@ -20,6 +20,17 @@ const nextConfig: NextConfig = {
         hostname: '*.public.blob.vercel-storage.com',
         pathname: '/**',
       },
+      // Phase 2 dev/seed only. supabase/seed.sql references these for the
+      // 4 demo properties so the catalog has something to render before
+      // admins upload real images via the Phase 3 wizard. Safe to leave in
+      // production remotePatterns — placehold.co only serves placeholder
+      // PNGs, never user content. Remove (or restrict to specific paths) if
+      // strictness about third-party origins is required by the reviewer.
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+        pathname: '/**',
+      },
     ],
     // Cap the device sizes so Next does not generate gigantic variants we
     // never serve. Real-estate cards top out around 1600px.

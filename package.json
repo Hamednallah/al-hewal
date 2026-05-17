@@ -33,13 +33,26 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@hookform/resolvers": "5.2.2",
+    "@radix-ui/react-dialog": "1.1.15",
+    "@radix-ui/react-slot": "1.2.4",
     "@supabase/ssr": "0.10.3",
     "@supabase/supabase-js": "2.105.4",
+    "@upstash/ratelimit": "2.0.8",
+    "@upstash/redis": "1.38.0",
+    "blurhash": "2.0.5",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "libphonenumber-js": "1.13.0",
+    "maplibre-gl": "5.24.0",
+    "material-symbols": "0.44.6",
     "next": "15.5.18",
     "next-intl": "4.11.1",
     "react": "19.2.6",
     "react-dom": "19.2.6",
+    "react-hook-form": "7.75.0",
     "server-only": "0.0.1",
+    "tailwind-merge": "3.5.0",
     "zod": "4.4.3"
   },
   "devDependencies": {
