@@ -1,0 +1,40 @@
+{
+  "public": {
+    "brand": {
+      "name": "Al Hewal",
+      "tagline": "We build quality... and shape the future"
+    },
+    "nav": {
+      "home": "Home",
+      "properties": "Properties",
+      "about": "About",
+      "contact": "Contact"
+    },
+    "home": {
+      "hero": {
+        "headline": "We build quality... and shape the future",
+        "subheadline": "Al Hewal: a leader in Saudi real-estate development and investment, crafting residential excellence with a full one-year maintenance warranty.",
+        "ctaProjects": "Browse Projects",
+        "ctaContact": "Contact via WhatsApp"
+      }
+    },
+    "common": {
+      "languageSwitch": "العربية",
+      "skipToContent": "Skip to main content"
+    }
+  },
+  "admin": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "listings": "Listing Management",
+      "leads": "Leads Journal",
+      "analytics": "Strategic Analytics",
+      "admins": "Admin Management",
+      "profile": "My Profile"
+    },
+    "common": {
+      "languageSwitch": "العربية",
+      "signOut": "Sign Out"
+    }
+  }
+}

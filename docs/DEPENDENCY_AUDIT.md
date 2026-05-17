@@ -39,8 +39,9 @@
 | `tailwindcss` | 4.3.0 | 2026-05-08 (9 d ago) | Tailwind Labs | CSS framework (v4 with native `@theme`) |
 | `@tailwindcss/postcss` | 4.3.0 | 2026-05-08 (9 d ago) | Tailwind Labs | PostCSS plugin for Tailwind v4 |
 | `postcss` | 8.5.14 | 2026-05-04 (13 d ago) | OpenJS Foundation | CSS processor (required by Tailwind v4) |
-| `eslint` | 10.3.0 | 2026-05-01 (16 d ago) | OpenJS Foundation | Linter |
+| `eslint` | 9.39.4 | 2026-03-07 (71 d ago) | OpenJS Foundation | Linter. **Pinned to 9.x** — `eslint-config-next@15.5.18` peer-deps `^7\|^8\|^9` and does not support ESLint 10 yet. Re-evaluate when we bump to Next 16. |
 | `eslint-config-next` | 15.5.18 | 2026-05-07 (10 d ago) | Vercel | Next.js + React + a11y lint rules; version matches Next 15.5.18 |
+| `@eslint/eslintrc` | 3.3.5 | 2026-03-07 (71 d ago) | OpenJS Foundation | Flat-config compatibility shim; loads eslint-config-next's legacy preset into our flat config |
 | `prettier` | 3.8.3 | 2026-04-15 (32 d ago) | Prettier team | Formatter |
 | `prettier-plugin-tailwindcss` | 0.8.0 | 2026-04-27 (20 d ago) | Tailwind Labs | Class-order formatting |
 | `husky` | 9.1.7 | 2024-11-18 | Typicode | Git hook installer (battle-tested, no incidents) |

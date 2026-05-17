@@ -9,7 +9,7 @@ node_modules/
 out/
 build/
 dist/
-next-env.d.ts
+# next-env.d.ts is generated but should be committed (Next.js convention)
 
 # Production / deployment
 .vercel/

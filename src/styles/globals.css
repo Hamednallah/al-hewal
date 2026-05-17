@@ -1,0 +1,125 @@
+@import 'tailwindcss';
+
+/* ============================================================================
+ * Al Hewal — design tokens
+ * ----------------------------------------------------------------------------
+ * Tokens are authored as native CSS custom properties under Tailwind v4's
+ * `@theme` block so they appear as Tailwind utility classes
+ * (e.g. `bg-teal-forest`, `text-brass`, `font-arabic`) AND as CSS variables
+ * that hand-written rules can read (`var(--color-teal-forest)`).
+ *
+ * Source of truth for colour values:
+ *   ../../stitch_alhewal_bilingual_corporate_website/al_hewal_architectura/DESIGN.md
+ *
+ * Brass-on-light contrast warning: brass (#D4B982) on off-white (#F9F9F9)
+ * is 1.9:1 — FAILS WCAG AA. Use brass ONLY on teal backgrounds or as a
+ * decorative accent (borders, dividers, status badges). Body text in brass
+ * is forbidden on light surfaces — see CLAUDE.md.
+ * ========================================================================= */
+
+@theme {
+  /* --- Brand palette (Forest Teal / Desert Brass / Architectural neutrals) - */
+  --color-teal-forest: #002b2b;
+  --color-teal-forest-50: #e6efef;
+  --color-teal-forest-100: #b3cccc;
+  --color-teal-forest-200: #80aaaa;
+  --color-teal-forest-300: #4d8888;
+  --color-teal-forest-400: #1a6666;
+  --color-teal-forest-500: #004242;
+  --color-teal-forest-600: #003535;
+  --color-teal-forest-700: #002b2b;
+  --color-teal-forest-800: #001a1a;
+  --color-teal-forest-900: #000d0d;
+
+  --color-brass: #d4b982;
+  --color-brass-50: #fbf6ea;
+  --color-brass-100: #f0e2bf;
+  --color-brass-200: #e5cf94;
+  --color-brass-300: #dabb69;
+  --color-brass-400: #d4b982;
+  --color-brass-500: #c5a059;
+  --color-brass-600: #b38f4d;
+  --color-brass-700: #8a6e3a;
+  --color-brass-800: #614d28;
+  --color-brass-900: #382c17;
+
+  --color-charcoal: #2d2d2d;
+  --color-charcoal-muted: #4a4a4a;
+
+  --color-canvas: #f9f9f9;
+  --color-canvas-raised: #ffffff;
+  --color-canvas-sunken: #f3f3f3;
+  --color-canvas-deep: #eeeeee;
+
+  --color-success: #1b5e20;
+
+  /* --- Typography --------------------------------------------------------- */
+  --font-sans:
+    'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    sans-serif;
+  --font-arabic:
+    'IBM Plex Sans Arabic', 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+
+  /* --- Layout system ----------------------------------------------------- */
+  /* All radii are 0 — sharp architectural rectangles, no rounded corners. */
+  --radius: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-full: 0px;
+
+  --spacing-section: clamp(64px, 4rem + 4vw, 120px);
+  --spacing-gutter: 24px;
+  --spacing-edge: clamp(16px, 1rem + 2vw, 32px);
+  --spacing-container: 1440px;
+}
+
+/* ============================================================================
+ * Base styles
+ * ========================================================================= */
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: var(--color-canvas);
+    color: var(--color-charcoal);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Arabic gets its own font + slightly looser line-height so calligraphic
+   * ascenders/descenders breathe. Driven by the `lang` attribute on
+   * `<html>` set per route from the [locale] segment. */
+  :lang(ar) body {
+    font-family: var(--font-arabic);
+    line-height: 1.8;
+  }
+
+  /* Focus styles are deliberately visible. Brass on teal is the accent;
+   * we keep a generic high-contrast outline for default focus so non-themed
+   * elements still pass WCAG focus-visible. */
+  :focus-visible {
+    outline: 2px solid var(--color-brass-500);
+    outline-offset: 2px;
+  }
+
+  /* Reduce motion for users who request it. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

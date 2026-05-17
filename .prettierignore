@@ -1,0 +1,13 @@
+node_modules
+.next
+.vercel
+coverage
+playwright-report
+test-results
+pnpm-lock.yaml
+*.tsbuildinfo
+public
+.husky
+supabase/.branches
+supabase/.temp
+src/lib/supabase/database.types.ts
