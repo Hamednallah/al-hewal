@@ -40,13 +40,13 @@ The full approved implementation plan lives at
 - **Branches:** `feat/...`, `fix/...`, `chore/...`, `docs/...`, `test/...`.
   Direct push to `main` is forbidden after the initial scaffolding.
 - **Commits:** Conventional Commits (`feat:`, `fix:`, `refactor:`, etc.). One
-  logical change per commit. The body explains *why*. No co-author trailers.
+  logical change per commit. The body explains _why_. No co-author trailers.
 - **PRs:** one per phase sub-task. Body includes scope, screenshots for UI,
   test plan, free-tier impact, new env vars.
 - **File size:** target 200-400 lines per file, hard cap 800. If a file gets
   larger, split by responsibility.
 - **Function size:** target under 50 lines. If longer, extract.
-- **Comments:** explain *why*, not *what*. Default to no comments. Only add
+- **Comments:** explain _why_, not _what_. Default to no comments. Only add
   when the reason is non-obvious.
 
 ## Design system
@@ -76,7 +76,7 @@ and `src/styles/globals.css`. Key invariants:
   pipeline.
 - `src/app/api/whatsapp/track/route.ts` — rate-limited, audited, 302 to
   `wa.me`. This is THE primary conversion endpoint. Treat it with care.
-- `supabase/migrations/*.sql` — append-only. Never edit a merged migration.
+- `supabase/migrations/*.sql` — append-only **after a migration has been applied to a shared database** (staging, production, or any teammate's local). Until then, in-place edits are not just allowed but _preferred_ — a fresh `pnpm supabase start` re-runs every migration from scratch, so a bug in an early file blocks everything that follows. The rule kicks in the moment the migration touches a DB that isn't yours to wipe.
 
 ## What not to do
 

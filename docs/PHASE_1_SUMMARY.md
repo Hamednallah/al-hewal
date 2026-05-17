@@ -159,40 +159,87 @@ Once the project is live:
      label as `SUPABASE_SERVICE_ROLE_KEY`. **THIS IS THE NUCLEAR KEY.
      NEVER PASTE IT INTO A PUBLIC CHANNEL.**
 
-### A.3 Install the Supabase CLI (one-time)
+### A.3 Use the Supabase CLI via pnpm
 
-```powershell
-# Windows: install via Scoop (fastest), or download binary directly
-scoop install supabase
-# OR via standalone download: https://github.com/supabase/cli/releases/latest
-# pick the windows_amd64.zip, extract supabase.exe to a folder on your PATH
-supabase --version  # confirm it prints e.g. 2.x
-```
-
-### A.4 Link the local repo to your project + run migrations
+You do NOT need a global `supabase` install. The CLI ships as an npm
+package that pnpm fetches and caches on first use. Always invoke it as
+**`pnpm supabase ...`** in this repo.
 
 ```powershell
 # from d:\Work\Projects\AL-Hewal\al-hewal
-supabase login                                # opens a browser, OK with default scopes
-supabase link --project-ref abcdefghijklmnopqrst   # paste YOUR project ref
-# It will ask for the DB password from A.1 step 4 — paste it.
-# Confirm by checking it printed "Linked to project ..."
+pnpm supabase --version                       # confirm e.g. supabase v2.x
+```
 
-supabase db push                              # runs 0001, 0002, 0003 against your project
+Optional global install (so bare `supabase` works in any terminal):
+
+```powershell
+# Windows
+scoop install supabase
+# macOS
+brew install supabase/tap/supabase
+```
+
+### A.4 (Optional) Run Supabase locally via Docker
+
+Useful for testing migrations and RLS without touching your live
+project. **Requires Docker Desktop installed and running.** Skip this
+section if you'd rather go straight to the remote project (A.5).
+
+```powershell
+# from d:\Work\Projects\AL-Hewal\al-hewal
+pnpm supabase start
+# First run: ~5 min while Docker pulls the Supabase images.
+# When done it prints local URLs:
+#   API URL:        http://127.0.0.1:54321
+#   DB URL:         postgresql://postgres:postgres@127.0.0.1:54322/postgres
+#   Studio URL:     http://127.0.0.1:54323
+#   Inbucket URL:   http://127.0.0.1:54324  (catches outgoing emails)
+```
+
+Visit the Studio URL in a browser and you'll see the same dashboard
+the cloud project offers, populated with the migrations from
+`supabase/migrations/`. To stop:
+
+```powershell
+pnpm supabase stop                            # leaves data on disk
+pnpm supabase stop --no-backup                # wipes data
+```
+
+### A.5 Link the local repo to your remote project + push migrations
+
+```powershell
+# from d:\Work\Projects\AL-Hewal\al-hewal
+pnpm supabase login                           # opens a browser, OK with default scopes
+pnpm supabase link --project-ref abcdefghijklmnopqrst   # paste YOUR project ref
+# It will ask for the DB password from A.1 step 4 — paste it.
+# Confirm by checking it printed "Finished supabase link."
+
+pnpm supabase db push                         # runs 0001, 0002, 0003 against your project
 ```
 
 Watch the output. You should see something like:
 
 ```
-Applying migration 20260517_0001_init.sql...
-Applying migration 20260517_0002_rls.sql...
-Applying migration 20260517_0003_review_fixes.sql...
+Applying migration 0001_init.sql...
+Applying migration 0002_rls.sql...
+Applying migration 0003_review_fixes.sql...
 Finished supabase db push.
 ```
 
 If you get an error, copy-paste the FULL output to me and I'll debug.
 
-### A.5 Verify in the Supabase dashboard
+> **If you previously hit** `ERROR: functions in index expression must
+be marked IMMUTABLE (SQLSTATE 42P17)` on the `whatsapp_clicks_day_idx`
+> line, that was the bug in `0001_init.sql` that shipped in v0.1.0 and
+> was fixed in v0.1.1. Pull the latest `main` (`git pull --ff-only`),
+> then re-run `pnpm supabase start` (if local) or
+> `pnpm supabase db reset` followed by `pnpm supabase db push` (if you
+> already partially pushed to the remote — `db reset` drops the public
+> schema cleanly so a re-push starts from a clean state). **Only run
+> `db reset` against a remote you don't mind wiping** — production data
+> is destroyed by it.
+
+### A.6 Verify in the Supabase dashboard
 
 1. Supabase dashboard → **Table Editor** (left sidebar).
 2. You should see these tables in the `public` schema:

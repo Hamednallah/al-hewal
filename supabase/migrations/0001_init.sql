@@ -209,14 +209,23 @@ comment on table public.leads is
 -- Denormalised mirror of WhatsApp-source leads for fast analytics queries
 -- (counts by property, by day, by region) without scanning the wider
 -- leads table.
+--
+-- `created_day` is a STORED generated column. We index THAT, not
+-- `date_trunc('day', created_at)` — `date_trunc` on a `timestamptz` is
+-- not IMMUTABLE because its text representation depends on the session
+-- `TimeZone` GUC, so PostgreSQL refuses it in an index expression. The
+-- generated column materialises the UTC date at write time and is
+-- trivially indexable; analytics queries can `GROUP BY created_day`
+-- without a runtime cast.
 create table public.whatsapp_clicks (
   id          bigserial primary key,
   lead_id     uuid references public.leads(id) on delete cascade,
   property_id uuid references public.properties(id) on delete set null,
-  created_at  timestamptz not null default now()
+  created_at  timestamptz not null default now(),
+  created_day date generated always as ((created_at at time zone 'UTC')::date) stored
 );
 create index whatsapp_clicks_property_idx on public.whatsapp_clicks (property_id, created_at desc);
-create index whatsapp_clicks_day_idx on public.whatsapp_clicks (date_trunc('day', created_at));
+create index whatsapp_clicks_day_idx on public.whatsapp_clicks (created_day);
 
 -- ---- page_views -------------------------------------------------------------
 -- Raw per-pageview rows, partitioned monthly so old data can be dropped

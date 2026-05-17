@@ -16,17 +16,23 @@ change is expressed as ALTER / DROP / CREATE on top.
 
 ## Critical / High — APPLIED
 
-### #1 `date_trunc()` index on `whatsapp_clicks` — APPLIED
+### #1 `date_trunc()` index on `whatsapp_clicks` — APPLIED (INLINED into 0001)
 
 The reviewer is right. `date_trunc('day', timestamptz)` is not
 `IMMUTABLE` because the timestamp's text representation depends on the
 session `TimeZone` GUC, so PostgreSQL refuses it in an index expression.
-This would have failed at first `INSERT`.
+Worse than "would fail at first `INSERT`" — **the broken `CREATE
+INDEX` aborts the migration apply itself**, before any other statement
+runs. A fresh `pnpm supabase start` failed at statement 38 of 0001 and
+rolled back. Fix in 0003 alone is not enough because 0003 never runs.
 
-**Fix:** added a STORED generated column
-`created_day = (created_at at time zone 'UTC')::date` and indexed it.
-Cleaner architecturally because analytics queries can now `GROUP BY
-created_day` directly without a runtime cast.
+**Fix:** the STORED generated column +
+`(created_day)` index were **inlined into 0001** directly. 0001 had not
+yet been applied to any shared database when the bug surfaced, so the
+"append-only after merge" rule did not apply — until first apply,
+fixing a migration in place is the right call. CLAUDE.md was updated
+to make that rule explicit. 0003 still carries the review-trail
+comment for #1 but no longer runs the DROP/ALTER/CREATE block.
 
 ### #2 `page_views` partitioning will eventually fail — APPLIED
 

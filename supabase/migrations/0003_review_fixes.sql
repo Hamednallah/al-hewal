@@ -7,7 +7,13 @@
 -- as an ALTER / DROP / CREATE on top of what those migrations established.
 --
 -- Items addressed here (numbers match the review):
---   #1  date_trunc()-based index replaced with a STORED generated date column
+--   #1  date_trunc()-based index replaced with a STORED generated date
+--       column — INLINED into 0001 directly because the broken index
+--       prevented 0001 from applying AT ALL (a fresh `pnpm supabase
+--       start` would fail mid-migration before this file could run).
+--       0001 had not yet been applied to any shared DB when the bug was
+--       caught, so editing it in place was the right call. See
+--       docs/DB_REVIEW_RESPONSE.md and CLAUDE.md for the rule.
 --   #2  page_views gains a DEFAULT partition so inserts never fail when a
 --       monthly partition is missing
 --   #3  hero_image_id replaced with property_images.is_hero +
@@ -39,18 +45,9 @@
 -- =============================================================================
 
 -- ---- #1: WhatsApp clicks day index ------------------------------------------
--- date_trunc('day', timestamptz) is not IMMUTABLE because the timestamp's
--- text representation depends on the session TimeZone GUC, so PostgreSQL
--- (correctly) refuses to use it in an index expression. The right fix is
--- a STORED generated column that materialises the UTC date at write time;
--- the index then references a plain column.
-drop index if exists public.whatsapp_clicks_day_idx;
-
-alter table public.whatsapp_clicks
-  add column created_day date
-    generated always as ((created_at at time zone 'UTC')::date) stored;
-
-create index whatsapp_clicks_day_idx on public.whatsapp_clicks (created_day);
+-- INLINED into 0001_init.sql. Kept as a comment here so the review trail
+-- in this file stays complete. Nothing to do — running this migration
+-- after 0001 is a no-op for item #1.
 
 -- ---- #2: page_views DEFAULT partition --------------------------------------
 -- Without a DEFAULT partition, any insert whose created_at falls outside
