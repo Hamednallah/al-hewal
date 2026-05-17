@@ -54,6 +54,32 @@
       "openMenu": "Open menu",
       "closeMenu": "Close menu"
     },
+    "catalog": {
+      "pageTitle": "Properties",
+      "pageEyebrow": "Browse the catalog",
+      "filter": {
+        "searchLabel": "Search",
+        "searchPlaceholder": "Search by project name or district",
+        "type": "Property type",
+        "anyType": "All types",
+        "city": "City",
+        "anyCity": "All cities",
+        "minPrice": "Min price (SAR)",
+        "maxPrice": "Max price (SAR)",
+        "apply": "Apply filters",
+        "clear": "Clear"
+      },
+      "results": {
+        "summary": "Showing {showing} of {total}",
+        "empty": "No properties match the current filters. Try widening your search.",
+        "emptyNoFilters": "No properties listed yet. Contact us about what's available soon."
+      },
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "pageOf": "Page {current} of {total}"
+      }
+    },
     "property": {
       "noImage": "Image coming soon",
       "priceFrom": "Starting from {price}",

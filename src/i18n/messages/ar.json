@@ -54,6 +54,32 @@
       "openMenu": "فتح القائمة",
       "closeMenu": "إغلاق القائمة"
     },
+    "catalog": {
+      "pageTitle": "العقارات",
+      "pageEyebrow": "تصفح المعروض",
+      "filter": {
+        "searchLabel": "ابحث",
+        "searchPlaceholder": "ابحث باسم المشروع أو الحي",
+        "type": "نوع العقار",
+        "anyType": "كل الأنواع",
+        "city": "المدينة",
+        "anyCity": "كل المدن",
+        "minPrice": "الحد الأدنى للسعر (ر.س)",
+        "maxPrice": "الحد الأقصى للسعر (ر.س)",
+        "apply": "تطبيق الفلاتر",
+        "clear": "مسح"
+      },
+      "results": {
+        "summary": "{showing} من أصل {total}",
+        "empty": "لا توجد عقارات تطابق الفلاتر الحالية. جرّب توسيع نطاق البحث.",
+        "emptyNoFilters": "لا توجد عقارات معروضة حاليًا. تواصل معنا للاستفسار عن المتاح قريبًا."
+      },
+      "pagination": {
+        "previous": "السابق",
+        "next": "التالي",
+        "pageOf": "صفحة {current} من {total}"
+      }
+    },
     "property": {
       "noImage": "صورة قريبًا",
       "priceFrom": "ابتداءً من {price}",

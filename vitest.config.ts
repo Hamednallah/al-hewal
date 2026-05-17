@@ -58,6 +58,8 @@ export default defineConfig({
         'src/components/public/FeaturedProjects.tsx',
         'src/components/public/TrustBanner.tsx',
         'src/components/public/PropertyCard.tsx',
+        'src/components/public/FilterBar.tsx',
+        'src/components/public/Pagination.tsx',
         'src/lib/data/**',
         'src/app/**/{layout,page,not-found,error,global-error,opengraph-image,sitemap,robots,manifest}.{ts,tsx}',
         'src/app/**/route.{ts,tsx}',
