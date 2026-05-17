@@ -349,9 +349,16 @@ the CI gate.
      - ✅ Dismiss stale pull request approvals when new commits are pushed
    - ✅ **Require status checks to pass before merging**
      - ✅ Require branches to be up to date before merging
-     - In the search box, type each of these and select them as required:
-       - `verify`
-       - `e2e`
+     - In the search box, type each of these **exactly** and click the
+       suggestion (these are the job display names from `ci.yml` — the
+       internal job IDs `verify` and `e2e` are NOT what GitHub shows):
+       - `Lint, typecheck, test, build`
+       - `Playwright (chromium)`
+     - If a name does not appear in the dropdown, GitHub has not yet
+       seen a successful run of that check on this branch. Push any
+       commit (or click **Re-run all jobs** on the latest CI run at
+       https://github.com/Hamednallah/al-hewal/actions ), wait for it
+       to complete, then come back to this page.
    - ✅ **Require conversation resolution before merging**
    - ✅ **Require linear history**
    - ❌ Do **NOT** check "Restrict who can push" (leaves the option open for hotfixes)
