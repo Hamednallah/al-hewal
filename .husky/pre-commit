@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+# =============================================================================
+# Al Hewal ? pre-commit hook
+#
+# 1. Run lint-staged: Prettier + ESLint on staged files only.
+# 2. Run secret-scan against staged diff (rejects JWTs, Supabase tokens,
+#    Vercel Blob R/W tokens, raw .env content, hardcoded Google Maps keys).
+#
+# NEVER bypass this hook with --no-verify. If a check fails, fix the
+# underlying issue. See CONTRIBUTING.md.
+# =============================================================================
+set -e
+
+# 1. lint-staged (runs in node so corepack picks up the pinned pnpm).
+corepack pnpm lint-staged
+
+# 2. secret-scan: inspect the staged diff (added lines only).
+node scripts/secret-scan.mjs

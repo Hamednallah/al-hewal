@@ -1,0 +1,130 @@
+﻿name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel superseded runs on the same ref to save minutes on the free tier.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Test-only env values. Real secrets live in the repository Secrets store
+  # and are NEVER referenced from this file directly.
+  NODE_ENV: test
+  NEXT_PUBLIC_SITE_URL: https://al-hewal.test
+  NEXT_PUBLIC_SUPABASE_URL: https://abcdefghij.supabase.co
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  SUPABASE_SERVICE_ROLE_KEY: BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+  NEXT_PUBLIC_WHATSAPP_PHONE: '9665XXXXXXXX'
+  NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: AIzaSyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+jobs:
+  verify:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node + Corepack
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+          # Cache disabled here; we use pnpm's own store cache below for
+          # finer control.
+
+      - name: Activate pinned pnpm via Corepack
+        run: |
+          corepack enable
+          corepack prepare --activate
+          pnpm --version
+
+      - name: Get pnpm store path
+        id: pnpm-store
+        run: echo "path=$(pnpm store path)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-${{ runner.os }}-
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify npm package signatures
+        run: pnpm audit signatures
+        # Soft-fail: at the time of writing, not every transitive dep
+        # publishes provenance attestations. Tighten to a hard fail once
+        # the ecosystem catches up.
+        continue-on-error: true
+
+      - name: High/critical CVE gate
+        run: pnpm audit --audit-level=high
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test (unit + integration, coverage gate)
+        run: pnpm test
+
+      - name: Build
+        run: pnpm build
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+
+  e2e:
+    name: Playwright (chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: verify
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node + Corepack
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.x'
+
+      - name: Activate pnpm
+        run: |
+          corepack enable
+          corepack prepare --activate
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run Playwright (chromium smoke)
+        run: pnpm exec playwright test --project=chromium
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

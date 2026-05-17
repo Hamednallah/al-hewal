@@ -79,8 +79,15 @@
     "bracketSameLine": false,
     "arrowParens": "always",
     "endOfLine": "lf",
-    "plugins": ["prettier-plugin-tailwindcss"],
-    "tailwindFunctions": ["cn", "cva", "clsx", "tw"]
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ],
+    "tailwindFunctions": [
+      "cn",
+      "cva",
+      "clsx",
+      "tw"
+    ]
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx}": [

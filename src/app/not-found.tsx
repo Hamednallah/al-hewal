@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 /**
  * Top-level not-found page. Reached when a request hits a URL that doesn't
  * start with a valid locale prefix (e.g. `/foo/bar`). next-intl's middleware
@@ -6,7 +8,8 @@
  * exist), this page renders without locale context.
  *
  * Returns a minimal HTML document because there is no <html> wrapper from
- * the locale layout at this level.
+ * the locale layout at this level — we cannot rely on the design tokens or
+ * Tailwind classes here, hence inline styles.
  */
 export default function GlobalNotFound() {
   return (
@@ -36,13 +39,11 @@ export default function GlobalNotFound() {
             الحوال · Al Hewal
           </p>
           <h1 style={{ fontSize: '3rem', margin: '1rem 0', fontWeight: 700 }}>404</h1>
-          <p style={{ fontSize: '1rem', opacity: 0.8 }}>
-            الصفحة غير موجودة · Page not found
-          </p>
+          <p style={{ fontSize: '1rem', opacity: 0.8 }}>الصفحة غير موجودة · Page not found</p>
           <p style={{ marginTop: '2rem', fontSize: '0.875rem' }}>
-            <a href="/ar" style={{ color: '#d4b982' }}>
+            <Link href="/ar" style={{ color: '#d4b982' }}>
               العودة للرئيسية / Go home
-            </a>
+            </Link>
           </p>
         </div>
       </body>
