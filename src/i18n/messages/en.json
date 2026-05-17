@@ -12,10 +12,40 @@
     },
     "home": {
       "hero": {
+        "eyebrow": "Saudi Real-Estate Development",
         "headline": "We build quality... and shape the future",
         "subheadline": "Al Hewal: a leader in Saudi real-estate development and investment, crafting residential excellence with a full one-year maintenance warranty.",
         "ctaProjects": "Browse Projects",
         "ctaContact": "Contact via WhatsApp"
+      },
+      "valueProps": {
+        "sectionEyebrow": "Why Al Hewal",
+        "sectionHeadline": "Solid engineering. Absolute commitment. Enduring trust.",
+        "items": {
+          "engineering": {
+            "title": "Modern, high-quality engineering",
+            "body": "We design and execute every project to the latest engineering standards with premium finishes and high-quality materials, matched to the ambitions of the market."
+          },
+          "deadlines": {
+            "title": "Commitment to deadlines and precise execution",
+            "body": "We honour each project's schedule with disciplined construction management that delivers on time without compromising quality."
+          },
+          "maintenance": {
+            "title": "One-year warranty and maintenance",
+            "body": "Every Al Hewal project ships with a full warranty on the workmanship and a free maintenance service for a full year post-handover."
+          }
+        }
+      },
+      "featured": {
+        "eyebrow": "Latest projects",
+        "headline": "Our Featured Projects",
+        "viewAll": "Browse all properties",
+        "empty": "We're launching new projects shortly. Contact us about what's available now."
+      },
+      "trustBanner": {
+        "headline": "Full one-year maintenance warranty",
+        "body": "Our confidence in our work shows in our guarantees. Every Al Hewal project comes with a full warranty on the workmanship and one year of post-sale maintenance service.",
+        "cta": "Talk to our sales team"
       }
     },
     "common": {
@@ -23,6 +53,27 @@
       "skipToContent": "Skip to main content",
       "openMenu": "Open menu",
       "closeMenu": "Close menu"
+    },
+    "property": {
+      "noImage": "Image coming soon",
+      "priceFrom": "Starting from {price}",
+      "specs": {
+        "bedrooms": "Beds",
+        "bathrooms": "Baths",
+        "sqm": "m²"
+      },
+      "type": {
+        "villa": "Villa",
+        "duplex": "Duplex",
+        "apartment": "Apartment",
+        "investment": "Investment Building"
+      },
+      "status": {
+        "available": "Available",
+        "starting_soon": "Starting Soon",
+        "reserved": "Reserved",
+        "sold": "Sold"
+      }
     },
     "footer": {
       "tagline": "We build quality... and shape the future",
