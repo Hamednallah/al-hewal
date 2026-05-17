@@ -29,16 +29,17 @@ test.describe('Catalog page', () => {
   });
 
   test('clear-filters link returns to the unfiltered catalog', async ({ page }) => {
-    await page.goto('/en/properties?q=__no_match__');
+    await page.goto('/en/properties?q=__no_match__', { waitUntil: 'domcontentloaded' });
     // Two "Clear" links exist on the page: one inside the FilterBar's
     // search role, one inside the empty-state CTA. Scope to the empty
-    // state by excluding the search region.
+    // state via .last() — the empty-state CTA is the last "Clear".
     const clear = page
       .getByRole('main')
       .getByRole('link', { name: /^clear$/i })
       .last();
     await expect(clear).toBeVisible();
-    await clear.click();
-    await expect(page).toHaveURL(/\/en\/properties$/);
+    // waitForURL handles the pre-hydration click case where the native
+    // <a> navigation happens before React's onClick can intercept.
+    await Promise.all([page.waitForURL(/\/en\/properties$/), clear.click()]);
   });
 });
