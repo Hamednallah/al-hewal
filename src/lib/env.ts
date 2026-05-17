@@ -17,10 +17,10 @@ import { z } from 'zod';
 const serverSchema = z.object({
   // Required everywhere
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
-  NEXT_PUBLIC_SITE_URL: z.string().url(),
+  NEXT_PUBLIC_SITE_URL: z.url(),
 
   // Supabase
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
+  NEXT_PUBLIC_SUPABASE_URL: z.url(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(40),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(40),
 
@@ -29,19 +29,22 @@ const serverSchema = z.object({
     .string()
     .regex(/^[1-9][0-9]{6,14}$/, 'must be E.164 digits with no leading + (e.g. 9665XXXXXXXX)'),
 
-  // Google Maps Embed (browser-exposed; restrict by HTTP referrer in the
-  // Google Cloud Console before going live)
-  NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string().min(20),
+  // Google Maps Embed key. OPTIONAL — the platform defaults to MapLibre GL
+  // + OpenStreetMap (no key, no per-load cost). Set this only when the
+  // owner wants Google's tile imagery; the property-detail page swaps
+  // providers at runtime if the key is present.
+  // Restrict by HTTP referrer in the Google Cloud Console before going live.
+  NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: z.string().min(20).optional().or(z.literal('')),
 
   // Vercel Blob (server only)
   BLOB_READ_WRITE_TOKEN: z.string().min(20).optional(),
 
   // Upstash Redis for rate limiting (server only)
-  UPSTASH_REDIS_REST_URL: z.string().url().optional(),
+  UPSTASH_REDIS_REST_URL: z.url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(20).optional(),
 
   // Phase 5 - optional in earlier phases
-  SENTRY_DSN: z.string().url().optional(),
+  SENTRY_DSN: z.url().optional(),
   SENTRY_AUTH_TOKEN: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
 });

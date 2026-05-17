@@ -12,6 +12,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  # Opt every GitHub-shipped action into the Node 24 runtime (the v4 actions still default to Node 20, which is deprecated). Lifts the deprecation warning that surfaced in the first CI run.
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
   # Test-only env values. Real secrets live in the repository Secrets store
   # and are NEVER referenced from this file directly.
   NODE_ENV: test

@@ -14,6 +14,13 @@ describe('i18n routing config', () => {
   it('always prefixes the URL with a locale', () => {
     expect(routing.localePrefix).toBe('always');
   });
+
+  it('ignores browser language detection so KSA visitors always start on /ar', () => {
+    // Regression guard: enabling locale detection caused the CI E2E to fail
+    // because Playwright defaults to en-US and the middleware was honouring
+    // it, sending visitors to /en instead of the Arabic-first home.
+    expect(routing.localeDetection).toBe(false);
+  });
 });
 
 describe('isLocale', () => {

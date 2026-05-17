@@ -70,7 +70,7 @@ secure_password_change = true
 
 [auth.email.template.invite]
 subject = "You have been invited to Al Hewal Admin"
-content_path = "./templates/invite.html"
+# content_path = "./templates/invite.html"
 
 [auth.mfa]
 max_enrolled_factors = 5

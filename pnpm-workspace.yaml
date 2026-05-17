@@ -19,7 +19,8 @@
 # pnpm will append it here automatically. Then commit the diff.
 # ============================================================================
 allowBuilds:
-  '@parcel/watcher': true     # next-intl -> native file watcher; HMR falls back to polling without it
-  '@swc/core': true            # next-intl -> native compiler; falls back to wasm-SWC (slower) without it
-  sharp: true                  # next -> libvips image optimization for next/image (REQUIRED)
-  unrs-resolver: true          # eslint-config-next -> Rust TS module resolver for ESLint
+  '@parcel/watcher': true # next-intl -> native file watcher; HMR falls back to polling without it
+  '@swc/core': true # next-intl -> native compiler; falls back to wasm-SWC (slower) without it
+  sharp: true # next -> libvips image optimization for next/image (REQUIRED)
+  supabase: true
+  unrs-resolver: true # eslint-config-next -> Rust TS module resolver for ESLint
