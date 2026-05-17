@@ -3,8 +3,9 @@ import { getLocale, getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/navigation';
 import { type Locale } from '@/i18n/routing';
-import { cn } from '@/lib/utils';
 import type { PropertySummary } from '@/lib/data/properties';
+import { formatPrice } from '@/lib/format';
+import { cn } from '@/lib/utils';
 
 /**
  * Property summary card used by both the home featured carousel and the
@@ -139,14 +140,3 @@ function SpecsBar({
   );
 }
 
-function formatPrice(price: number, locale: Locale): string {
-  // SAR formatting with the locale's number system. Arabic locale uses
-  // Eastern Arabic numerals by default in many fonts; we keep Western
-  // digits in tables/specs (per CLAUDE.md) but allow the locale Intl
-  // formatter to pick its preferred grouping separator.
-  return new Intl.NumberFormat(locale === 'ar' ? 'ar-SA' : 'en-US', {
-    style: 'currency',
-    currency: 'SAR',
-    maximumFractionDigits: 0,
-  }).format(price);
-}

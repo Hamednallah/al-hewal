@@ -101,6 +101,70 @@
         "sold": "تم البيع"
       }
     },
+    "propertyDetail": {
+      "back": "العودة إلى كل العقارات",
+      "startingPrice": "السعر يبدأ من",
+      "negotiable": "السعر قابل للتفاوض",
+      "locationFallback": "{city}",
+      "locationWithDistrict": "{district}، {city}",
+      "gallery": {
+        "openLightbox": "افتح الصورة {index} في العرض المكبّر",
+        "morePhotos": "+{count} صورة",
+        "previous": "الصورة السابقة",
+        "next": "الصورة التالية",
+        "close": "إغلاق المعرض",
+        "counter": "{current} من {total}",
+        "noImages": "الصور قريبًا"
+      },
+      "specs": {
+        "title": "أبرز مميزات العقار",
+        "bedrooms": "غرف النوم",
+        "bathrooms": "دورات المياه",
+        "area": "مساحة البناء",
+        "areaValue": "{value} م²",
+        "plot": "رقم القطعة",
+        "streetWidth": "عرض الشارع",
+        "streetWidthValue": "{value} م",
+        "facade": "الواجهة",
+        "facadeNorth": "شمالية",
+        "facadeSouth": "جنوبية",
+        "facadeEast": "شرقية",
+        "facadeWest": "غربية",
+        "facadeCorner": "ركنية"
+      },
+      "brief": {
+        "title": "نبذة عن المشروع"
+      },
+      "amenities": {
+        "title": "المميزات الفاخرة",
+        "category": {
+          "interior": "داخلية",
+          "exterior": "خارجية",
+          "smart": "منزل ذكي",
+          "safety": "الأمان والمطابقة",
+          "other": "أخرى"
+        }
+      },
+      "contact": {
+        "title": "احجز معاينة",
+        "body": "تحدث مع مستشاري المبيعات حول {title}. الردود عادةً خلال ساعة في أوقات العمل.",
+        "whatsapp": "استفسار عبر واتساب",
+        "call": "اتصل الآن",
+        "whatsappAria": "افتح محادثة واتساب حول {title}",
+        "callAria": "اتصل بالمبيعات حول {title}",
+        "messageTemplate": "السلام عليكم الحوال، أرغب بمزيد من المعلومات عن {title} ({url})."
+      },
+      "map": {
+        "title": "نظرة على الموقع",
+        "loading": "جاري تحميل الخريطة…",
+        "fallback": "معاينة الخريطة غير متاحة. الإحداثيات: {lat}، {lng}.",
+        "openInMaps": "افتح في خرائط جوجل"
+      },
+      "metadata": {
+        "titleTemplate": "{title} | الحوال",
+        "description": "{title} — {summary} في {location}. السعر يبدأ من {price}."
+      }
+    },
     "footer": {
       "tagline": "نبني الجودة… ونصنع المستقبل",
       "about": "شركة الحوال للتطوير والاستثمار العقاري — شركة سعودية متخصصة في تطوير المشاريع السكنية والاستثمارية وفق أعلى معايير الجودة، مع ضمان صيانة شامل لمدة عام كامل.",
