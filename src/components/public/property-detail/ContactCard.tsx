@@ -7,20 +7,21 @@ import { cn } from '@/lib/utils';
  * Sticky desktop contact card. Renders the brass-bordered teal block
  * from the Stitch mockup with WhatsApp + Call CTAs.
  *
- * PR 2.4 wires the CTAs directly to `wa.me` and `tel:` — the
- * tracked endpoint at `/api/whatsapp/track` lands in PR 2.5 and will
- * become the WhatsApp href. Phone number is read from
- * `NEXT_PUBLIC_WHATSAPP_PHONE` (validated as E.164 digits in env.ts).
+ * The WhatsApp CTA now routes through `/api/whatsapp/track?p=<slug>`
+ * (PR 2.5) which records the click in `leads` + `whatsapp_clicks` and
+ * 302-redirects to wa.me with the bilingual pre-filled message
+ * generated server-side. Direct wa.me links are no longer used because
+ * the analytics dashboard depends on the server-side row insert.
  *
- * The pre-filled WhatsApp message includes the property URL so the
- * receiving agent knows which listing the prospect is asking about.
+ * Phone number for the Call CTA is read from `NEXT_PUBLIC_WHATSAPP_PHONE`
+ * (validated as E.164 digits in env.ts).
  *
  * On mobile this card is hidden (`md:block` only) — `MobileContactBar`
  * takes over.
  */
 type ContactCardProps = {
   title: string;
-  url: string;
+  slug: string;
   whatsappPhone: string;
   locale: Locale;
   className?: string;
@@ -28,14 +29,13 @@ type ContactCardProps = {
 
 export async function ContactCard({
   title,
-  url,
+  slug,
   whatsappPhone,
   locale,
   className,
 }: ContactCardProps) {
   const t = await getTranslations({ locale, namespace: 'public.propertyDetail.contact' });
-  const message = t('messageTemplate', { title, url });
-  const waHref = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`;
+  const waHref = `/api/whatsapp/track?p=${encodeURIComponent(slug)}&locale=${locale}`;
   const telHref = `tel:+${whatsappPhone}`;
 
   return (
@@ -53,8 +53,8 @@ export async function ContactCard({
         <a
           href={waHref}
           aria-label={t('whatsappAria', { title })}
-          target="_blank"
           rel="noopener noreferrer"
+          data-event="whatsapp-click"
           className="bg-brass-400 text-teal-forest-700 hover:bg-canvas focus-visible:ring-canvas focus-visible:ring-offset-teal-forest-700 inline-flex items-center justify-center gap-2 px-6 py-3.5 text-xs font-bold tracking-[0.25em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           <ChatIcon />

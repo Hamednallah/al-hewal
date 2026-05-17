@@ -63,7 +63,18 @@ const config = [
     },
   },
   {
-    files: ['src/lib/supabase/admin.ts', 'src/app/api/**/*.ts', 'src/app/**/route.ts'],
+    // Files that LEGITIMATELY need the service-role client:
+    //  - admin.ts itself defines/exports it
+    //  - API route handlers under src/app/api/** perform server-side
+    //    writes (analytics, lead inserts, audit) that bypass RLS
+    //  - src/lib/audit.ts writes admin_audit_log entries via the
+    //    service-role client; same rationale as the route handlers
+    files: [
+      'src/lib/supabase/admin.ts',
+      'src/lib/audit.ts',
+      'src/app/api/**/*.ts',
+      'src/app/**/route.ts',
+    ],
     rules: { 'no-restricted-imports': 'off' },
   },
   {

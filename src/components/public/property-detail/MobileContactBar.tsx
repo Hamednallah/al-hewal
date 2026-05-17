@@ -5,6 +5,10 @@ import { type Locale } from '@/i18n/routing';
 /**
  * Fixed mobile conversion bar at the bottom of the viewport.
  *
+ * The WhatsApp CTA routes through `/api/whatsapp/track?p=<slug>` (PR 2.5)
+ * so every click is recorded in `leads` + `whatsapp_clicks` before the
+ * server 302s the visitor to wa.me. Same rationale as ContactCard.
+ *
  * The main content gets `pb-24` on mobile to compensate so the bar
  * never hides the last paragraph (CLAUDE.md a11y rule and the design
  * note in SESSION_HANDOFF.md).
@@ -14,20 +18,19 @@ import { type Locale } from '@/i18n/routing';
  */
 type MobileContactBarProps = {
   title: string;
-  url: string;
+  slug: string;
   whatsappPhone: string;
   locale: Locale;
 };
 
 export async function MobileContactBar({
   title,
-  url,
+  slug,
   whatsappPhone,
   locale,
 }: MobileContactBarProps) {
   const t = await getTranslations({ locale, namespace: 'public.propertyDetail.contact' });
-  const message = t('messageTemplate', { title, url });
-  const waHref = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(message)}`;
+  const waHref = `/api/whatsapp/track?p=${encodeURIComponent(slug)}&locale=${locale}`;
   const telHref = `tel:+${whatsappPhone}`;
 
   return (
@@ -47,8 +50,8 @@ export async function MobileContactBar({
       <a
         href={waHref}
         aria-label={t('whatsappAria', { title })}
-        target="_blank"
         rel="noopener noreferrer"
+        data-event="whatsapp-click"
         className="bg-brass-400 text-teal-forest-700 hover:bg-canvas focus-visible:ring-canvas focus-visible:ring-offset-teal-forest-700 inline-flex flex-[2] items-center justify-center gap-2 px-4 py-3 text-xs font-bold tracking-[0.2em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         <ChatIcon />
