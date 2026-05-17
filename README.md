@@ -16,28 +16,32 @@ inventory, leads, analytics, and team management.
 
 ## Project Status
 
-Under active development. Phase 1 (Foundations) in progress.
+Phase 1 (Foundations) shipped as `v0.1.1`. Phase 2 (Public site) is
+in progress — 4 of 8 sub-PRs merged.
 
-See [`docs/PROJECT_PLAN.md`](docs/PROJECT_PLAN.md) for the full phased plan,
-or the approved planning document at
+**Resuming work in a new session?** Read
+[`docs/SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) **first**. It's
+the entire context needed to pick up without re-reading chat history.
+
+See the approved planning document at
 `C:\Users\bino9\.claude\plans\lets-build-the-al-hewal-soft-horizon.md`.
 
 ## Tech Stack
 
-| Layer | Choice |
-|---|---|
-| Framework | Next.js 15 App Router (React 19, TypeScript strict) |
-| Styling | Tailwind v4 + shadcn/ui (Radix), re-themed to the Al Hewal design system |
-| i18n | next-intl, `/ar` (default) and `/en` path prefixes, full RTL/LTR support |
-| Database | Supabase Postgres with Row Level Security |
-| Auth | Supabase Auth — magic-link admin invites only, no public signup |
-| Image storage | Vercel Blob (raw) + `next/image` (AVIF / WebP transforms) |
-| Maps | Google Maps Embed API (lazy-loaded) |
-| Charts | Recharts |
-| Forms | React Hook Form + Zod |
-| Testing | Vitest + React Testing Library + Playwright (E2E + axe-core) |
-| Observability | Sentry, Vercel Logs, first-party `page_views` table |
-| Hosting | Vercel |
+| Layer         | Choice                                                                   |
+| ------------- | ------------------------------------------------------------------------ |
+| Framework     | Next.js 15 App Router (React 19, TypeScript strict)                      |
+| Styling       | Tailwind v4 + shadcn/ui (Radix), re-themed to the Al Hewal design system |
+| i18n          | next-intl, `/ar` (default) and `/en` path prefixes, full RTL/LTR support |
+| Database      | Supabase Postgres with Row Level Security                                |
+| Auth          | Supabase Auth — magic-link admin invites only, no public signup          |
+| Image storage | Vercel Blob (raw) + `next/image` (AVIF / WebP transforms)                |
+| Maps          | Google Maps Embed API (lazy-loaded)                                      |
+| Charts        | Recharts                                                                 |
+| Forms         | React Hook Form + Zod                                                    |
+| Testing       | Vitest + React Testing Library + Playwright (E2E + axe-core)             |
+| Observability | Sentry, Vercel Logs, first-party `page_views` table                      |
+| Hosting       | Vercel                                                                   |
 
 ## Local Development
 
@@ -68,20 +72,20 @@ The site will be available at:
 
 ## Scripts
 
-| Script | Purpose |
-|---|---|
-| `pnpm dev` | Start the Next.js dev server with hot reload |
-| `pnpm build` | Production build |
-| `pnpm start` | Run the production build locally |
-| `pnpm typecheck` | TypeScript strict typecheck |
-| `pnpm lint` | ESLint |
-| `pnpm format` / `pnpm format:check` | Prettier write / check |
-| `pnpm test` | Unit + integration tests (Vitest) with coverage |
-| `pnpm test:e2e` | Playwright end-to-end suite |
-| `pnpm test:a11y` | Playwright + axe-core accessibility audit |
-| `pnpm test:rls` | Supabase Row Level Security regression test |
-| `pnpm audit:signatures` | Verify npm provenance attestations |
-| `pnpm audit:deps` | High/critical CVE gate |
+| Script                              | Purpose                                         |
+| ----------------------------------- | ----------------------------------------------- |
+| `pnpm dev`                          | Start the Next.js dev server with hot reload    |
+| `pnpm build`                        | Production build                                |
+| `pnpm start`                        | Run the production build locally                |
+| `pnpm typecheck`                    | TypeScript strict typecheck                     |
+| `pnpm lint`                         | ESLint                                          |
+| `pnpm format` / `pnpm format:check` | Prettier write / check                          |
+| `pnpm test`                         | Unit + integration tests (Vitest) with coverage |
+| `pnpm test:e2e`                     | Playwright end-to-end suite                     |
+| `pnpm test:a11y`                    | Playwright + axe-core accessibility audit       |
+| `pnpm test:rls`                     | Supabase Row Level Security regression test     |
+| `pnpm audit:signatures`             | Verify npm provenance attestations              |
+| `pnpm audit:deps`                   | High/critical CVE gate                          |
 
 ## Repository Layout
 
