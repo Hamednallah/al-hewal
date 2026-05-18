@@ -74,12 +74,16 @@ const config = [
     //    RLS hides. Each consumer is gated by `requireAdmin()` at the
     //    page boundary; the file naming convention prevents accidental
     //    drift into public surfaces.
+    //  - src/lib/admin/** — PR 3.3b shared HOF for row-action route
+    //    handlers (handlePropertyAction). Same service-role rationale
+    //    as the API routes that delegate to it.
     files: [
       'src/lib/supabase/admin.ts',
       'src/lib/audit.ts',
       'src/app/api/**/*.ts',
       'src/app/**/route.ts',
       'src/lib/data/admin-*.ts',
+      'src/lib/admin/**/*.ts',
     ],
     rules: { 'no-restricted-imports': 'off' },
   },

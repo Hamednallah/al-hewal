@@ -2,35 +2,48 @@ import { getTranslations } from 'next-intl/server';
 import Link from 'next/link';
 
 import type { Locale } from '@/i18n/routing';
+import type { AdminSessionPayload } from '@/lib/auth/session';
 import type { AdminPropertyRow } from '@/lib/data/admin-properties';
 import { formatPrice } from '@/lib/format';
 
+import { RowActionButton } from './RowActionButton';
 import { StatusBadge } from './StatusBadge';
 
 interface PropertyTableProps {
   locale: Locale;
   rows: AdminPropertyRow[];
   basePath: string;
+  /**
+   * Current admin's session — used to decide which row actions render.
+   * super_admin sees `feature` + `delete`; standard_admin does not.
+   */
+  admin: AdminSessionPayload;
 }
 
 /**
  * Admin Listing Management table — server-rendered, sortable rows show
  * project name (bilingual title in the active locale), location, price,
- * status, featured flag, last updated, and a contextual edit link.
+ * status, featured flag, last updated, and the contextual row-action
+ * group (edit / publish / feature / archive | restore / delete).
  *
  * Pixel reference: `stitch_alhewal_bilingual_corporate_website/
- * admin_listing_management/screen.png`. The mockup's row actions
- * (edit / publish / archive / delete) are deferred to PR 3.3b — this
- * first cut ships read-only access so admins can browse + filter the
- * inventory immediately.
+ * admin_listing_management/screen.png`.
  *
- * Row hover lifts the row above the table grid and surfaces the edit
- * link as the primary affordance. Mutation actions arrive once the
- * `/api/admin/properties/[id]/<action>` routes land.
+ * Tier rules (PR 3.3b):
+ *   - `standard_admin` sees edit, publish (when draft), and
+ *     archive ↔ restore.
+ *   - `super_admin` sees those plus feature / unfeature and the
+ *     destructive hard delete.
+ *
+ * Mutations route through `/api/properties/[id]/<action>` and trigger
+ * `router.refresh()` on success; the table is server-rendered, so a
+ * refresh re-fetches the current page worth of data.
  */
-export async function PropertyTable({ locale, rows, basePath }: PropertyTableProps) {
+export async function PropertyTable({ locale, rows, basePath, admin }: PropertyTableProps) {
   const t = await getTranslations({ locale, namespace: 'admin.properties.table' });
   const tType = await getTranslations({ locale, namespace: 'admin.properties.type' });
+  const tActions = await getTranslations({ locale, namespace: 'admin.properties.actions' });
+  const isSuperAdmin = admin.tier === 'super_admin';
 
   if (rows.length === 0) {
     return null;
@@ -39,7 +52,7 @@ export async function PropertyTable({ locale, rows, basePath }: PropertyTablePro
   return (
     <div className="bg-canvas-raised border-outline-variant/30 border">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm">
+        <table className="w-full text-start text-sm">
           <thead className="bg-canvas-sunken text-charcoal-muted text-xs tracking-[0.18em] uppercase">
             <tr>
               <th scope="col" className="px-6 py-4 font-semibold">
@@ -112,13 +125,63 @@ export async function PropertyTable({ locale, rows, basePath }: PropertyTablePro
                     {updated}
                   </td>
                   <td className="px-6 py-4 text-end">
-                    <Link
-                      href={`${basePath}/${row.id}/edit`}
-                      prefetch={false}
-                      className="text-teal-forest-700 border-teal-forest-700/30 hover:bg-teal-forest-700 hover:text-canvas inline-flex items-center border px-3 py-1.5 text-xs font-medium tracking-wide transition-colors"
+                    <div
+                      className="inline-flex flex-wrap items-start justify-end gap-2"
+                      role="group"
+                      aria-label={tActions('menuLabel', { title })}
                     >
-                      {t('edit')}
-                    </Link>
+                      <Link
+                        href={`${basePath}/${row.id}/edit`}
+                        prefetch={false}
+                        className="text-teal-forest-700 border-teal-forest-700/30 hover:bg-teal-forest-700 hover:text-canvas inline-flex items-center border px-2.5 py-1 text-[0.7rem] font-medium tracking-wide transition-colors"
+                      >
+                        {t('edit')}
+                      </Link>
+                      {!isArchived && row.status === 'draft' ? (
+                        <RowActionButton
+                          href={`/api/properties/${row.id}/publish`}
+                          method="POST"
+                          label={tActions('publish')}
+                          failureMessage={tActions('failureToast')}
+                        />
+                      ) : null}
+                      {isSuperAdmin && !isArchived ? (
+                        <RowActionButton
+                          href={`/api/properties/${row.id}/feature`}
+                          method="POST"
+                          body={{ featured: !row.featured }}
+                          label={row.featured ? tActions('unfeature') : tActions('feature')}
+                          failureMessage={tActions('failureToast')}
+                        />
+                      ) : null}
+                      {isArchived ? (
+                        <RowActionButton
+                          href={`/api/properties/${row.id}/restore`}
+                          method="POST"
+                          label={tActions('restore')}
+                          failureMessage={tActions('failureToast')}
+                        />
+                      ) : (
+                        <RowActionButton
+                          href={`/api/properties/${row.id}/archive`}
+                          method="POST"
+                          label={tActions('archive')}
+                          confirmMessage={tActions('archiveConfirm', { title })}
+                          tone="destructive"
+                          failureMessage={tActions('failureToast')}
+                        />
+                      )}
+                      {isSuperAdmin ? (
+                        <RowActionButton
+                          href={`/api/properties/${row.id}`}
+                          method="DELETE"
+                          label={tActions('delete')}
+                          confirmMessage={tActions('deleteConfirm', { title })}
+                          tone="destructive"
+                          failureMessage={tActions('failureToast')}
+                        />
+                      ) : null}
+                    </div>
                   </td>
                 </tr>
               );

@@ -120,8 +120,25 @@ export function PropertyForm({ locale, mode, propertyId, initialValues }: Proper
     setStatus({ kind: 'submitting' });
     try {
       // Strip empty strings on optional fields so the server interprets
-      // "leave alone" rather than "set to NULL" on edit.
-      const payload = Object.fromEntries(Object.entries(data).filter(([, value]) => value !== ''));
+      // "leave alone" rather than "set to NULL" on edit. Also drop
+      // `featured` from edit-mode payloads when it matches the loaded
+      // value — RHF always carries the checkbox state, and sending an
+      // unchanged `featured` would trip the PATCH endpoint's super_admin
+      // tier guard for routine standard_admin edits.
+      const payload = Object.fromEntries(
+        Object.entries(data).filter(([key, value]) => {
+          if (value === '') return false;
+          if (
+            mode === 'edit' &&
+            key === 'featured' &&
+            initialValues !== undefined &&
+            initialValues.featured === value
+          ) {
+            return false;
+          }
+          return true;
+        }),
+      );
       const url = mode === 'create' ? '/api/properties' : `/api/properties/${propertyId}`;
       const method = mode === 'create' ? 'POST' : 'PATCH';
       const res = await fetch(url, {
@@ -368,7 +385,7 @@ export function PropertyForm({ locale, mode, propertyId, initialValues }: Proper
             id="prop-maps-url"
             label={tFields('google_maps_url')}
             type="url"
-            placeholder="https://maps.google.com/…"
+            placeholder={tFields('google_maps_url_placeholder')}
             error={errors.google_maps_url?.message}
             dir="ltr"
             className="md:col-span-3"
