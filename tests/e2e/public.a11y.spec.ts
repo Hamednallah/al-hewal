@@ -19,6 +19,8 @@ const ROUTES = [
   { name: 'home', path: '' },
   { name: 'catalog', path: '/properties' },
   { name: 'catalog-empty-filter', path: '/properties?q=__no_match__' },
+  { name: 'about', path: '/about' },
+  { name: 'contact', path: '/contact' },
 ];
 
 for (const locale of ['ar', 'en'] as const) {

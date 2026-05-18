@@ -1,6 +1,7 @@
 # Session Handoff — read this FIRST
 
-> Last updated: 2026-05-18, after Phase 2 close (v0.2.0).
+> Last updated: 2026-05-18, after Phase 2 close (v0.2.0) + the public-site
+> fast-follow PRs (2.8 docs sweep, 2.9 about/contact/brand/404).
 > The next session resumes on **Phase 3 — Admin Command Center**,
 > starting with **PR 3.1 — magic-link auth + admin guard**.
 
@@ -24,7 +25,7 @@ shipped (v0.2.0).** Resume with **Phase 3 — Admin Command Center**.
 | ---------- | ------------------------------------------------------------------------------- |
 | Repo       | https://github.com/Hamednallah/al-hewal                                         |
 | Local      | `d:\Work\Projects\AL-Hewal\al-hewal\`                                           |
-| Main HEAD  | tag `v0.2.0` (PR #10 — tests + Phase 2 wrap)                                    |
+| Main HEAD  | PR #12 (about + contact + brand assets + bilingual 404)                         |
 | Branch     | `main` (you should be on it; if not, `git checkout main && git pull --ff-only`) |
 | Latest tag | `v0.2.0` (Phase 2 — Public site)                                                |
 | Next PR    | **3.1 — magic-link auth + admin guard middleware**                              |
@@ -78,6 +79,40 @@ The entire public-facing site:
   WhatsApp, SEO, a11y) + 86 vitest unit (97%+ on covered modules).
 
 Full Phase 2 summary: [`docs/PHASE_2_SUMMARY.md`](PHASE_2_SUMMARY.md).
+
+### Phase 2 fast-follows (post-v0.2.0, on `main`)
+
+- **PR 2.8 (docs sweep)** — synced agent-memory mirror, added Phase 2
+  deps section to `DEPENDENCY_AUDIT.md`, fixed stale `robots.ts` path
+  in `POST_DEPLOY_CHECKLIST.md`, added phase-status banner to
+  `MASTER_PLAN.md`.
+- **PR 2.9 (public pages + brand + 404 + footer)** — the deferred
+  Phase 2 polish items the owner asked for explicitly:
+  - **`/<locale>/about`** — bilingual marketing page composed from
+    `alhewal.txt`. Mission / promise / 5-step values / CTA band.
+    ISR 24h.
+  - **`/<locale>/contact`** + **`ContactForm.tsx`** — direct-channels
+    strip (WhatsApp + Call routed through `/api/whatsapp/track`) +
+    React-Hook-Form + Zod form that POSTs to `/api/leads`. Same field
+    shape as the route schema. Bilingual success/error states.
+  - **Brand assets** — `public/brand/logo.png`, `logo.svg`, `hero.png`
+    (supplied by the owner from `d:/Work/Projects/AL-Hewal/images/`).
+    Nav now uses the logo image instead of the text wordmark. Hero
+    uses `hero.png` as a full-bleed background with a teal-forest
+    gradient overlay (mirrors via `rtl:` for AR).
+  - **Bilingual 404** — `src/app/not-found.tsx` rebuilt: big "404"
+    mark, AR + EN side-by-side (each block with its own `lang` +
+    `dir` so screen readers switch correctly), four CTAs (browse +
+    home per locale), centered brand-logo header + copyright footer.
+    See §4l below for the routing trap that pushed this back to the
+    global file.
+  - **Footer centered** — every column uses `items-center` +
+    `text-center` so the layout reads identically in AR and EN
+    (the previous version aligned to inline-start which shifted
+    between locales).
+  - Test coverage: `tests/e2e/public-pages.spec.ts` (6 specs across
+    `/about`, `/contact`, `/404`) + axe scans extended to both new
+    pages in both locales (+4 axe runs).
 
 ---
 
@@ -334,6 +369,49 @@ User keeps secrets in `d:\Work\Projects\AL-Hewal\al-hewal\.env` (gitignored). NE
   `*.a11y.spec.ts`).
 - CI Playwright job runs `--project=chromium --project=a11y` together
   so the dev server boots only once.
+
+### 4l. Next 15 `not-found.tsx` route-group trap
+
+When `notFound()` is called from inside a route group like
+`[locale]/(public)/properties/[slug]/page.tsx`, Next 15 does NOT
+reliably pick up a sibling `not-found.tsx` placed at
+`[locale]/(public)/not-found.tsx` or even `[locale]/not-found.tsx` —
+both files were silently skipped during the build (no compiled
+artifact in `.next/server/app/`). The global `app/not-found.tsx`
+is the only file that fires.
+
+For Phase 2 we landed on: enrich the global `app/not-found.tsx` so
+it's a proper bilingual page with the brand chrome, and accept that
+the "in-shell" not-found pattern isn't available. Don't waste time
+re-attempting a route-group not-found.tsx in Phase 3 — it's a known
+Next 15 limitation, not a config bug.
+
+If Phase 3 admin routes need their own not-found behaviour, the
+cleanest path is the `app/(admin)/not-found.tsx` pattern at the
+TOP of an admin route group, not nested inside it.
+
+### 4m. Brand assets (PR 2.9)
+
+Owner-supplied assets live in `public/brand/`:
+
+- `logo.png` (123 KB) — primary brand logo with the Islamic
+  geometric frame, palm tree, and city silhouette in brass + green.
+  Used by `Nav` (replaces the old text wordmark) and by the global
+  `not-found.tsx` header.
+- `logo.svg` (322 KB) — vector version, currently unused but
+  reserved for Phase 3 admin surfaces (sidebar, print materials,
+  PDF leads export).
+- `hero.png` (1 MB) — brand-mark photograph on a marble wall.
+  Powers the home `Hero` as a full-bleed background image with a
+  teal-forest gradient overlay (mirrors via `rtl:` for AR).
+
+The owner's brand palette (dark green + brass + ivory) already
+harmonises with our locked design tokens (Forest Teal `#002B2B` +
+Brass `#D4B982`). No token changes were needed.
+
+If new brand assets land, copy them into `public/brand/` and import
+via the standard `next/image` `<Image>` (or plain `<img>` in
+`not-found.tsx` since it sits outside the App Router image pipeline).
 
 ---
 

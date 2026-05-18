@@ -60,6 +60,11 @@ export default defineConfig({
         'src/components/public/PropertyCard.tsx',
         'src/components/public/FilterBar.tsx',
         'src/components/public/Pagination.tsx',
+        // PR 2.9 — contact-form client component is fully covered by
+        // Playwright in tests/e2e/public-pages.spec.ts (renders form,
+        // surfaces inline errors, submits to /api/leads). Unit testing
+        // RHF + fetch would be testing mocks rather than behaviour.
+        'src/components/public/ContactForm.tsx',
         // Property detail components — visual / interactive, covered by
         // Playwright in PR 2.7 (per docs/SESSION_HANDOFF.md PR 2.4 plan).
         'src/components/public/property-detail/**',
