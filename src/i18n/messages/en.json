@@ -279,6 +279,7 @@
     },
     "properties": {
       "filter": {
+        "formAriaLabel": "Filter properties",
         "searchLabel": "Search",
         "searchPlaceholder": "Title, slug, city…",
         "status": "Status",

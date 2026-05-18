@@ -1,21 +1,26 @@
 ---
 name: feedback-monitor-ci
-description: 'After pushing to GitHub, proactively monitor the CI run via gh CLI and report failures before the user has to ask'
+description: 'User monitors GitHub Actions themselves — do NOT run `gh run watch` or background CI-watch loops. Wait for the user to report status/failures, then diagnose from their report.'
 metadata:
   node_type: memory
   type: feedback
   originSessionId: 3692c396-8443-4856-b863-63dcc5583bc3
 ---
 
-The user asked "what do you need to monitor [CI]" and then installed and authenticated `gh` CLI. This is an explicit invitation to use it after every push.
+The user monitors CI themselves and will tell me when a run completes (green or red). I MUST NOT spawn `gh run watch` background tasks, polling loops, or repeated `gh run list` checks after a push.
 
-**Why:** in this session, CI failed on a Playwright test and the user had to manually paste the log into chat. That round-trip is wasted time when `gh run watch` does it directly. The user wants CI failures noticed and addressed in the same session, not in the next.
+**Why:** background watches keep the session alive longer and re-invoke me on every CI notification, which on Opus burns expensive turns for streaming text I don't need. The user said explicitly: "always from now on, let me monitor the GitHub Actions and tell you." That call also flipped the prior policy in the original version of this memory (which had me running `gh run watch` after every push) — this version supersedes it.
 
-**How to apply:** after every `git push`:
+**How to apply:**
 
-1. `gh run list --branch <branch> --limit 1` to find the run id
-2. `gh run watch <id>` (or `gh run watch` for the most recent) to block until complete
-3. If it fails: `gh run view <id> --log-failed` to fetch only the failing step output, then fix
-4. Do NOT wait for the user to notice the red badge on GitHub
+1. After `git push`, **stop**. Don't run `gh run watch`. Don't poll `gh run list`. Don't schedule wakeups for CI.
+2. Move on to the next thing the user asked for, OR end the turn with a clean status line ("PR #N pushed, auto-merge queued — ping me when CI reports back").
+3. When the user reports a failure (e.g. "the CI failed"), THEN use `gh` to diagnose:
+   - `gh run list --branch <branch> --limit 1` to find the latest run id (single command, single shot)
+   - `gh run view <id> --log-failed` to fetch only the failing step
+   - Fix, commit, push, stop again
+4. If CI is green, the user typically says so or moves to the next task — no action needed from me.
 
-If `gh` is not available in a future session, fall back to asking the user to paste the run log. Don't pretend the push succeeded just because git push exited 0 — that only proves the commit reached GitHub, not that CI is green.
+The pattern is "push and wait for the user," not "push and babysit." Same applies to deployment status, preview URLs, and any other long-running external thing.
+
+See also: [[reference_gh_cli_path]] for the gh.exe absolute-path quirk on this Windows machine.

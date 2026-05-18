@@ -279,6 +279,7 @@
     },
     "properties": {
       "filter": {
+        "formAriaLabel": "تصفية العقارات",
         "searchLabel": "بحث",
         "searchPlaceholder": "الاسم، الرابط، المدينة…",
         "status": "الحالة",

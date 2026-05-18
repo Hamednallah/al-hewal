@@ -1,5 +1,4 @@
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
 
 import type { Locale } from '@/i18n/routing';
 import {
@@ -41,7 +40,7 @@ export async function PropertyAdminFilterBar({
         action={action}
         className="mx-auto flex flex-col gap-4 px-6 py-5 md:flex-row md:items-end md:gap-3 md:px-10"
         role="search"
-        aria-label={t('searchLabel')}
+        aria-label={t('formAriaLabel')}
       >
         <FilterInput
           id="admin-properties-search"
@@ -117,13 +116,17 @@ export async function PropertyAdminFilterBar({
           >
             {t('apply')}
           </button>
-          <Link
+          {/* Plain <a> (not next/link): clearing filters is a hard reset
+              of the URL state, and a Next client-side push inside a form
+              with hydrated `defaultValue` inputs has been flaky enough
+              (Playwright caught the form submission winning the race) to
+              not be worth the SPA-routing benefit. */}
+          <a
             href={action}
-            prefetch={false}
             className="text-teal-forest-700 hover:bg-canvas-sunken border-outline-variant border px-4 py-2 text-sm font-medium"
           >
             {t('clear')}
-          </Link>
+          </a>
         </div>
       </form>
     </section>
