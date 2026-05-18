@@ -110,10 +110,9 @@ export async function POST(req: NextRequest) {
 
   try {
     const client = getSupabaseAdminClient();
-    // Cast at the insert boundary — see note in lib/audit.ts.
     const leadRow = {
       property_id: parsed.data.propertyId ?? null,
-      source: 'contact_form',
+      source: 'contact_form' as const,
       inquiry_type: parsed.data.inquiryType,
       name: parsed.data.name,
       phone: phoneE164,
@@ -124,7 +123,7 @@ export async function POST(req: NextRequest) {
       user_agent: userAgent,
       referrer,
     };
-    const { error } = await client.from('leads').insert(leadRow as never);
+    const { error } = await client.from('leads').insert(leadRow);
     if (error) {
       console.warn('[leads] insert failed:', error.message);
       return NextResponse.json({ success: false, error: 'insert_failed' }, { status: 500 });

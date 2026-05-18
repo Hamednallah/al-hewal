@@ -99,12 +99,9 @@ export async function GET(req: NextRequest) {
   // success — RLS bypass via service role means it shouldn't fail, but if
   // it does, the user can still sign in.
   try {
-    // Cast at the boundary — same pattern as src/app/api/leads/route.ts;
-    // the generated Database type widens the update arg to `never` until
-    // we generate types against a remote DB that has the admins table.
     await getSupabaseAdminClient()
       .from('admins')
-      .update({ last_login_at: new Date().toISOString() } as never)
+      .update({ last_login_at: new Date().toISOString() })
       .eq('id', adminRow.id);
   } catch (err) {
     console.warn(

@@ -51,10 +51,6 @@ export type AuditEntry = {
 export async function writeAuditLog(entry: AuditEntry): Promise<void> {
   try {
     const client = getSupabaseAdminClient();
-    // Cast to `never` is unavoidable until `database.types.ts` is
-    // regenerated from the linked Supabase project — the placeholder
-    // type leaves every Insert as `never[]`. CI fails on schema drift
-    // once we run the regen step, so this cast becomes a no-op then.
     const insertRow = {
       actor_id: entry.actorId ?? null,
       action: entry.action,
@@ -64,6 +60,11 @@ export async function writeAuditLog(entry: AuditEntry): Promise<void> {
       ip_hash: entry.ipHash ?? null,
       user_agent: entry.userAgent ?? null,
     };
+    // `diff` is typed `unknown` on the caller-facing AuditEntry interface so
+    // each caller can pass whatever before/after shape makes sense for the
+    // entity it's logging. The generated Supabase type for the column is
+    // `Json | undefined`, which `unknown` doesn't narrow into cleanly — cast
+    // at the boundary instead of polluting every caller with a `Json` cast.
     const { error } = await client.from('admin_audit_log').insert(insertRow as never);
     if (error) {
       console.warn('[audit] insert failed:', scrubPii(error.message));

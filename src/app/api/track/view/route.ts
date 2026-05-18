@@ -87,7 +87,6 @@ export async function POST(req: NextRequest) {
 
   try {
     const client = getSupabaseAdminClient();
-    // Cast at the insert boundary — see note in lib/audit.ts.
     const viewRow = {
       path: parsed.data.path,
       property_id: parsed.data.propertyId ?? null,
@@ -97,7 +96,7 @@ export async function POST(req: NextRequest) {
       // for truly stateless callers — RLS doesn't require it).
       visitor_hash: visitorHash ?? ipHash ?? 'anon',
     };
-    const { error } = await client.from('page_views').insert(viewRow as never);
+    const { error } = await client.from('page_views').insert(viewRow);
     if (error) {
       console.warn('[track/view] insert failed:', error.message);
     }

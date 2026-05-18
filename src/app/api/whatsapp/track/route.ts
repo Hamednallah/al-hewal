@@ -128,27 +128,21 @@ type RecordParams = {
 async function recordClick({ propertyId, locale, ipHash, userAgent }: RecordParams): Promise<void> {
   try {
     const client = getSupabaseAdminClient();
-    // Cast at the insert boundary — see note in lib/audit.ts. Removed
-    // once supabase typegen runs against the linked project in CI.
     const leadRow = {
       property_id: propertyId,
-      source: 'whatsapp',
+      source: 'whatsapp' as const,
       locale,
       ip_hash: ipHash,
       user_agent: userAgent,
     };
-    const { data, error } = await client
-      .from('leads')
-      .insert(leadRow as never)
-      .select('id')
-      .single();
+    const { data, error } = await client.from('leads').insert(leadRow).select('id').single();
     if (error) {
       console.warn('[whatsapp/track] lead insert failed:', error.message);
       return;
     }
-    const leadId = (data as { id: string } | null)?.id ?? null;
+    const leadId = data?.id ?? null;
     const clickRow = { lead_id: leadId, property_id: propertyId };
-    const { error: clickErr } = await client.from('whatsapp_clicks').insert(clickRow as never);
+    const { error: clickErr } = await client.from('whatsapp_clicks').insert(clickRow);
     if (clickErr) {
       console.warn('[whatsapp/track] click insert failed:', clickErr.message);
     }
