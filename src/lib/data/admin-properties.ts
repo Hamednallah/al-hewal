@@ -120,7 +120,12 @@ export async function listAdminProperties(
       }
     }
 
-    const { data, count, error } = await query;
+    // 2s budget: production Supabase responds in <500ms; this cap stops
+    // CI's placeholder URL (and any prod-side network blip) from blocking
+    // the RSC render long enough to make `router.push` wait past the
+    // 5s `toHaveURL` poll. On timeout the catch block returns the empty
+    // page — same UX as a real Supabase error.
+    const { data, count, error } = await query.abortSignal(AbortSignal.timeout(2000));
     if (error) {
       console.warn('[listAdminProperties] supabase returned error:', error.message);
       return empty;
@@ -208,7 +213,8 @@ export async function getAdminDistinctCities(): Promise<string[]> {
     const { data, error } = await client
       .from('properties')
       .select('city')
-      .order('city', { ascending: true });
+      .order('city', { ascending: true })
+      .abortSignal(AbortSignal.timeout(2000));
     if (error) {
       console.warn('[getAdminDistinctCities] supabase returned error:', error.message);
       return [];
