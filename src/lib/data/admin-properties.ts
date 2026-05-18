@@ -1,6 +1,12 @@
 import 'server-only';
 
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
+import {
+  ADMIN_PROPERTY_STATUSES,
+  ADMIN_PROPERTY_TYPES,
+  type AdminPropertyStatus,
+  type AdminPropertyType,
+} from '@/lib/validators/property';
 
 /**
  * Admin-side property reads. Uses the service-role client because the
@@ -9,19 +15,18 @@ import { getSupabaseAdminClient } from '@/lib/supabase/admin';
  *
  * Public catalog reads (`src/lib/data/properties.ts`) stay on the anon
  * client + RLS — different audience, different policy.
+ *
+ * The enum constants moved into `lib/validators/property.ts` (Phase 3.4)
+ * so client-side form components can import them without dragging the
+ * `server-only` boundary into the browser bundle.
  */
 
-export const ADMIN_PROPERTY_TYPES = ['villa', 'duplex', 'apartment', 'investment'] as const;
-export const ADMIN_PROPERTY_STATUSES = [
-  'draft',
-  'available',
-  'starting_soon',
-  'reserved',
-  'sold',
-] as const;
-
-export type AdminPropertyType = (typeof ADMIN_PROPERTY_TYPES)[number];
-export type AdminPropertyStatus = (typeof ADMIN_PROPERTY_STATUSES)[number];
+export {
+  ADMIN_PROPERTY_TYPES,
+  ADMIN_PROPERTY_STATUSES,
+  type AdminPropertyType,
+  type AdminPropertyStatus,
+};
 
 export const ADMIN_PROPERTIES_PAGE_SIZE = 20;
 export const ADMIN_PROPERTIES_MAX_PAGE = 50;
@@ -135,6 +140,62 @@ export async function listAdminProperties(
     );
     return empty;
   }
+}
+
+/**
+ * Load a single property by id, for the admin Edit form. Returns null on
+ * Supabase failure or when the row doesn't exist. Includes ALL columns
+ * the form needs to round-trip (creating PR 3.4 keeps this narrow; the
+ * wizard's images + amenities steps in later PRs will extend the select).
+ */
+export async function getAdminPropertyById(id: string): Promise<AdminPropertyEditRow | null> {
+  try {
+    const client = getSupabaseAdminClient();
+    const { data, error } = await client
+      .from('properties')
+      .select(
+        'id, slug, title_ar, title_en, description_ar, description_en, type, status, price_sar, price_negotiable, area_sqm, bedrooms, bathrooms, city, district, plot_number, street_width_m, facade, lat, lng, google_maps_url, featured, deleted_at',
+      )
+      .eq('id', id)
+      .maybeSingle();
+    if (error) {
+      console.warn('[getAdminPropertyById] supabase returned error:', error.message);
+      return null;
+    }
+    return (data ?? null) as AdminPropertyEditRow | null;
+  } catch (err) {
+    console.warn(
+      '[getAdminPropertyById] unexpected failure:',
+      err instanceof Error ? err.message : err,
+    );
+    return null;
+  }
+}
+
+export interface AdminPropertyEditRow {
+  id: string;
+  slug: string;
+  title_ar: string;
+  title_en: string;
+  description_ar: string;
+  description_en: string;
+  type: AdminPropertyType;
+  status: AdminPropertyStatus;
+  price_sar: number;
+  price_negotiable: boolean;
+  area_sqm: number;
+  bedrooms: number;
+  bathrooms: number;
+  city: string;
+  district: string | null;
+  plot_number: string | null;
+  street_width_m: number | null;
+  facade: string | null;
+  lat: number | null;
+  lng: number | null;
+  google_maps_url: string | null;
+  featured: boolean;
+  deleted_at: string | null;
 }
 
 /**
