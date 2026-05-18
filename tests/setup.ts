@@ -18,6 +18,9 @@ process.env.SUPABASE_SERVICE_ROLE_KEY ??= 's'.repeat(60);
 // regex in env.ts, AND because whatsapp.test.ts asserts on this exact
 // value. Test determinism wins over the local .env fallback here.
 process.env.NEXT_PUBLIC_WHATSAPP_PHONE = '966500000000';
+// Phase 3 — admin cookie HMAC secret. Deterministic so the sign/verify
+// round-trip in lib/auth/session.test.ts is reproducible across runs.
+process.env.AUTH_COOKIE_SECRET ??= 'test-only-deterministic-cookie-secret-32+chars-for-vitest';
 
 import '@testing-library/jest-dom/vitest';
 

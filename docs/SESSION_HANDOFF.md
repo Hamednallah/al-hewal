@@ -21,14 +21,14 @@ default. WhatsApp-driven lead funnel.
 **Phase 1 (foundations) shipped (v0.1.1). Phase 2 (public site)
 shipped (v0.2.0).** Resume with **Phase 3 — Admin Command Center**.
 
-|            |                                                                                 |
-| ---------- | ------------------------------------------------------------------------------- |
-| Repo       | https://github.com/Hamednallah/al-hewal                                         |
-| Local      | `d:\Work\Projects\AL-Hewal\al-hewal\`                                           |
-| Main HEAD  | PR #12 (about + contact + brand assets + bilingual 404)                         |
-| Branch     | `main` (you should be on it; if not, `git checkout main && git pull --ff-only`) |
-| Latest tag | `v0.2.0` (Phase 2 — Public site)                                                |
-| Next PR    | **3.1 — magic-link auth + admin guard middleware**                              |
+|            |                                                                                                       |
+| ---------- | ----------------------------------------------------------------------------------------------------- |
+| Repo       | https://github.com/Hamednallah/al-hewal                                                               |
+| Local      | `d:\Work\Projects\AL-Hewal\al-hewal\`                                                                 |
+| Main HEAD  | PR #14 (Phase 3.1 — magic-link auth + admin guard) — pending merge                                    |
+| Branch     | `main` (you should be on it; if not, `git checkout main && git pull --ff-only`)                       |
+| Latest tag | `v0.2.1` (Phase 2 closeout — favicon + PWA manifest)                                                  |
+| Next PR    | **3.X — `inquiry_type` enum + ContactForm radio (general vs maintenance)**, then PR 3.2 — admin shell |
 
 ---
 
@@ -151,24 +151,40 @@ Phase 3 builds the admin Command Center. The master plan summary:
 
 Suggested PR breakdown (subject to in-session adjustment):
 
-### PR 3.1 — Magic-link auth + admin guard
+### PR 3.1 — Magic-link auth + admin guard ✅ shipped (PR #14)
 
-- `/auth/login` page (email field, magic-link request via Supabase
-  Auth `signInWithOtp`).
-- `/auth/callback/route.ts` handles the Supabase callback URL,
-  exchanges the code, and writes the admin's signed-cookie session.
-- `/auth/sign-out/route.ts`.
-- Admin guard chained into `src/middleware.ts`: protects every
-  `/<locale>/admin/*` path; reads a signed 5-minute-TTL cookie
-  cache to avoid hitting Supabase on every request. On miss, calls
-  `getUser()` once + checks the `admins` row (status='active'),
-  re-signs the cookie. On fail, 302 to
-  `/<locale>/auth/login?next=<encoded-path>`.
-- `src/lib/auth/session.ts` — cookie sign/verify (HMAC via a new
-  `AUTH_COOKIE_SECRET` env var, validated in `env.ts`).
-- `src/lib/auth/admins.ts` — `currentAdmin()` server helper that
-  returns the typed admin row from the cookie or null.
-- Unit tests for the cookie sign/verify round-trip + the helper.
+- `/<locale>/auth/login` — bilingual server component +
+  `LoginForm.tsx` (client island using `useActionState`) +
+  `actions.ts` (server action calling
+  `supabase.auth.signInWithOtp` with `shouldCreateUser: false`).
+  Email-enumeration hardening: always returns `{ status: 'sent' }`
+  on syntactically valid input.
+- `/auth/callback/route.ts` — exchanges the OTP, looks up the
+  `public.admins` row, refuses if missing / not `status='active'`,
+  otherwise signs the HMAC session cookie and redirects to `next`.
+- `/auth/sign-out/route.ts` — clears Supabase session + our cookie.
+- `src/middleware.ts` — admin guard runs BEFORE next-intl, matches
+  `/(ar|en)/admin(/...)?`, verifies cookie, redirects unauth to
+  `/<locale>/auth/login?next=<path>`. The `/auth/*` paths are
+  EXCLUDED from the matcher so Supabase's registered callback URL
+  is never locale-rewritten.
+- `src/lib/auth/session.ts` — Web Crypto HMAC-SHA-256 sign/verify
+  (Edge-safe). Cookie name `alh_admin_sess`, TTL 1h (the 5-min +
+  refresh spec was deferred — see the file's header comment for the
+  rationale). New required env var: `AUTH_COOKIE_SECRET` (32+ chars).
+- `src/lib/auth/admins.ts` — `currentAdmin()` for RSC + actions
+  (cookie-only; no Supabase round-trip). `requireAdmin()` throws.
+- `src/app/[locale]/admin/page.tsx` — minimal placeholder
+  ("Welcome, {email}") until PR 3.2 lands the real admin shell.
+- Tests: 12 vitest unit specs in
+  `tests/unit/lib/auth/{session,admins}.test.ts` (round-trip,
+  tamper, expiry, malformed-cookie cases) + 6 Playwright specs in
+  `tests/e2e/admin-auth.spec.ts` (redirect, bilingual form,
+  query-string error surface, noindex).
+- First-admin bootstrap procedure: see
+  [`docs/PHASE_3_RUNBOOK.md`](PHASE_3_RUNBOOK.md) §1 (click-by-click
+  for Supabase Studio + SQL fallback). The Supabase Auth
+  Redirect-URLs allowlist also needs updating, documented in §3.
 
 ### PR 3.2 — Admin shell
 
@@ -366,9 +382,12 @@ Optional: `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY`, `BLOB_READ_WRITE_TOKEN`,
 `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `SENTRY_DSN`,
 `SENTRY_AUTH_TOKEN`, `RESEND_API_KEY`.
 
-**Phase 3 will ADD `AUTH_COOKIE_SECRET`** (32-byte hex, used to HMAC
-the admin session cookie). Add to env.ts schema and to `.env.example`
-in PR 3.1.
+**`AUTH_COOKIE_SECRET`** — added in PR 3.1. 32+ chars of random hex,
+HMAC-signs the admin session cookie. See
+[`PHASE_3_RUNBOOK.md`](PHASE_3_RUNBOOK.md) §2 for generation commands
+
+- rotation cadence. CI workflow + tests/setup.ts both default it to a
+  deterministic test value; real production secret lives in Vercel env.
 
 User keeps secrets in `d:\Work\Projects\AL-Hewal\al-hewal\.env` (gitignored). NEVER commit. If you see one in IDE selection, do NOT echo it back.
 
@@ -467,6 +486,7 @@ and delete the local branch as before.
 | Question                                                              | File / command                                                                           |
 | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | "Why was decision X made?"                                            | [`docs/plan/MASTER_PLAN.md`](plan/MASTER_PLAN.md)                                        |
+| "How do I bootstrap the first admin / configure Supabase Auth?"       | [`docs/PHASE_3_RUNBOOK.md`](PHASE_3_RUNBOOK.md)                                          |
 | "What did Phase 2 actually ship?"                                     | [`docs/PHASE_2_SUMMARY.md`](PHASE_2_SUMMARY.md)                                          |
 | "What's the design token for Y?"                                      | `src/styles/globals.css` `@theme` block, fallback to `…/al_hewal_architectura/DESIGN.md` |
 | "What does the admin screen look like?"                               | `…/stitch_alhewal_bilingual_corporate_website/admin_*/screen.png`                        |

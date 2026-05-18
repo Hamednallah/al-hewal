@@ -27,6 +27,11 @@ env:
   # eagerly validates env on first request.
   NEXT_PUBLIC_WHATSAPP_PHONE: '966500000000'
   NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: AIzaSyAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+  # Admin session HMAC secret (Phase 3). Test-only deterministic value so
+  # the cookie sign/verify round-trip is reproducible. Real production secret
+  # lives in Vercel project env + the GitHub Actions Secrets store and is
+  # NEVER referenced from this workflow file.
+  AUTH_COOKIE_SECRET: 'test-only-deterministic-cookie-secret-32+chars-for-ci'
 
 jobs:
   verify:
