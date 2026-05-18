@@ -93,18 +93,29 @@ test.describe('admin shell (PR 3.2)', () => {
   }) => {
     await loginAsAdmin(context, { tier: 'super_admin' });
 
-    const pages: Array<{ path: string; heading: RegExp; pr: RegExp }> = [
-      { path: '/en/admin/properties', heading: /Listing Management/, pr: /PR 3\.3/ },
-      { path: '/en/admin/leads', heading: /Leads Journal/, pr: /PR 3\.6/ },
-      { path: '/en/admin/analytics', heading: /Strategic Analytics/, pr: /Phase 4/ },
-      { path: '/en/admin/admins', heading: /Admin Management/, pr: /PR 3\.4/ },
-      { path: '/en/admin/profile', heading: /My Profile/, pr: /Phase 4/ },
+    const pages: Array<{ path: string; heading: RegExp; tracking: RegExp }> = [
+      {
+        path: '/en/admin/properties',
+        heading: /Listing Management/,
+        tracking: /Tracking: PR 3\.3$/,
+      },
+      { path: '/en/admin/leads', heading: /Leads Journal/, tracking: /Tracking: PR 3\.6$/ },
+      {
+        path: '/en/admin/analytics',
+        heading: /Strategic Analytics/,
+        tracking: /Tracking: Phase 4$/,
+      },
+      { path: '/en/admin/admins', heading: /Admin Management/, tracking: /Tracking: PR 3\.4$/ },
+      { path: '/en/admin/profile', heading: /My Profile/, tracking: /Tracking: Phase 4$/ },
     ];
 
-    for (const { path, heading, pr } of pages) {
+    for (const { path, heading, tracking } of pages) {
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading);
-      await expect(page.getByText(pr)).toBeVisible();
+      // Anchor to the literal "Tracking: …" pill (rendered by AdminPlaceholder)
+      // so the assertion doesn't collide with the same PR string when it
+      // appears inside the placeholder body copy.
+      await expect(page.getByText(tracking)).toBeVisible();
     }
   });
 });
