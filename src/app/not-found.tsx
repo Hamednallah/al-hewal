@@ -81,7 +81,7 @@ export default function GlobalNotFound() {
               alt="Al Hewal · الحوال"
               width={64}
               height={64}
-              style={{ height: 56, width: 'auto', display: 'block' }}
+              style={{ height: 56, width: 'auto', display: 'block', borderRadius: 8 }}
             />
           </Link>
         </header>

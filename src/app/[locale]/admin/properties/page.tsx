@@ -7,6 +7,7 @@ import { AdminPagination } from '@/components/admin/AdminPagination';
 import { AdminTopbar } from '@/components/admin/AdminTopbar';
 import { PropertyAdminFilterBar } from '@/components/admin/PropertyAdminFilterBar';
 import { PropertyTable } from '@/components/admin/PropertyTable';
+import { Button } from '@/components/ui/button';
 import { type Locale, routing } from '@/i18n/routing';
 import {
   getAdminDistinctCities,
@@ -61,13 +62,11 @@ export default async function AdminPropertiesPage({ params, searchParams }: Page
         title={t('title')}
         subtitle={subtitleWithCount}
         actions={
-          <Link
-            href={newPath}
-            prefetch={false}
-            className="bg-brass text-teal-forest-700 hover:bg-brass-300 inline-flex items-center gap-2 px-4 py-2.5 text-sm font-semibold tracking-wide transition-colors"
-          >
-            + {tCommon('addNewProperty')}
-          </Link>
+          <Button asChild variant="secondary" size="md">
+            <Link href={newPath} prefetch={false}>
+              + {tCommon('addNewProperty')}
+            </Link>
+          </Button>
         }
       />
       <PropertyAdminFilterBar locale={typedLocale} filters={filters} cities={cities} />
@@ -111,13 +110,11 @@ function EmptyState({ title, body, ctaLabel, ctaHref }: EmptyStateProps) {
     >
       <h2 className="text-teal-forest-700 text-xl font-semibold">{title}</h2>
       <p className="text-charcoal-muted max-w-md text-sm leading-relaxed">{body}</p>
-      <Link
-        href={ctaHref}
-        prefetch={false}
-        className="bg-brass text-teal-forest-700 hover:bg-brass-300 mt-2 inline-flex items-center gap-2 px-5 py-3 text-sm font-semibold tracking-wide"
-      >
-        + {ctaLabel}
-      </Link>
+      <Button asChild variant="secondary" size="md" className="mt-2">
+        <Link href={ctaHref} prefetch={false}>
+          + {ctaLabel}
+        </Link>
+      </Button>
     </section>
   );
 }

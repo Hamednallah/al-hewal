@@ -35,9 +35,24 @@ const PNG_TARGETS = [
 
 const ICO_SIZES = [16, 32, 48];
 
+// Rounded-corner radius as a fraction of size. ~18% lines up roughly with
+// the iOS app-icon squircle and the in-app Nav logo's `rounded-lg` so the
+// browser-tab favicon visually matches the site chrome.
+const RADIUS_RATIO = 0.18;
+
+function roundedMask(size) {
+  const radius = Math.round(size * RADIUS_RATIO);
+  return Buffer.from(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}">` +
+      `<rect x="0" y="0" width="${size}" height="${size}" rx="${radius}" ry="${radius}" fill="#fff"/>` +
+      `</svg>`,
+  );
+}
+
 async function generatePng(size) {
   return sharp(SOURCE)
     .resize(size, size, { fit: 'contain', background: { r: 255, g: 255, b: 255, alpha: 0 } })
+    .composite([{ input: roundedMask(size), blend: 'dest-in' }])
     .png({ compressionLevel: 9 })
     .toBuffer();
 }
