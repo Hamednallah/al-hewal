@@ -110,20 +110,23 @@ CVE, no install scripts unless allowlisted).
 | `react-hook-form`          | 7.75.0  | Beier (Bluebill)     | Installed early; not yet used in Phase 2 (admin wizard in Phase 3)                                 | PR 2.1       |
 | `@hookform/resolvers`      | 5.2.2   | react-hook-form team | Zod resolver for react-hook-form (Phase 3)                                                         | PR 2.1       |
 
-Dev-dep added in Phase 2:
+Dev-deps added in Phase 2:
 
-| Package          | Version | Maintainer | Purpose                                                          | Landed in |
-| ---------------- | ------- | ---------- | ---------------------------------------------------------------- | --------- |
-| `supabase` (CLI) | 2.98.2  | Supabase   | Local `pnpm supabase db reset` + remote migration push + typegen | PR 2.1    |
+| Package          | Version | Maintainer   | Purpose                                                                                                                                                                                                                                                                                               | Landed in |
+| ---------------- | ------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
+| `supabase` (CLI) | 2.98.2  | Supabase     | Local `pnpm supabase db reset` + remote migration push + typegen                                                                                                                                                                                                                                      | PR 2.1    |
+| `sharp`          | 0.34.5  | lovell/sharp | Pulled forward from Phase 3.5 as a **devDep** only — used by `scripts/generate-favicons.mjs` to resize the brand logo into the favicon + PWA icon set. PR 3.5 will promote it to `dependencies` for the server-side image upload pipeline. Postinstall already allowlisted via `pnpm-workspace.yaml`. | PR 2.10   |
+| `png-to-ico`     | 3.0.1   | steambap     | Packs the multi-size PNG buffers (16/32/48) into a single legacy `favicon.ico`. One-off use by `scripts/generate-favicons.mjs`; no postinstall script.                                                                                                                                                | PR 2.10   |
 
 Postinstall scripts: none of the Phase 2 additions request build
-scripts beyond the six already allowlisted in Phase 1.
+scripts beyond the six already allowlisted in Phase 1. `sharp` is one
+of those six; `png-to-ico` has none.
 
 ## Deferred to later phases
 
 These will be added in their respective phases with the same audit treatment:
 
-- **Phase 3:** `@vercel/blob`, `sharp`, `@react-pdf/renderer`
+- **Phase 3:** `@vercel/blob`, `@react-pdf/renderer` (sharp pulled forward in PR 2.10)
 - **Phase 4:** `recharts`
 - **Phase 5:** `@sentry/nextjs`
 
