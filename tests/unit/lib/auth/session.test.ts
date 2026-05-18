@@ -33,9 +33,12 @@ describe('admin session cookie', () => {
 
   it('rejects a tampered payload', async () => {
     const token = await signAdminSession(SAMPLE);
+    const dot = token.indexOf('.');
+    expect(dot).toBeGreaterThan(0);
+    const payloadB64 = token.slice(0, dot);
+    const sig = token.slice(dot + 1);
     // Flip the LAST character of the payload section. Even if the JSON
     // happens to still parse, the signature won't match.
-    const [payloadB64, sig] = token.split('.');
     const tampered = payloadB64.slice(0, -1) + (payloadB64.slice(-1) === 'a' ? 'b' : 'a');
     const result = await verifyAdminSession(`${tampered}.${sig}`);
     expect(result).toBeNull();
@@ -43,7 +46,10 @@ describe('admin session cookie', () => {
 
   it('rejects a tampered signature', async () => {
     const token = await signAdminSession(SAMPLE);
-    const [payloadB64, sig] = token.split('.');
+    const dot = token.indexOf('.');
+    expect(dot).toBeGreaterThan(0);
+    const payloadB64 = token.slice(0, dot);
+    const sig = token.slice(dot + 1);
     const tamperedSig = sig.slice(0, -1) + (sig.slice(-1) === 'a' ? 'b' : 'a');
     const result = await verifyAdminSession(`${payloadB64}.${tamperedSig}`);
     expect(result).toBeNull();
