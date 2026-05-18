@@ -41,7 +41,12 @@ test.describe('admin auth guard (PR 3.1)', () => {
     // `<div role="alert" id="__next-route-announcer__">` at the body
     // level, which would otherwise collide with `getByRole('alert')`
     // in Playwright strict mode.
-    await expect(page.locator('main').getByRole('alert')).toContainText(/not registered/i);
+    // The EN copy is "This email isn't registered as an Al Hewal
+    // administrator." — match the unambiguous tail to avoid future
+    // copy drift breaking the assertion.
+    await expect(page.locator('main').getByRole('alert')).toContainText(
+      /registered as an al hewal administrator/i,
+    );
   });
 
   test('login page is non-indexable', async ({ page }) => {
