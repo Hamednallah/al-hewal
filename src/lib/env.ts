@@ -43,6 +43,14 @@ const serverSchema = z.object({
   UPSTASH_REDIS_REST_URL: z.url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().min(20).optional(),
 
+  // Admin session cookie HMAC secret. 32+ characters of high-entropy random
+  // data — generate with `openssl rand -hex 32` (or the PowerShell equivalent
+  // documented in .env.example). Used to sign the 5-minute admin session
+  // cache cookie so middleware can validate an admin without round-tripping
+  // to Supabase on every request. Rotate quarterly — a rotation only forces
+  // active admins to re-auth once.
+  AUTH_COOKIE_SECRET: z.string().min(32),
+
   // Phase 5 - optional in earlier phases
   SENTRY_DSN: z.url().optional(),
   SENTRY_AUTH_TOKEN: z.string().optional(),
