@@ -45,18 +45,29 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     );
   }
 
-  // Strip undefined keys so Supabase doesn't try to overwrite with NULL
-  // for fields the form chose not to update.
+  // Build updateRow from the keys the client ACTUALLY sent. Zod
+  // schemas like `featured: z.coerce.boolean().default(false)` fill
+  // missing keys with defaults — left as-is, those defaults would
+  // silently overwrite existing data (e.g. flipping featured back to
+  // false on every routine save) AND falsely trip the super_admin
+  // tier guard below for standard_admins editing other fields.
+  const rawKeys =
+    body !== null && typeof body === 'object'
+      ? new Set(Object.keys(body as Record<string, unknown>))
+      : new Set<string>();
   const updateRow: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(parsed.data)) {
-    if (value !== undefined) updateRow[key] = value;
+    if (value !== undefined && rawKeys.has(key)) {
+      updateRow[key] = value;
+    }
   }
   if (Object.keys(updateRow).length === 0) {
     return NextResponse.json({ success: false, error: 'no_changes' }, { status: 400 });
   }
   // Tier gate: `featured` is a super_admin-only field. Without this guard
   // a standard_admin could bypass `/feature`'s tier check by PATCHing the
-  // column through the general edit endpoint.
+  // column through the general edit endpoint. Safe to check `updateRow`
+  // (not raw body) now that we strip Zod defaults above.
   if ('featured' in updateRow && admin.tier !== 'super_admin') {
     return NextResponse.json({ success: false, error: 'forbidden' }, { status: 403 });
   }
