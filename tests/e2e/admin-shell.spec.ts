@@ -94,11 +94,9 @@ test.describe('admin shell (PR 3.2)', () => {
     await loginAsAdmin(context, { tier: 'super_admin' });
 
     const pages: Array<{ path: string; heading: RegExp; tracking: RegExp }> = [
-      {
-        path: '/en/admin/properties',
-        heading: /Listing Management/,
-        tracking: /Tracking: PR 3\.3$/,
-      },
+      // NOTE: `/en/admin/properties` was a placeholder in PR 3.2 but PR 3.3a
+      // replaced it with the real Listing Management table. The placeholder
+      // assertions for that route now live in `admin-properties.spec.ts`.
       { path: '/en/admin/leads', heading: /Leads Journal/, tracking: /Tracking: PR 3\.6$/ },
       {
         path: '/en/admin/analytics',

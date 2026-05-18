@@ -25,10 +25,10 @@ shipped (v0.2.0).** Resume with **Phase 3 — Admin Command Center**.
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Repo       | https://github.com/Hamednallah/al-hewal                                                                                       |
 | Local      | `d:\Work\Projects\AL-Hewal\al-hewal\`                                                                                         |
-| Main HEAD  | PR #16 (Phase 3.2 — admin shell + sidebar + tier-driven nav) — pending merge                                                  |
+| Main HEAD  | PR #18 (Phase 3.3a — read-only admin listings table) — pending merge                                                          |
 | Branch     | `main` (you should be on it; if not, `git checkout main && git pull --ff-only`)                                               |
 | Latest tag | `v0.2.1` (Phase 2 closeout — favicon + PWA manifest). `v0.3.0` is reserved for the end of Phase 3 per master-plan convention. |
-| Next PR    | **3.3 — Property listings table (server-paginated, filtered)**                                                                |
+| Next PR    | **3.4 — 3-step Add/Edit Property wizard (PR 3.3b row actions land after the wizard)**                                         |
 
 ---
 

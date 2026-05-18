@@ -274,7 +274,63 @@
       "overview": "Overview",
       "section": "Section",
       "comingSoon": "Coming soon",
-      "superAdminOnly": "Super-admin only"
+      "superAdminOnly": "Super-admin only",
+      "addNewProperty": "Add new property"
+    },
+    "properties": {
+      "filter": {
+        "formAriaLabel": "Filter properties",
+        "searchLabel": "Search",
+        "searchPlaceholder": "Title, slug, city…",
+        "status": "Status",
+        "type": "Type",
+        "city": "City",
+        "featured": "Featured",
+        "featuredYes": "Featured only",
+        "featuredNo": "Not featured",
+        "includeArchived": "Include archived",
+        "any": "Any",
+        "apply": "Apply",
+        "clear": "Clear"
+      },
+      "status": {
+        "draft": "Draft",
+        "available": "Available",
+        "starting_soon": "Starting soon",
+        "reserved": "Reserved",
+        "sold": "Sold",
+        "archived": "Archived"
+      },
+      "type": {
+        "villa": "Villa",
+        "duplex": "Duplex",
+        "apartment": "Apartment",
+        "investment": "Investment"
+      },
+      "table": {
+        "project": "Project",
+        "type": "Type",
+        "location": "Location",
+        "price": "Price",
+        "status": "Status",
+        "featured": "Featured",
+        "featuredYes": "Featured",
+        "featuredNo": "—",
+        "updated": "Updated",
+        "actions": "Actions",
+        "edit": "Edit"
+      },
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "pageOf": "Page {current} of {total}",
+        "showing": "Page {current} of {total} · {rows} properties total"
+      },
+      "empty": {
+        "title": "No properties yet",
+        "body": "Once you add your first property, it will appear here with full filter, search, and edit controls. Drafts and archived rows are also visible to admins.",
+        "ctaLabel": "Add your first property"
+      }
     },
     "pages": {
       "dashboard": {
@@ -288,6 +344,7 @@
       "properties": {
         "title": "Listing Management",
         "subtitle": "Review, add, and update Al Hewal residential projects.",
+        "subtitleWithCount": "Showing {filtered} of {total} properties.",
         "placeholder": "The full listings table — with server-side pagination, status filters, and the add/edit property wizard — lands in PR 3.3. Until then, properties are seeded locally and the public catalog reads them in read-only mode."
       },
       "leads": {

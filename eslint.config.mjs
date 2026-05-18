@@ -69,11 +69,17 @@ const config = [
     //    writes (analytics, lead inserts, audit) that bypass RLS
     //  - src/lib/audit.ts writes admin_audit_log entries via the
     //    service-role client; same rationale as the route handlers
+    //  - src/lib/data/admin-*.ts admin-only data readers need the
+    //    service-role client to see drafts + archived rows that anon
+    //    RLS hides. Each consumer is gated by `requireAdmin()` at the
+    //    page boundary; the file naming convention prevents accidental
+    //    drift into public surfaces.
     files: [
       'src/lib/supabase/admin.ts',
       'src/lib/audit.ts',
       'src/app/api/**/*.ts',
       'src/app/**/route.ts',
+      'src/lib/data/admin-*.ts',
     ],
     rules: { 'no-restricted-imports': 'off' },
   },
