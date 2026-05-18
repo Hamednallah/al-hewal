@@ -144,3 +144,78 @@ same secret (or rotate them in lock-step).
 
 The `auth.users` row was created (step 1) but the `public.admins` row was
 skipped (step 2). Re-run the insert in step 2.
+
+---
+
+## 5. Applying schema migrations (PR 3.X — `inquiry_type`)
+
+Phase 3 introduces an append-only migration `0004_inquiry_type.sql` that
+adds a topic classifier to `public.leads` (`'general'` vs `'maintenance'`).
+The migration is non-destructive — existing rows backfill to `'general'`
+via the column default.
+
+### Local Supabase (Docker)
+
+If your local stack is running (`pnpm supabase status` reports services
+up), re-apply the full schema + seed:
+
+```powershell
+pnpm supabase db reset
+```
+
+`db reset` runs every migration in order from a clean slate, so 0004
+lands automatically. Use this for any local schema change — it's the
+fastest way to verify migration files don't conflict.
+
+### Remote (linked) Supabase
+
+`db push` ships **only the migrations not yet applied** to the linked
+remote project (`gvjmnwsqaymkxcsabjur`).
+
+```powershell
+pnpm supabase db push
+```
+
+You will see a confirmation prompt listing the migrations that will run.
+Read it carefully — it should mention `0004_inquiry_type.sql` and
+nothing else if Phase 1/2 migrations were already applied (they are).
+Type `Y` to confirm.
+
+The migration takes ~1 second on an empty `leads` table. No downtime.
+
+### Verifying the column was created
+
+```powershell
+pnpm supabase db remote query "select column_name, data_type, column_default from information_schema.columns where table_schema = 'public' and table_name = 'leads' and column_name = 'inquiry_type';"
+```
+
+Expected output: one row, `inquiry_type | USER-DEFINED | 'general'::inquiry_type`.
+
+### Regenerating database.types.ts (optional but recommended)
+
+Once the remote schema reflects the new column, regenerate the typed
+client:
+
+```powershell
+pnpm supabase gen types typescript --project-id gvjmnwsqaymkxcsabjur > src/lib/supabase/database.types.ts
+```
+
+Until you do this, the `.insert({ inquiry_type: ... })` in
+[`src/app/api/leads/route.ts`](../src/app/api/leads/route.ts) keeps the
+`as never` cast that the existing codebase already uses for that exact
+reason.
+
+### Rollback
+
+If something is wrong, revert the migration with a SECOND migration —
+don't edit `0004_inquiry_type.sql` in place (it's already in the remote
+DB's `supabase_migrations.schema_migrations` ledger and editing the file
+won't re-run it).
+
+```sql
+-- supabase/migrations/0005_inquiry_type_rollback.sql
+alter table public.leads drop column inquiry_type;
+drop type inquiry_type;
+```
+
+Same `pnpm supabase db push` to ship the rollback.

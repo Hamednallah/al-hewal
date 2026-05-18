@@ -50,6 +50,11 @@ const BodySchema = z.object({
     .transform((v) => (v === '' ? undefined : v)),
   propertyId: z.string().uuid().optional(),
   locale: z.enum(['ar', 'en']).default('ar'),
+  // Topic classification — backed by the inquiry_type enum added in
+  // migration 0004. Defaults to 'general' so older clients (and the
+  // property-detail page's "Contact via WhatsApp" pathway) keep
+  // working without sending the new field.
+  inquiryType: z.enum(['general', 'maintenance']).default('general'),
 });
 
 export const runtime = 'nodejs';
@@ -109,6 +114,7 @@ export async function POST(req: NextRequest) {
     const leadRow = {
       property_id: parsed.data.propertyId ?? null,
       source: 'contact_form',
+      inquiry_type: parsed.data.inquiryType,
       name: parsed.data.name,
       phone: phoneE164,
       email: parsed.data.email ?? null,

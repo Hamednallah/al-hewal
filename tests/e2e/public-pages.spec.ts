@@ -47,7 +47,9 @@ test.describe('/contact page', () => {
     await page.getByLabel('Email (optional)').fill('test@example.com');
     // Intercept the POST so the assertion is independent of any real
     // Supabase availability — we're testing the form, not the route.
+    let capturedBody: Record<string, unknown> | null = null;
     await page.route('**/api/leads', async (route) => {
+      capturedBody = JSON.parse(route.request().postData() ?? '{}');
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -56,6 +58,60 @@ test.describe('/contact page', () => {
     });
     await page.getByRole('button', { name: /send message/i }).click();
     await expect(page.getByRole('status')).toContainText(/Message received/i);
+    // Defaults to a general inquiry when the user doesn't change the radio.
+    expect(capturedBody).not.toBeNull();
+    expect(capturedBody!.inquiryType).toBe('general');
+  });
+});
+
+test.describe('/contact inquiry-type (general vs maintenance)', () => {
+  test('EN /contact renders both inquiry-type options with general pre-selected', async ({
+    page,
+  }) => {
+    await page.goto('/en/contact', { waitUntil: 'domcontentloaded' });
+    const general = page.getByLabel('General inquiry');
+    const maintenance = page.getByLabel('Maintenance request');
+    await expect(general).toBeVisible();
+    await expect(maintenance).toBeVisible();
+    await expect(general).toBeChecked();
+    await expect(maintenance).not.toBeChecked();
+  });
+
+  test('AR /contact renders both inquiry-type options translated', async ({ page }) => {
+    await page.goto('/ar/contact', { waitUntil: 'domcontentloaded' });
+    await expect(page.getByLabel('استفسار عام')).toBeVisible();
+    await expect(page.getByLabel('طلب صيانة')).toBeVisible();
+  });
+
+  test('selecting maintenance swaps the message placeholder', async ({ page }) => {
+    await page.goto('/en/contact', { waitUntil: 'domcontentloaded' });
+    const message = page.getByLabel('Message');
+    await expect(message).toHaveAttribute('placeholder', /what you'?re looking for/i);
+    await page.getByLabel('Maintenance request').check();
+    await expect(message).toHaveAttribute('placeholder', /unit number/i);
+  });
+
+  test('maintenance submission posts inquiryType=maintenance and shows the maintenance success copy', async ({
+    page,
+  }) => {
+    await page.goto('/en/contact', { waitUntil: 'domcontentloaded' });
+    await page.getByLabel('Maintenance request').check();
+    await page.getByLabel('Your name').fill('Maintenance Customer');
+    await page.getByLabel('Phone (WhatsApp preferred)').fill('0501234567');
+    await page.getByLabel('Message').fill('Building 3, unit 12 — leaking faucet');
+    let capturedBody: Record<string, unknown> | null = null;
+    await page.route('**/api/leads', async (route) => {
+      capturedBody = JSON.parse(route.request().postData() ?? '{}');
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+    });
+    await page.getByRole('button', { name: /send message/i }).click();
+    await expect(page.getByRole('status')).toContainText(/maintenance team/i);
+    expect(capturedBody).not.toBeNull();
+    expect(capturedBody!.inquiryType).toBe('maintenance');
   });
 });
 
