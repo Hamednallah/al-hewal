@@ -15,16 +15,24 @@ import { cn } from '@/lib/utils';
  *
  * Validation mirrors the route's Zod schema in
  * `src/app/api/leads/route.ts` — same required min/max bounds for
- * name + phone, email + message both optional. The server still
- * re-validates (defence in depth + phone normalisation via
- * libphonenumber-js).
+ * name + phone, email + message both optional, inquiryType required
+ * (defaults to 'general'). The server still re-validates (defence in
+ * depth + phone normalisation via libphonenumber-js).
  *
  * Submit states render bilingually via next-intl: idle / submitting /
  * success / error. Errors surface both inline (per field) AND at the
  * top of the form as a status region the screen reader picks up.
+ *
+ * Selecting "Maintenance request" swaps the message placeholder so
+ * the user is prompted for the project / building / unit reference
+ * that the maintenance team needs to schedule a visit.
  */
 
+const INQUIRY_TYPES = ['general', 'maintenance'] as const;
+type InquiryType = (typeof INQUIRY_TYPES)[number];
+
 const FormSchema = z.object({
+  inquiryType: z.enum(INQUIRY_TYPES),
   name: z.string().trim().min(1).max(200),
   phone: z.string().trim().min(6).max(40),
   email: z.string().trim().email().max(254).optional().or(z.literal('')),
@@ -36,7 +44,7 @@ type FormValues = z.infer<typeof FormSchema>;
 type SubmitStatus =
   | { kind: 'idle' }
   | { kind: 'submitting' }
-  | { kind: 'success' }
+  | { kind: 'success'; inquiryType: InquiryType }
   | { kind: 'error'; code: ErrorCode };
 
 type ErrorCode =
@@ -55,6 +63,7 @@ export function ContactForm({ locale }: ContactFormProps) {
   const tFields = useTranslations('public.contact.fields');
   const tErrors = useTranslations('public.contact.errors');
   const [status, setStatus] = useState<SubmitStatus>({ kind: 'idle' });
+  const [inquiryType, setInquiryType] = useState<InquiryType>('general');
 
   const {
     register,
@@ -63,7 +72,13 @@ export function ContactForm({ locale }: ContactFormProps) {
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(FormSchema),
-    defaultValues: { name: '', phone: '', email: '', message: '' },
+    defaultValues: {
+      inquiryType: 'general',
+      name: '',
+      phone: '',
+      email: '',
+      message: '',
+    },
   });
 
   const onSubmit = handleSubmit(async (data) => {
@@ -73,6 +88,7 @@ export function ContactForm({ locale }: ContactFormProps) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          inquiryType: data.inquiryType,
           name: data.name,
           phone: data.phone,
           email: data.email || undefined,
@@ -81,8 +97,9 @@ export function ContactForm({ locale }: ContactFormProps) {
         }),
       });
       if (res.ok) {
-        setStatus({ kind: 'success' });
+        setStatus({ kind: 'success', inquiryType: data.inquiryType });
         reset();
+        setInquiryType('general');
         return;
       }
       type Body = { error?: ErrorCode };
@@ -95,13 +112,15 @@ export function ContactForm({ locale }: ContactFormProps) {
   });
 
   if (status.kind === 'success') {
+    const successBody =
+      status.inquiryType === 'maintenance' ? t('successBodyMaintenance') : t('successBody');
     return (
       <div
         role="status"
         className="bg-teal-forest-700 text-canvas border-brass-400 border-t-4 p-8 md:p-10"
       >
         <p className="text-brass-400 text-xs tracking-[0.3em] uppercase">{t('successTitle')}</p>
-        <p className="mt-3 text-lg leading-relaxed md:text-xl">{t('successBody')}</p>
+        <p className="mt-3 text-lg leading-relaxed md:text-xl">{successBody}</p>
       </div>
     );
   }
@@ -127,6 +146,45 @@ export function ContactForm({ locale }: ContactFormProps) {
           {topLevelError}
         </p>
       ) : null}
+
+      <fieldset className="flex flex-col gap-3">
+        <legend className="text-charcoal text-sm font-semibold">{tFields('inquiryType')}</legend>
+        <div className="flex flex-col gap-2 sm:flex-row sm:gap-3">
+          {INQUIRY_TYPES.map((value) => {
+            const inputId = `contact-inquiry-${value}`;
+            const isSelected = inquiryType === value;
+            const labelKey = value === 'maintenance' ? 'inquiryTypeMaintenance' : 'inquiryTypeGeneral';
+            const hintKey =
+              value === 'maintenance' ? 'inquiryTypeMaintenanceHint' : 'inquiryTypeGeneralHint';
+            return (
+              <label
+                key={value}
+                htmlFor={inputId}
+                className={cn(
+                  'border-outline-variant text-charcoal hover:border-teal-forest-500 flex flex-1 cursor-pointer flex-col gap-1 border p-3 text-sm transition-colors',
+                  isSelected && 'border-teal-forest-700 bg-teal-forest-50',
+                )}
+              >
+                <span className="flex items-center gap-2 font-semibold">
+                  <input
+                    id={inputId}
+                    type="radio"
+                    value={value}
+                    className="accent-teal-forest-700 h-4 w-4"
+                    {...register('inquiryType', {
+                      onChange: (event) => setInquiryType(event.target.value as InquiryType),
+                    })}
+                  />
+                  {tFields(labelKey)}
+                </span>
+                <span className="text-charcoal-muted text-xs leading-relaxed">
+                  {tFields(hintKey)}
+                </span>
+              </label>
+            );
+          })}
+        </div>
+      </fieldset>
 
       <Field
         id="contact-name"
@@ -162,7 +220,11 @@ export function ContactForm({ locale }: ContactFormProps) {
       <FieldTextarea
         id="contact-message"
         label={tFields('message')}
-        placeholder={tFields('messagePlaceholder')}
+        placeholder={
+          inquiryType === 'maintenance'
+            ? tFields('messageMaintenancePlaceholder')
+            : tFields('messagePlaceholder')
+        }
         rows={5}
         error={errors.message?.message}
         {...register('message')}

@@ -21,14 +21,14 @@ default. WhatsApp-driven lead funnel.
 **Phase 1 (foundations) shipped (v0.1.1). Phase 2 (public site)
 shipped (v0.2.0).** Resume with **Phase 3 — Admin Command Center**.
 
-|            |                                                                                                       |
-| ---------- | ----------------------------------------------------------------------------------------------------- |
-| Repo       | https://github.com/Hamednallah/al-hewal                                                               |
-| Local      | `d:\Work\Projects\AL-Hewal\al-hewal\`                                                                 |
-| Main HEAD  | PR #14 (Phase 3.1 — magic-link auth + admin guard) — pending merge                                    |
-| Branch     | `main` (you should be on it; if not, `git checkout main && git pull --ff-only`)                       |
-| Latest tag | `v0.2.1` (Phase 2 closeout — favicon + PWA manifest)                                                  |
-| Next PR    | **3.X — `inquiry_type` enum + ContactForm radio (general vs maintenance)**, then PR 3.2 — admin shell |
+|            |                                                                                                                               |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Repo       | https://github.com/Hamednallah/al-hewal                                                                                       |
+| Local      | `d:\Work\Projects\AL-Hewal\al-hewal\`                                                                                         |
+| Main HEAD  | PR #15 (Phase 3.X — `inquiry_type` enum + ContactForm radio) — pending merge                                                  |
+| Branch     | `main` (you should be on it; if not, `git checkout main && git pull --ff-only`)                                               |
+| Latest tag | `v0.2.1` (Phase 2 closeout — favicon + PWA manifest). `v0.3.0` is reserved for the end of Phase 3 per master-plan convention. |
+| Next PR    | **3.2 — admin shell (sidebar + topbar + tier-driven nav)**                                                                    |
 
 ---
 
@@ -185,6 +185,34 @@ Suggested PR breakdown (subject to in-session adjustment):
   [`docs/PHASE_3_RUNBOOK.md`](PHASE_3_RUNBOOK.md) §1 (click-by-click
   for Supabase Studio + SQL fallback). The Supabase Auth
   Redirect-URLs allowlist also needs updating, documented in §3.
+
+### PR 3.X — `inquiry_type` enum + ContactForm maintenance category ✅ shipped (PR #15)
+
+A small fast-follow added between PR 3.1 and PR 3.2 because the owner
+wanted the public ContactForm to capture maintenance requests
+separately from general sales inquiries (so the future Leads Journal
+can route them to the right team).
+
+- Migration `0004_inquiry_type.sql` — new `inquiry_type` Postgres
+  enum (`'general' | 'maintenance'`), added as a NOT NULL column on
+  `public.leads` with `default 'general'` (existing rows backfill
+  cleanly), plus `(inquiry_type, created_at desc)` index for the
+  upcoming Leads Journal filter. Append-only — apply to remote via
+  `pnpm supabase db push` per [PHASE_3_RUNBOOK §5](PHASE_3_RUNBOOK.md#5-applying-schema-migrations-pr-3x--inquiry_type).
+- `src/components/public/ContactForm.tsx` — radio-group fieldset above
+  the name field. Selecting "Maintenance request" swaps the message
+  placeholder to prompt for project/building/unit. Success banner
+  reads the appropriate copy (general vs maintenance).
+- `src/app/api/leads/route.ts` — Zod schema accepts the new
+  `inquiryType` field with `default 'general'`, so older callers (and
+  the property-detail WhatsApp pathway) keep working without changes.
+  Insert sends the column.
+- i18n: `public.contact.fields.inquiryType*` keys + the new
+  `successBodyMaintenance` copy in both `en.json` and `ar.json`.
+- Tests: 4 new Playwright specs in `tests/e2e/public-pages.spec.ts`
+  cover both options rendering, AR translation, placeholder swap,
+  and the maintenance success path (with `inquiryType=maintenance`
+  asserted on the captured request body).
 
 ### PR 3.2 — Admin shell
 

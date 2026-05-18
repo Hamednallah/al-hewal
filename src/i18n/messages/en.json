@@ -196,6 +196,11 @@
       "callCta": "Call sales",
       "formTitle": "Send us a message",
       "fields": {
+        "inquiryType": "What is this about?",
+        "inquiryTypeGeneral": "General inquiry",
+        "inquiryTypeMaintenance": "Maintenance request",
+        "inquiryTypeGeneralHint": "Sales, viewings, project information",
+        "inquiryTypeMaintenanceHint": "Issue with a delivered unit (post-handover service)",
         "name": "Your name",
         "namePlaceholder": "Full name",
         "phone": "Phone (WhatsApp preferred)",
@@ -203,12 +208,14 @@
         "email": "Email (optional)",
         "emailPlaceholder": "you@example.com",
         "message": "Message",
-        "messagePlaceholder": "Tell us a bit about what you're looking for…"
+        "messagePlaceholder": "Tell us a bit about what you're looking for…",
+        "messageMaintenancePlaceholder": "Project / building / unit number, and what needs attention…"
       },
       "submit": "Send message",
       "submitting": "Sending…",
       "successTitle": "Message received",
       "successBody": "Thank you. A sales advisor will reach out shortly.",
+      "successBodyMaintenance": "Thank you. Our maintenance team will be in touch to schedule a visit.",
       "errors": {
         "invalid_phone": "Please enter a valid Saudi phone number (05XXXXXXXX) or an international number with country code.",
         "invalid_body": "Please check the highlighted fields.",

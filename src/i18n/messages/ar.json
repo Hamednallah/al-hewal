@@ -196,6 +196,11 @@
       "callCta": "اتصل بالمبيعات",
       "formTitle": "أرسل لنا رسالة",
       "fields": {
+        "inquiryType": "ما طبيعة طلبك؟",
+        "inquiryTypeGeneral": "استفسار عام",
+        "inquiryTypeMaintenance": "طلب صيانة",
+        "inquiryTypeGeneralHint": "مبيعات، حجز معاينة، استفسار عن المشاريع",
+        "inquiryTypeMaintenanceHint": "مشكلة في وحدة مُسلَّمة (خدمة ما بعد التسليم)",
         "name": "الاسم",
         "namePlaceholder": "الاسم الكامل",
         "phone": "رقم الجوال (يفضل واتساب)",
@@ -203,12 +208,14 @@
         "email": "البريد الإلكتروني (اختياري)",
         "emailPlaceholder": "you@example.com",
         "message": "الرسالة",
-        "messagePlaceholder": "أخبرنا بما تبحث عنه…"
+        "messagePlaceholder": "أخبرنا بما تبحث عنه…",
+        "messageMaintenancePlaceholder": "المشروع / المبنى / رقم الوحدة، وما يحتاج إلى متابعة…"
       },
       "submit": "إرسال الرسالة",
       "submitting": "جاري الإرسال…",
       "successTitle": "تم استلام رسالتك",
       "successBody": "شكراً لك. سيتواصل معك أحد المستشارين قريباً.",
+      "successBodyMaintenance": "شكراً لك. سيتواصل معك فريق الصيانة قريباً لتحديد موعد الزيارة.",
       "errors": {
         "invalid_phone": "يرجى إدخال رقم جوال سعودي صحيح (05XXXXXXXX) أو رقم دولي مع رمز الدولة.",
         "invalid_body": "يرجى مراجعة الحقول المعلّمة.",
