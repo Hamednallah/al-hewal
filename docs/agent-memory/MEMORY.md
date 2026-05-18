@@ -1,6 +1,7 @@
 - [User is new to Vercel — always hand-hold setup](feedback_hand_held_setup.md) — every external-service setup must be click-by-click with URLs and exact form values
 - [GitHub required-check picker uses job DISPLAY name](feedback_github_check_names.md) — never document the YAML job key; quote the `name:` field verbatim
 - [User monitors CI themselves — do NOT run `gh run watch`](feedback_monitor_ci.md) — push, stop, wait for the user to report status
+- [Admin UI must match the public site + reuse its components](feedback_admin_ui_parity.md) — Button, MobileDrawer, Pagination, Field patterns — and the sidebar must be mobile-collapsible like the public Nav
 - [`gh` is NOT on PATH — call by absolute path](reference_gh_cli_path.md) — `& "C:\Program Files\GitHub CLI\gh.exe" ...` from PowerShell
 - [User uses team-review docs to push back; defend decisions when correct](feedback_pushback_on_reviews.md) — DB/security/code reviews arrive as `.md` files at project root; respond with a written disposition doc
 - [User wants Arabic-default routing regardless of browser language](project_arabic_first_routing.md) — `localeDetection: false` in next-intl; the Saudi audience never gets auto-redirected to /en

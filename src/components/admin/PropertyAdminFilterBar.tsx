@@ -1,5 +1,7 @@
 import { getTranslations } from 'next-intl/server';
+import Link from 'next/link';
 
+import { Button } from '@/components/ui/button';
 import type { Locale } from '@/i18n/routing';
 import {
   ADMIN_PROPERTY_STATUSES,
@@ -110,23 +112,18 @@ export async function PropertyAdminFilterBar({
         </label>
 
         <div className="flex items-center gap-3 md:mb-1">
-          <button
-            type="submit"
-            className="bg-teal-forest-700 text-canvas hover:bg-teal-forest-800 px-4 py-2 text-sm font-medium"
-          >
+          <Button type="submit" variant="primary" size="sm">
             {t('apply')}
-          </button>
-          {/* Plain <a> (not next/link): clearing filters is a hard reset
-              of the URL state, and a Next client-side push inside a form
-              with hydrated `defaultValue` inputs has been flaky enough
-              (Playwright caught the form submission winning the race) to
-              not be worth the SPA-routing benefit. */}
-          <a
-            href={action}
-            className="text-teal-forest-700 hover:bg-canvas-sunken border-outline-variant border px-4 py-2 text-sm font-medium"
-          >
-            {t('clear')}
-          </a>
+          </Button>
+          {/* Clear uses Button asChild → plain <a> (not next/link).
+              Clearing filters is a hard URL reset, and a Next
+              client-side push inside the form with hydrated
+              `defaultValue` inputs raced with form submission in CI. */}
+          <Button asChild variant="outline" size="sm">
+            <Link href={action} prefetch={false}>
+              {t('clear')}
+            </Link>
+          </Button>
         </div>
       </form>
     </section>

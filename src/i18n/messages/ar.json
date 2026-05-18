@@ -275,7 +275,9 @@
       "section": "القسم",
       "comingSoon": "قريباً",
       "superAdminOnly": "المشرف العام فقط",
-      "addNewProperty": "إضافة عقار جديد"
+      "addNewProperty": "إضافة عقار جديد",
+      "openMenu": "فتح القائمة",
+      "closeMenu": "إغلاق القائمة"
     },
     "properties": {
       "filter": {

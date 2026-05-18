@@ -275,7 +275,9 @@
       "section": "Section",
       "comingSoon": "Coming soon",
       "superAdminOnly": "Super-admin only",
-      "addNewProperty": "Add new property"
+      "addNewProperty": "Add new property",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu"
     },
     "properties": {
       "filter": {

@@ -2,11 +2,11 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { Button } from '@/components/ui/button';
 import { ADMIN_PROPERTY_STATUSES, ADMIN_PROPERTY_TYPES } from '@/lib/validators/property';
 import type { Locale } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
@@ -103,7 +103,6 @@ export function PropertyForm({ locale, mode, propertyId, initialValues }: Proper
   const tType = useTranslations('admin.properties.type');
   const tStatus = useTranslations('admin.properties.status');
   const tErrors = useTranslations('admin.properties.form.errors');
-  const router = useRouter();
   const [status, setStatus] = useState<SubmitStatus>({ kind: 'idle' });
 
   const {
@@ -132,8 +131,10 @@ export function PropertyForm({ locale, mode, propertyId, initialValues }: Proper
         const body = (await res.json()) as { success: true; data?: { slug?: string } };
         const slug = body.data?.slug ?? '';
         setStatus({ kind: 'success', slug });
-        router.push(`/${locale}/admin/properties`);
-        router.refresh();
+        // Hard navigation: a successful create/update changes server-side
+        // data the listings page must re-fetch. `router.push` + `refresh`
+        // raced unreliably in CI Playwright; `assign` is deterministic.
+        window.location.assign(`/${locale}/admin/properties`);
         return;
       }
       const body = (await res.json().catch(() => ({}))) as { error?: string };
@@ -374,13 +375,9 @@ export function PropertyForm({ locale, mode, propertyId, initialValues }: Proper
       </Section>
 
       <div className="border-outline-variant/40 flex items-center justify-end gap-3 border-t pt-6">
-        <button
-          type="submit"
-          disabled={submitting}
-          className="bg-teal-forest-700 text-canvas hover:bg-teal-forest-800 px-6 py-3 text-sm font-semibold tracking-wide transition-colors disabled:opacity-60"
-        >
+        <Button type="submit" variant="primary" size="md" disabled={submitting}>
           {submitting ? t('submitting') : mode === 'create' ? t('submitCreate') : t('submitUpdate')}
-        </button>
+        </Button>
       </div>
     </form>
   );
