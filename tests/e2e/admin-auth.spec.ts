@@ -37,7 +37,11 @@ test.describe('admin auth guard (PR 3.1)', () => {
 
   test('login page surfaces the callback error from query string', async ({ page }) => {
     await page.goto('/en/auth/login?error=notAdmin');
-    await expect(page.getByRole('alert')).toContainText(/not registered/i);
+    // Scope to the form region — Next.js adds its own internal
+    // `<div role="alert" id="__next-route-announcer__">` at the body
+    // level, which would otherwise collide with `getByRole('alert')`
+    // in Playwright strict mode.
+    await expect(page.locator('main').getByRole('alert')).toContainText(/not registered/i);
   });
 
   test('login page is non-indexable', async ({ page }) => {
