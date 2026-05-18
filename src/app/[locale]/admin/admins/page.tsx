@@ -1,0 +1,51 @@
+import { hasLocale } from 'next-intl';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import { notFound, redirect } from 'next/navigation';
+
+import { AdminPlaceholder } from '@/components/admin/AdminPlaceholder';
+import { AdminTopbar } from '@/components/admin/AdminTopbar';
+import { routing } from '@/i18n/routing';
+import { requireAdmin } from '@/lib/auth/admins';
+
+export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) return { robots: { index: false, follow: false } };
+  const t = await getTranslations({ locale, namespace: 'admin.pages.admins' });
+  return { title: t('title'), robots: { index: false, follow: false } };
+}
+
+/**
+ * Admin Management — super_admin tier only.
+ *
+ * Belt-and-suspenders: the sidebar already hides this nav item from
+ * standard_admin, but a directly-typed URL would otherwise reach this
+ * RSC. We re-check here and redirect to the dashboard with a polite
+ * deny rather than leaking a half-rendered shell.
+ *
+ * RLS will repeat the same check at the data layer once PR 3.4 wires
+ * the actual super-admin CRUD.
+ */
+export default async function AdminAdminsPage({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  if (!hasLocale(routing.locales, locale)) notFound();
+  setRequestLocale(locale);
+  const admin = await requireAdmin();
+  if (admin.tier !== 'super_admin') {
+    redirect(`/${locale}/admin`);
+  }
+  const t = await getTranslations({ locale, namespace: 'admin.pages.admins' });
+  const tCommon = await getTranslations({ locale, namespace: 'admin.common' });
+
+  return (
+    <>
+      <AdminTopbar
+        eyebrow={tCommon('superAdminOnly')}
+        title={t('title')}
+        subtitle={t('subtitle')}
+      />
+      <AdminPlaceholder eyebrow={tCommon('comingSoon')} body={t('placeholder')} prTag="PR 3.4" />
+    </>
+  );
+}

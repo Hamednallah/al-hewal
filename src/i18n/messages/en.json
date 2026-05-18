@@ -255,6 +255,11 @@
     }
   },
   "admin": {
+    "shell": {
+      "title": "Command Center",
+      "subtitle": "Real Estate Operations",
+      "navAriaLabel": "Administrator navigation"
+    },
     "nav": {
       "dashboard": "Dashboard",
       "listings": "Listing Management",
@@ -265,7 +270,46 @@
     },
     "common": {
       "languageSwitch": "العربية",
-      "signOut": "Sign Out"
+      "signOut": "Sign Out",
+      "overview": "Overview",
+      "section": "Section",
+      "comingSoon": "Coming soon",
+      "superAdminOnly": "Super-admin only"
+    },
+    "pages": {
+      "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "At-a-glance overview of your Command Center session.",
+        "welcomeLabel": "Signed in as",
+        "tierLabel": "Admin tier",
+        "statusLabel": "Account status",
+        "body": "Use the sidebar to manage listings, review leads, and check analytics. The dashboard will grow into a real KPI surface in Phase 4."
+      },
+      "properties": {
+        "title": "Listing Management",
+        "subtitle": "Review, add, and update Al Hewal residential projects.",
+        "placeholder": "The full listings table — with server-side pagination, status filters, and the add/edit property wizard — lands in PR 3.3. Until then, properties are seeded locally and the public catalog reads them in read-only mode."
+      },
+      "leads": {
+        "title": "Leads Journal",
+        "subtitle": "Inbound contact attempts from WhatsApp, the contact form, and call clicks.",
+        "placeholder": "The chronological timeline with per-property filter, mark-contacted, and the bilingual PDF export ships in PR 3.6. Today every submission still lands in Supabase tagged with its source and inquiry_type — view in Supabase Studio meanwhile."
+      },
+      "analytics": {
+        "title": "Strategic Analytics",
+        "subtitle": "KPI cards, lead-velocity trend, hottest properties, and KSA region heatmap.",
+        "placeholder": "Analytics dashboards ship in Phase 4 once the materialised views in migration 0003_views.sql are populated by real admin activity. The page_views and whatsapp_clicks tables already feed those views."
+      },
+      "admins": {
+        "title": "Admin Management",
+        "subtitle": "Invite, promote, and deactivate administrators (super-admin only).",
+        "placeholder": "The invite + tier-management UI ships in PR 3.4. Today the first super-admin is bootstrapped manually via SQL — see docs/PHASE_3_RUNBOOK.md §1."
+      },
+      "profile": {
+        "title": "My Profile",
+        "subtitle": "Identity, language preference, and account security.",
+        "placeholder": "The full profile editor + TOTP enrolment for super-admins lands in Phase 4. Today, language preference can be changed by re-running the bootstrap SQL with a different language_pref value."
+      }
     },
     "auth": {
       "login": {
