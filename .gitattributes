@@ -1,0 +1,40 @@
+# =============================================================================
+# Al Hewal — Git attributes
+#
+# Normalise text files to LF + UTF-8 so checkouts are consistent across
+# Windows, mac, and the CI runners. Critical for `database.types.ts`,
+# which is regenerated via `pnpm supabase gen types ... > <file>` from
+# PowerShell — PowerShell's default redirection writes UTF-16 LE + CRLF,
+# which Git then flags as binary and which breaks ESLint/tsc. The rule
+# below tells Git to treat all *.ts files as text with LF endings (Git
+# itself doesn't re-encode UTF-16, but the explicit `text` attribute
+# combined with the contributor pattern documented in
+# `docs/PHASE_3_RUNBOOK.md` §5 keeps regens consistent).
+# =============================================================================
+
+* text=auto eol=lf
+
+# Generated / large lockfiles — Git default detection is fine.
+pnpm-lock.yaml -diff
+
+# Binary assets — explicit so Git never tries to munge line endings.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.avif binary
+*.svg text eol=lf
+
+# Source text — explicit for the editorially-important file types.
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.css text eol=lf
+*.sql text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

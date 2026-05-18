@@ -194,16 +194,31 @@ Expected output: one row, `inquiry_type | USER-DEFINED | 'general'::inquiry_type
 ### Regenerating database.types.ts (optional but recommended)
 
 Once the remote schema reflects the new column, regenerate the typed
-client:
+client. **Do NOT use plain `>` redirection in PowerShell** — its default
+encoding is UTF-16 LE + CRLF, which Git flags as binary and which ESLint
+/ tsc refuse to parse. Use one of these instead:
 
 ```powershell
+# PowerShell — pipe through Out-File with explicit UTF-8 (no BOM):
+pnpm supabase gen types typescript --project-id gvjmnwsqaymkxcsabjur `
+  | Out-File -FilePath src/lib/supabase/database.types.ts -Encoding utf8 -NoNewline
+```
+
+```bash
+# bash / WSL — plain redirection is UTF-8 by default:
 pnpm supabase gen types typescript --project-id gvjmnwsqaymkxcsabjur > src/lib/supabase/database.types.ts
 ```
 
-Until you do this, the `.insert({ inquiry_type: ... })` in
-[`src/app/api/leads/route.ts`](../src/app/api/leads/route.ts) keeps the
-`as never` cast that the existing codebase already uses for that exact
-reason.
+The repository ships a `.gitattributes` rule (`*.ts text eol=lf`) that
+keeps Git consistent across platforms, but Git itself doesn't re-encode
+UTF-16 → UTF-8; the regen command is what enforces the encoding.
+
+Once `database.types.ts` is regenerated, the previous `as never` casts at
+the insert boundaries (in `src/app/api/leads/route.ts`,
+`src/app/api/whatsapp/track/route.ts`, `src/app/api/track/view/route.ts`)
+were dropped in the post-3.2 housekeeping PR. `src/lib/audit.ts` still
+needs one — the `diff: unknown` parameter never narrows cleanly into the
+typed `Json` column — see the comment in that file.
 
 ### Rollback
 
