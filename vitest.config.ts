@@ -69,6 +69,12 @@ export default defineConfig({
         // Playwright in PR 2.7 (per docs/SESSION_HANDOFF.md PR 2.4 plan).
         'src/components/public/property-detail/**',
         'src/lib/data/**',
+        // PR 3.2 — admin shell is visual + tier-conditional rendering;
+        // covered by Playwright in tests/e2e/admin-shell.spec.ts (sidebar
+        // visibility, tier filtering, aria-current active state, sign-out
+        // link, AR RTL, every placeholder route). Unit-testing the icons
+        // + a static sidebar would test markup, not behaviour.
+        'src/components/admin/**',
         // PR 2.5 — integration-heavy wrappers around Supabase / Upstash
         // / the Next runtime. The pure-logic siblings (pii.ts, ip.ts,
         // whatsapp.ts) ARE measured; these are exercised by Playwright

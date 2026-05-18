@@ -1,10 +1,10 @@
 import { hasLocale } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { redirect } from 'next/navigation';
-import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
+import { AdminTopbar } from '@/components/admin/AdminTopbar';
 import { routing } from '@/i18n/routing';
-import { currentAdmin } from '@/lib/auth/admins';
+import { requireAdmin } from '@/lib/auth/admins';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,64 +17,43 @@ export async function generateMetadata({ params }: PageProps) {
   if (!hasLocale(routing.locales, locale)) {
     return { robots: { index: false, follow: false } };
   }
-  const t = await getTranslations({ locale, namespace: 'admin.nav' });
+  const t = await getTranslations({ locale, namespace: 'admin.pages.dashboard' });
   return {
-    title: t('dashboard'),
+    title: t('title'),
     robots: { index: false, follow: false },
   };
 }
 
-/**
- * Phase 3 PR 3.1 — placeholder admin landing. Belt-and-suspenders auth:
- * middleware already guards `/<locale>/admin/*`, but this RSC re-checks
- * `currentAdmin()` because relying solely on middleware in App Router has
- * been flaky enough across Next versions that the defence-in-depth is
- * cheaper than the postmortem.
- *
- * Real admin shell + dashboard lands in PR 3.2. This file is deliberately
- * minimal so the auth → shell hand-off is clean.
- */
 export default async function AdminDashboardPage({ params }: PageProps) {
   const { locale } = await params;
-  if (!hasLocale(routing.locales, locale)) {
-    redirect(`/${routing.defaultLocale}/auth/login`);
-  }
+  if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
 
-  const admin = await currentAdmin();
-  if (!admin) {
-    redirect(`/${locale}/auth/login?next=${encodeURIComponent(`/${locale}/admin`)}`);
-  }
-
-  const t = await getTranslations({ locale, namespace: 'admin' });
+  // requireAdmin throws if the layout slipped through somehow — keeps the
+  // RSC self-contained and surfaces an early failure rather than rendering
+  // garbage from a missing session.
+  const admin = await requireAdmin();
+  const t = await getTranslations({ locale, namespace: 'admin.pages.dashboard' });
+  const tCommon = await getTranslations({ locale, namespace: 'admin.common' });
 
   return (
-    <main className="bg-teal-forest text-canvas min-h-screen">
-      <div className="mx-auto max-w-3xl space-y-6 px-6 py-16">
-        <header className="space-y-1">
-          <p className="text-brass text-sm">{t('nav.dashboard')}</p>
-          <h1 className="text-2xl font-medium">
-            {locale === 'ar' ? `أهلاً، ${admin.email}` : `Welcome, ${admin.email}`}
-          </h1>
-          <p className="text-canvas/70 text-sm">
-            tier: <span className="text-brass">{admin.tier}</span>
-          </p>
-        </header>
+    <>
+      <AdminTopbar eyebrow={tCommon('overview')} title={t('title')} subtitle={t('subtitle')} />
+      <section className="bg-canvas-raised border-outline-variant/30 mx-auto mt-8 grid w-full max-w-4xl gap-6 border p-8 md:grid-cols-3">
+        <SummaryCard label={t('welcomeLabel')} value={admin.email} />
+        <SummaryCard label={t('tierLabel')} value={admin.tier.replace('_', ' ')} />
+        <SummaryCard label={t('statusLabel')} value={admin.status} />
+      </section>
+      <p className="text-charcoal-muted mx-auto mt-6 max-w-4xl px-2 text-sm">{t('body')}</p>
+    </>
+  );
+}
 
-        <p className="text-canvas/80 text-sm leading-relaxed">
-          {locale === 'ar'
-            ? 'تم تسجيل الدخول بنجاح. لوحة التحكم الكاملة قيد التطوير في الإصدار القادم (PR 3.2).'
-            : 'Sign-in successful. The full admin shell lands next in PR 3.2.'}
-        </p>
-
-        <Link
-          href={`/auth/sign-out?next=/${locale}`}
-          prefetch={false}
-          className="border-canvas/30 text-canvas hover:bg-canvas/10 inline-block border px-4 py-2"
-        >
-          {t('common.signOut')}
-        </Link>
-      </div>
-    </main>
+function SummaryCard({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border-outline-variant/40 flex flex-col gap-2 border p-4">
+      <p className="text-brass-600 text-xs tracking-[0.2em] uppercase">{label}</p>
+      <p className="text-teal-forest-700 text-base font-semibold break-words">{value}</p>
+    </div>
   );
 }

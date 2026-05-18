@@ -25,10 +25,10 @@ shipped (v0.2.0).** Resume with **Phase 3 — Admin Command Center**.
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Repo       | https://github.com/Hamednallah/al-hewal                                                                                       |
 | Local      | `d:\Work\Projects\AL-Hewal\al-hewal\`                                                                                         |
-| Main HEAD  | PR #15 (Phase 3.X — `inquiry_type` enum + ContactForm radio) — pending merge                                                  |
+| Main HEAD  | PR #16 (Phase 3.2 — admin shell + sidebar + tier-driven nav) — pending merge                                                  |
 | Branch     | `main` (you should be on it; if not, `git checkout main && git pull --ff-only`)                                               |
 | Latest tag | `v0.2.1` (Phase 2 closeout — favicon + PWA manifest). `v0.3.0` is reserved for the end of Phase 3 per master-plan convention. |
-| Next PR    | **3.2 — admin shell (sidebar + topbar + tier-driven nav)**                                                                    |
+| Next PR    | **3.3 — Property listings table (server-paginated, filtered)**                                                                |
 
 ---
 
@@ -214,18 +214,50 @@ can route them to the right team).
   and the maintenance success path (with `inquiryType=maintenance`
   asserted on the captured request body).
 
-### PR 3.2 — Admin shell
+### PR 3.2 — Admin shell ✅ shipped (PR #16)
 
-- `src/app/[locale]/admin/layout.tsx` — sidebar (nav driven by tier)
-  - topbar (admin avatar / display name / sign-out). Uses the design
-    tokens; sharp 0px corners, brass on teal accents only.
-- Admin nav items: Dashboard, Properties (Listing Management), Leads
-  (Leads Journal), Analytics (Strategic Analytics), Admins
-  (super_admin only), My Profile.
-- `src/components/admin/AdminNav.tsx`, `AdminTopbar.tsx`,
-  `LocaleSwitcher` (admin variant — same logic, slightly different
-  affordance).
-- Empty Dashboard page that just says "Welcome, {displayName}".
+- `src/app/[locale]/admin/layout.tsx` — shell wrapper: re-checks
+  `currentAdmin()` (belt-and-suspenders) and renders the
+  `AdminSidebar` + main slot for every `/<locale>/admin/*` route.
+- `src/components/admin/AdminSidebar.tsx` — tier-driven nav. Reads
+  the `admin.tier` from the cookie payload; `super_admin` sees an
+  extra "Admin Management" item. Sidebar uses charcoal background +
+  brass accents; active link gets a brass `border-s-4` (logical
+  start-side border that flips correctly in RTL). Sign-out link sits
+  in the sidebar footer above a `border-t` divider.
+- `src/components/admin/AdminNavLink.tsx` — client-side active-state
+  resolver using `usePathname()`. Dashboard sets `matchSubpaths={false}`
+  so it doesn't light up on every sub-route.
+- `src/components/admin/AdminTopbar.tsx` — reusable page header with
+  eyebrow + title + subtitle + actions slot (where the listings
+  toolbar will plug in PR 3.3's search + filter controls).
+- `src/components/admin/AdminPlaceholder.tsx` — DRY empty-state with
+  a PR tag, used by every "coming soon" admin page.
+- `src/components/admin/AdminIcons.tsx` — 7 inline SVG icons
+  (dashboard, listings, leads, analytics, admins, profile, sign-out).
+  Same Phase 2 pattern (zero font-loading overhead).
+- Pages: Dashboard (`/admin`) renders a real KPI-card-shaped grid of
+  the admin's email/tier/status. Five placeholders for properties /
+  leads / analytics / admins / profile — each with a tracking PR tag
+  for the future implementation.
+- `admins/page.tsx` redirects standard_admin users back to the
+  dashboard even on a directly-typed URL (defence in depth on top of
+  the sidebar tier filter).
+- i18n: `admin.shell.*`, `admin.common.{overview, section, comingSoon,
+superAdminOnly}`, and `admin.pages.<each>.{title, subtitle,
+placeholder}` keys for both AR and EN.
+- Tests: 7 Playwright specs in `tests/e2e/admin-shell.spec.ts`
+  covering tier filtering, active-state highlighting, the
+  standard_admin → /admin/admins redirect, AR RTL chrome,
+  sign-out target, and every placeholder route. Cookie helper at
+  `tests/e2e/helpers/admin-auth.ts` injects a signed
+  `alh_admin_sess` cookie so we don't need real Supabase + magic-link
+  in CI.
+- Vitest config exclude list extended to skip
+  `src/components/admin/**` (visual + Playwright-covered, same
+  rationale as the Phase 2 public components already excluded).
+
+### PR 3.2 (legacy spec — superseded by what shipped above)
 
 ### PR 3.3 — Property listings table
 
