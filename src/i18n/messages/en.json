@@ -322,6 +322,18 @@
         "actions": "Actions",
         "edit": "Edit"
       },
+      "actions": {
+        "publish": "Publish",
+        "feature": "Feature",
+        "unfeature": "Unfeature",
+        "archive": "Archive",
+        "restore": "Restore",
+        "delete": "Delete",
+        "menuLabel": "Row actions for {title}",
+        "deleteConfirm": "Permanently delete \"{title}\"? This cannot be undone. Use Archive for reversible removal.",
+        "archiveConfirm": "Archive \"{title}\"? The listing will be hidden from the public site but can be restored.",
+        "failureToast": "The action failed. Please refresh and try again."
+      },
       "pagination": {
         "previous": "Previous",
         "next": "Next",
@@ -370,6 +382,7 @@
           "lat": "Latitude",
           "lng": "Longitude",
           "google_maps_url": "Google Maps URL",
+          "google_maps_url_placeholder": "https://maps.google.com/…",
           "featured": "Featured on home page"
         },
         "errors": {

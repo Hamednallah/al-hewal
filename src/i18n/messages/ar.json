@@ -322,6 +322,18 @@
         "actions": "الإجراءات",
         "edit": "تعديل"
       },
+      "actions": {
+        "publish": "نشر",
+        "feature": "إبراز",
+        "unfeature": "إلغاء الإبراز",
+        "archive": "أرشفة",
+        "restore": "استعادة",
+        "delete": "حذف",
+        "menuLabel": "إجراءات الصف لـ {title}",
+        "deleteConfirm": "هل تريد حذف \"{title}\" نهائياً؟ هذا الإجراء غير قابل للتراجع. استخدم الأرشفة للحذف القابل للاستعادة.",
+        "archiveConfirm": "أرشفة \"{title}\"؟ سيختفي العقار من الموقع العام مع إمكانية استعادته لاحقاً.",
+        "failureToast": "فشل الإجراء. يرجى تحديث الصفحة والمحاولة مجدداً."
+      },
       "pagination": {
         "previous": "السابق",
         "next": "التالي",
@@ -370,6 +382,7 @@
           "lat": "خط العرض",
           "lng": "خط الطول",
           "google_maps_url": "رابط Google Maps",
+          "google_maps_url_placeholder": "https://maps.google.com/…",
           "featured": "إبراز على الصفحة الرئيسية"
         },
         "errors": {

@@ -162,6 +162,7 @@ export async function getAdminPropertyById(id: string): Promise<AdminPropertyEdi
         'id, slug, title_ar, title_en, description_ar, description_en, type, status, price_sar, price_negotiable, area_sqm, bedrooms, bathrooms, city, district, plot_number, street_width_m, facade, lat, lng, google_maps_url, featured, deleted_at',
       )
       .eq('id', id)
+      .abortSignal(AbortSignal.timeout(2000))
       .maybeSingle();
     if (error) {
       console.warn('[getAdminPropertyById] supabase returned error:', error.message);

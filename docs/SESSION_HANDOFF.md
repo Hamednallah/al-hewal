@@ -25,10 +25,10 @@ shipped (v0.2.0).** Resume with **Phase 3 — Admin Command Center**.
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Repo       | https://github.com/Hamednallah/al-hewal                                                                                       |
 | Local      | `d:\Work\Projects\AL-Hewal\al-hewal\`                                                                                         |
-| Main HEAD  | PR #19 (Phase 3.4 — single-page property create/edit form + API) — pending merge                                              |
+| Main HEAD  | PR #19 (Phase 3.4 — single-page property create/edit form + API) — merged as `907c278`                                        |
 | Branch     | `main` (you should be on it; if not, `git checkout main && git pull --ff-only`)                                               |
 | Latest tag | `v0.2.1` (Phase 2 closeout — favicon + PWA manifest). `v0.3.0` is reserved for the end of Phase 3 per master-plan convention. |
-| Next PR    | **3.3b — row-action mutation routes (publish/archive/feature/delete) + listings UI buttons**                                  |
+| Next PR    | **3.5 — Image upload pipeline** (`/api/upload` → Vercel Blob + sharp resize / AVIF + WebP / EXIF strip)                       |
 
 ---
 
@@ -259,15 +259,71 @@ placeholder}` keys for both AR and EN.
 
 ### PR 3.2 (legacy spec — superseded by what shipped above)
 
-### PR 3.3 — Property listings table
+### PR 3.3a — Property listings table ✅ shipped (PR #18)
 
 - `src/app/[locale]/admin/properties/page.tsx` — server-rendered,
   server-paginated, server-filtered table (status, type, city,
-  featured). Row hover: edit / publish / archive / delete (delete is
-  super_admin only).
-- Filter form mirrors the public catalog's URL-driven pattern.
-- Bulk actions: feature/unfeature (super_admin), archive.
-- `src/components/admin/PropertyTable.tsx`.
+  featured, include-archived).
+- `src/components/admin/PropertyAdminFilterBar.tsx` — native
+  `<form method="GET">` mirroring the public catalog pattern; Apply
+  uses the public `<Button>`, Clear is a plain `<a>` (a Next `<Link>`
+  raced the form-submit in CI).
+- `src/components/admin/PropertyTable.tsx` — server-rendered table
+  rendering project / type / location / price / status / featured /
+  updated / row-action group.
+- `src/components/admin/AdminPagination.tsx` — locale-aware page
+  navigation mirroring the public Pagination.
+- `src/lib/data/admin-properties.ts` — `listAdminProperties`,
+  `getAdminDistinctCities`, `getAdminPropertyById`, `parse/serialize`
+  filter helpers. All Supabase queries capped at 2s via
+  `AbortSignal.timeout(2000)` so CI's placeholder Supabase URL never
+  blocks RSC navigation past Playwright's 5s `toHaveURL` budget.
+- Tests: 6 Playwright specs in `tests/e2e/admin-properties.spec.ts`
+  (empty state, AR RTL, filter inputs visible, Apply preserves URL,
+  Clear resets, standard_admin reads). Unit specs for parse +
+  serialize filters in `tests/unit/lib/data/admin-properties.test.ts`.
+
+### PR 3.3b — Row-action mutation routes ✅ shipped
+
+- `src/lib/admin/property-action.ts` — shared HOF (`handlePropertyAction`)
+  that owns auth → tier gate → UUID validation → mutate → audit log →
+  cache revalidation. Each row-action route stays ~10 lines.
+- `src/app/api/properties/[id]/publish/route.ts` — POST, sets
+  `status='available'`. Any active admin.
+- `src/app/api/properties/[id]/archive/route.ts` — POST, stamps
+  `deleted_at=now()`. Any active admin.
+- `src/app/api/properties/[id]/restore/route.ts` — POST, clears
+  `deleted_at`. Any active admin.
+- `src/app/api/properties/[id]/feature/route.ts` — POST `{ featured: boolean }`,
+  **super_admin only**, uses `revalidateAfterFeatureToggle()` (lighter
+  invalidation since only the home + catalog index changed).
+- `DELETE /api/properties/[id]` (added to existing route.ts) —
+  **super_admin only**, hard delete. Reads slug first so the revalidate
+  knows which now-defunct public pages to evict.
+- PATCH `/api/properties/[id]` — added tier guard: if body contains
+  `featured`, require super_admin (closes the bypass against the
+  `/feature` route's tier gate).
+- `src/components/admin/RowActionButton.tsx` — client island,
+  `useTransition` + `router.refresh()` on success; native
+  `window.confirm` on destructive actions (archive, delete). Inline
+  error region role="status" surfaces failure copy on a non-2xx.
+- `src/components/admin/PropertyTable.tsx` — wires the row-action
+  group with tier-aware visibility; standard_admin sees publish (on
+  drafts) + archive ↔ restore; super_admin sees those plus
+  feature / unfeature + hard delete.
+- i18n: `admin.properties.actions.{publish, feature, unfeature,
+archive, restore, delete, menuLabel, deleteConfirm, archiveConfirm,
+failureToast}` in both AR + EN.
+- Tests: 11 Playwright specs in `tests/e2e/admin-property-actions.spec.ts`
+  exercising the API route gates (401 unauthorized, 403 tier, 400
+  invalid id / body). Unit specs in
+  `tests/unit/lib/admin/property-action.test.ts` cover the helper's
+  auth/tier/uuid/success/failure branches.
+- Bundled review fixes from PRs 3.3a + 3.4: `text-left → text-start`
+  in PropertyTable (RTL); `AbortSignal.timeout(2000)` on
+  `getAdminPropertyById` for consistency; bilingual
+  `google_maps_url_placeholder` i18n key replacing a hardcoded
+  English placeholder in `PropertyForm`.
 
 ### PR 3.4 — Property wizard (3 steps)
 

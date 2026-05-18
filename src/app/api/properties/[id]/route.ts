@@ -3,6 +3,7 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { currentAdmin } from '@/lib/auth/admins';
 import { withAudit } from '@/lib/audit';
 import { revalidatePropertyPages } from '@/lib/cache';
+import { handlePropertyAction } from '@/lib/admin/property-action';
 import { updatePropertySchema } from '@/lib/validators/property';
 import { getSupabaseAdminClient } from '@/lib/supabase/admin';
 
@@ -53,6 +54,12 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
   if (Object.keys(updateRow).length === 0) {
     return NextResponse.json({ success: false, error: 'no_changes' }, { status: 400 });
   }
+  // Tier gate: `featured` is a super_admin-only field. Without this guard
+  // a standard_admin could bypass `/feature`'s tier check by PATCHing the
+  // column through the general edit endpoint.
+  if ('featured' in updateRow && admin.tier !== 'super_admin') {
+    return NextResponse.json({ success: false, error: 'forbidden' }, { status: 403 });
+  }
   updateRow.updated_at = new Date().toISOString();
 
   try {
@@ -89,4 +96,35 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     console.warn('[PATCH /api/properties/:id] update failed:', message);
     return NextResponse.json({ success: false, error: 'update_failed' }, { status: 500 });
   }
+}
+
+/**
+ * DELETE /api/properties/[id]
+ *
+ * Hard delete — removes the row from `properties` and (via cascading
+ * FKs) any dependent `property_images`. This is destructive and
+ * unrecoverable; `super_admin` only. For reversible removal use the
+ * `/archive` action (soft-delete via `deleted_at`).
+ */
+export async function DELETE(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
+  const { id } = await ctx.params;
+  return handlePropertyAction(id, {
+    auditAction: 'delete',
+    requireTier: 'super_admin',
+    buildAuditDiff: ({ admin }) => ({ deletedBy: admin.sub }),
+    mutate: async (client, rowId) => {
+      // Capture slug before delete so the revalidation can name the
+      // now-defunct public pages it needs to evict.
+      const { data: row, error: readErr } = await client
+        .from('properties')
+        .select('slug')
+        .eq('id', rowId)
+        .single();
+      if (readErr) throw readErr;
+      const slug = (row as { slug: string }).slug;
+      const { error: delErr } = await client.from('properties').delete().eq('id', rowId);
+      if (delErr) throw delErr;
+      return { slug };
+    },
+  });
 }

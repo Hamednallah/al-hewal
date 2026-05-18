@@ -36,7 +36,7 @@ export default async function AdminPropertiesPage({ params, searchParams }: Page
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
-  await requireAdmin();
+  const admin = await requireAdmin();
   const typedLocale = locale as Locale;
   const basePath = `/${typedLocale}/admin/properties`;
   const newPath = `${basePath}/new`;
@@ -80,7 +80,7 @@ export default async function AdminPropertiesPage({ params, searchParams }: Page
               ctaHref={newPath}
             />
           ) : (
-            <PropertyTable locale={typedLocale} rows={rows} basePath={basePath} />
+            <PropertyTable locale={typedLocale} rows={rows} basePath={basePath} admin={admin} />
           )}
           <AdminPagination
             locale={typedLocale}

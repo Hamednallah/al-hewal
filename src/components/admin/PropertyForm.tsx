@@ -368,7 +368,7 @@ export function PropertyForm({ locale, mode, propertyId, initialValues }: Proper
             id="prop-maps-url"
             label={tFields('google_maps_url')}
             type="url"
-            placeholder="https://maps.google.com/…"
+            placeholder={tFields('google_maps_url_placeholder')}
             error={errors.google_maps_url?.message}
             dir="ltr"
             className="md:col-span-3"
