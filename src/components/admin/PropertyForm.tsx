@@ -2,6 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslations } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -103,6 +104,7 @@ export function PropertyForm({ locale, mode, propertyId, initialValues }: Proper
   const tType = useTranslations('admin.properties.type');
   const tStatus = useTranslations('admin.properties.status');
   const tErrors = useTranslations('admin.properties.form.errors');
+  const router = useRouter();
   const [status, setStatus] = useState<SubmitStatus>({ kind: 'idle' });
 
   const {
@@ -128,14 +130,14 @@ export function PropertyForm({ locale, mode, propertyId, initialValues }: Proper
         body: JSON.stringify(payload),
       });
       if (res.ok) {
-        // Hard navigation: a successful create/update changes server-side
-        // data the listings page must re-fetch. No `setStatus(success)` or
-        // body parse here — both add React render work between
-        // fetch-complete and navigation start, and Playwright's
-        // `toHaveURL` only waits 5s for the new document to commit.
-        // `href` assignment is the most deterministic trigger across
-        // browsers + headless modes.
-        window.location.href = `/${locale}/admin/properties`;
+        // SPA navigation via Next router. `router.push` calls
+        // `history.pushState` synchronously, so `window.location.pathname`
+        // (and Playwright's `page.url()`) updates immediately — no need to
+        // wait on a fresh document commit. Hard navigation (assign/href)
+        // failed `toHaveURL`'s 5s poll in CI because the destination's
+        // commit time exceeded the budget. App Router auto-fetches the
+        // listings RSC on push, so no explicit refresh is required.
+        router.push(`/${locale}/admin/properties`);
         return;
       }
       const body = (await res.json().catch(() => ({}))) as { error?: string };
