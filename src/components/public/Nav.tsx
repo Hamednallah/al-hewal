@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 
 import { Link } from '@/i18n/navigation';
@@ -46,13 +47,22 @@ export async function Nav({ locale, className }: { locale: Locale; className?: s
       )}
     >
       <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-6 px-edge md:h-20">
-        {/* Brand mark — wordmark only for Phase 2.1; a real logo can drop
-            in later by replacing this span without touching layout. */}
+        {/* Brand mark — the official Al Hewal logo (PNG with transparent
+            background; the brass + green palette already harmonises with
+            the teal Nav). Bilingual alt for screen readers. */}
         <Link
           href="/"
-          className="text-brass-400 hover:text-canvas focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-400 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-forest-700 text-xl font-bold uppercase tracking-[0.3em] transition-colors"
+          aria-label={tBrand('name')}
+          className="focus-visible:ring-brass-400 focus-visible:ring-offset-teal-forest-700 inline-flex items-center focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
-          {tBrand('name')}
+          <Image
+            src="/brand/logo.png"
+            alt={tBrand('name')}
+            width={160}
+            height={160}
+            priority
+            className="h-12 w-auto md:h-14"
+          />
         </Link>
 
         {/* Desktop link list */}

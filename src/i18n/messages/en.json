@@ -165,6 +165,75 @@
         "description": "{title} — {summary} Located in {location}. Starting price {price}."
       }
     },
+    "about": {
+      "pageEyebrow": "About Al Hewal",
+      "pageTitle": "Saudi real estate, built with discipline.",
+      "pageDescription": "Al Hewal Real Estate Development & Investment Company is a Saudi developer specialising in buying, developing, and investing in land and buildings to the highest standards of quality and craftsmanship — delivering modern residential and investment projects that match the ambitions of our clients and the Saudi market.",
+      "missionTitle": "What we build",
+      "missionBody": "Integrated developments — villas, duplexes, apartments, and investment buildings — designed and executed with meticulous attention to detail. Premium materials, modern engineering standards, and finishes that age well.",
+      "trustTitle": "What we promise",
+      "trustBody": "Client trust is the foundation of our work. Every Al Hewal project ships with full warranties on the workmanship and one year of post-handover maintenance — so the quality stays in place long after the keys change hands.",
+      "valuesTitle": "How we work",
+      "values": {
+        "modern": "Modern, high-quality engineering",
+        "ontime": "On-time delivery with precise execution",
+        "warranty": "Reliable warranties on every contract",
+        "maintenance": "Post-sale maintenance and follow-up",
+        "relationships": "Long-term client relationships built on trust"
+      },
+      "ctaTitle": "Ready to discuss your next home?",
+      "ctaBody": "Browse the current catalog or reach our sales team directly via WhatsApp.",
+      "ctaProjects": "Browse Projects",
+      "ctaContact": "Contact Us"
+    },
+    "contact": {
+      "pageEyebrow": "Get in touch",
+      "pageTitle": "Talk to Al Hewal",
+      "pageDescription": "Tell us what you're looking for — investment, family home, or a specific district — and our sales advisors will reach out. Most enquiries get a reply within one business hour.",
+      "directTitle": "Direct channels",
+      "directBody": "Prefer instant reply? Tap WhatsApp for a one-tap chat in Arabic or English.",
+      "whatsappCta": "Chat on WhatsApp",
+      "callCta": "Call sales",
+      "formTitle": "Send us a message",
+      "fields": {
+        "name": "Your name",
+        "namePlaceholder": "Full name",
+        "phone": "Phone (WhatsApp preferred)",
+        "phonePlaceholder": "05XXXXXXXX or +9665XXXXXXXX",
+        "email": "Email (optional)",
+        "emailPlaceholder": "you@example.com",
+        "message": "Message",
+        "messagePlaceholder": "Tell us a bit about what you're looking for…"
+      },
+      "submit": "Send message",
+      "submitting": "Sending…",
+      "successTitle": "Message received",
+      "successBody": "Thank you. A sales advisor will reach out shortly.",
+      "errors": {
+        "invalid_phone": "Please enter a valid Saudi phone number (05XXXXXXXX) or an international number with country code.",
+        "invalid_body": "Please check the highlighted fields.",
+        "rate_limited": "You've sent several messages recently. Please wait a minute before trying again.",
+        "server_error": "Something went wrong on our side. Please WhatsApp us instead — link above.",
+        "network_error": "Connection problem. Check your internet and try again."
+      }
+    },
+    "notFound": {
+      "code": "404",
+      "ar": {
+        "eyebrow": "صفحة غير موجودة",
+        "title": "هذه الصفحة لم نعد ننشرها",
+        "body": "ربما تم نقل العقار، أو لم يعد الرابط صالحاً. تصفح المشاريع المتاحة أو تواصل معنا للاستفسار.",
+        "primaryCta": "تصفح العقارات",
+        "secondaryCta": "العودة للرئيسية"
+      },
+      "en": {
+        "eyebrow": "Page not found",
+        "title": "This page isn't available",
+        "body": "The property may have moved, or the link is no longer valid. Browse the current catalog or get in touch.",
+        "primaryCta": "Browse Properties",
+        "secondaryCta": "Back to Home"
+      }
+    },
     "footer": {
       "tagline": "We build quality... and shape the future",
       "about": "Al Hewal Real Estate Development and Investment Company — a Saudi developer crafting residential and investment projects to the highest quality standards, backed by a full one-year maintenance warranty.",

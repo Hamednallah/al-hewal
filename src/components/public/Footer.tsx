@@ -6,10 +6,15 @@ import { type Locale } from '@/i18n/routing';
 /**
  * Public footer.
  *
- * Server component, all content sourced from the message catalog. The
- * brand block on the left, an "Explore" link column in the middle, and
- * a Contact / WhatsApp CTA on the right. Mobile collapses to a single
- * column stack.
+ * Server component, all content sourced from the message catalog.
+ *
+ * Layout (per the Phase 2 wrap UX request): every column is
+ * **centered** rather than aligned to inline-start/inline-end, so the
+ * footer reads the same way in AR (RTL) and EN (LTR). Brand + tagline
+ * sit above three centered columns (Explore links, Contact CTA,
+ * Company name + copyright). This keeps the footer visually balanced
+ * regardless of locale, which mattered enough to the owner that they
+ * called it out explicitly.
  *
  * The WhatsApp CTA routes through `/api/whatsapp/track` (PR 2.5) so
  * footer clicks land in the leads + whatsapp_clicks tables for the
@@ -23,26 +28,32 @@ export async function Footer({ locale }: { locale: Locale }) {
 
   return (
     <footer className="bg-teal-forest-700 text-canvas border-brass-400/10 border-t">
-      <div className="mx-auto grid max-w-[1440px] gap-12 px-edge py-16 md:grid-cols-3 md:gap-8 md:py-20">
-        {/* Brand + about */}
-        <div className="md:col-span-1">
-          <p className="text-brass-400 mb-4 text-xs uppercase tracking-[0.3em]">{tBrand('name')}</p>
-          <p className="text-canvas mb-6 max-w-sm text-2xl font-semibold leading-tight md:text-3xl">
+      {/* Brand block — full-width, centered. */}
+      <div className="border-brass-400/10 border-b">
+        <div className="mx-auto flex max-w-[1440px] flex-col items-center gap-4 px-edge py-12 text-center md:py-16">
+          <p className="text-brass-400 text-xs tracking-[0.4em] uppercase">{tBrand('name')}</p>
+          <p className="text-canvas max-w-2xl text-2xl font-semibold leading-tight md:text-3xl">
             {t('tagline')}
           </p>
-          <p className="text-canvas/70 max-w-sm text-sm leading-relaxed">{t('about')}</p>
+          <p className="text-canvas/70 max-w-2xl text-sm leading-relaxed md:text-base">
+            {t('about')}
+          </p>
         </div>
+      </div>
 
-        {/* Explore links */}
-        <nav aria-label={t('sectionExplore')} className="md:col-span-1">
-          <p className="text-brass-400 mb-4 text-xs uppercase tracking-[0.3em]">
+      {/* Three centered columns. On mobile they stack with the same
+          centered axis — no inline-start/end bias. */}
+      <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-12 px-edge py-14 text-center md:grid-cols-3 md:gap-8 md:py-16">
+        {/* Explore */}
+        <nav aria-label={t('sectionExplore')} className="flex flex-col items-center gap-4">
+          <p className="text-brass-400 text-xs tracking-[0.3em] uppercase">
             {t('sectionExplore')}
           </p>
-          <ul className="flex flex-col gap-3">
+          <ul className="flex flex-col items-center gap-3">
             <li>
               <Link
                 href="/properties"
-                className="text-canvas/80 hover:text-brass-400 text-sm uppercase tracking-[0.15em] transition-colors"
+                className="text-canvas/80 hover:text-brass-400 text-sm font-semibold tracking-[0.15em] uppercase transition-colors"
               >
                 {t('linkProperties')}
               </Link>
@@ -50,7 +61,7 @@ export async function Footer({ locale }: { locale: Locale }) {
             <li>
               <Link
                 href="/about"
-                className="text-canvas/80 hover:text-brass-400 text-sm uppercase tracking-[0.15em] transition-colors"
+                className="text-canvas/80 hover:text-brass-400 text-sm font-semibold tracking-[0.15em] uppercase transition-colors"
               >
                 {t('linkAbout')}
               </Link>
@@ -58,7 +69,7 @@ export async function Footer({ locale }: { locale: Locale }) {
             <li>
               <Link
                 href="/contact"
-                className="text-canvas/80 hover:text-brass-400 text-sm uppercase tracking-[0.15em] transition-colors"
+                className="text-canvas/80 hover:text-brass-400 text-sm font-semibold tracking-[0.15em] uppercase transition-colors"
               >
                 {t('linkContact')}
               </Link>
@@ -66,23 +77,35 @@ export async function Footer({ locale }: { locale: Locale }) {
           </ul>
         </nav>
 
-        {/* Contact CTA */}
-        <div className="md:col-span-1">
-          <p className="text-brass-400 mb-4 text-xs uppercase tracking-[0.3em]">
+        {/* Direct contact CTA */}
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-brass-400 text-xs tracking-[0.3em] uppercase">
             {t('sectionContact')}
           </p>
           <a
             href={`/api/whatsapp/track?locale=${locale}`}
             rel="noopener noreferrer"
             data-event="whatsapp-click"
-            className="bg-brass-400 text-teal-forest-700 hover:bg-canvas inline-flex items-center px-6 py-3 text-sm font-bold uppercase tracking-[0.1em] transition-colors"
+            className="bg-brass-400 text-teal-forest-700 hover:bg-canvas inline-flex items-center justify-center px-6 py-3 text-sm font-bold tracking-[0.1em] uppercase transition-colors"
           >
             {t('whatsapp')}
           </a>
         </div>
+
+        {/* Company column — explicit copy slot the previous footer
+            lacked. Mirrors the "Explore" column visually so the grid
+            stays balanced. */}
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-brass-400 text-xs tracking-[0.3em] uppercase">
+            {t('sectionCompany')}
+          </p>
+          <p className="text-canvas/80 max-w-xs text-sm leading-relaxed">{tBrand('name')}</p>
+        </div>
       </div>
+
+      {/* Bottom legal line — centered too. */}
       <div className="border-brass-400/10 border-t">
-        <div className="mx-auto max-w-[1440px] px-edge py-6">
+        <div className="mx-auto max-w-[1440px] px-edge py-6 text-center">
           <p className="text-canvas/50 text-xs">{t('rights', { year })}</p>
         </div>
       </div>
