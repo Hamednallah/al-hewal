@@ -274,7 +274,62 @@
       "overview": "نظرة عامة",
       "section": "القسم",
       "comingSoon": "قريباً",
-      "superAdminOnly": "المشرف العام فقط"
+      "superAdminOnly": "المشرف العام فقط",
+      "addNewProperty": "إضافة عقار جديد"
+    },
+    "properties": {
+      "filter": {
+        "searchLabel": "بحث",
+        "searchPlaceholder": "الاسم، الرابط، المدينة…",
+        "status": "الحالة",
+        "type": "النوع",
+        "city": "المدينة",
+        "featured": "مميّز",
+        "featuredYes": "المميّزة فقط",
+        "featuredNo": "غير مميّزة",
+        "includeArchived": "تضمين المؤرشفة",
+        "any": "الكل",
+        "apply": "تطبيق",
+        "clear": "مسح"
+      },
+      "status": {
+        "draft": "مسودة",
+        "available": "متاح",
+        "starting_soon": "قريباً",
+        "reserved": "محجوز",
+        "sold": "مُباع",
+        "archived": "مؤرشف"
+      },
+      "type": {
+        "villa": "فيلا",
+        "duplex": "دوبلكس",
+        "apartment": "شقة",
+        "investment": "استثماري"
+      },
+      "table": {
+        "project": "المشروع",
+        "type": "النوع",
+        "location": "الموقع",
+        "price": "السعر",
+        "status": "الحالة",
+        "featured": "مميّز",
+        "featuredYes": "مميّز",
+        "featuredNo": "—",
+        "updated": "آخر تحديث",
+        "actions": "الإجراءات",
+        "edit": "تعديل"
+      },
+      "pagination": {
+        "previous": "السابق",
+        "next": "التالي",
+        "pageOf": "صفحة {current} من {total}",
+        "showing": "صفحة {current} من {total} · {rows} عقار إجمالاً"
+      },
+      "empty": {
+        "title": "لا توجد عقارات بعد",
+        "body": "بمجرد إضافة أول عقار سيظهر هنا مع أدوات التصفية والبحث والتعديل. كذلك تظهر للمشرفين المسوّدات والعقارات المؤرشفة.",
+        "ctaLabel": "أضف أول عقار"
+      }
     },
     "pages": {
       "dashboard": {
@@ -288,6 +343,7 @@
       "properties": {
         "title": "إدارة العقارات",
         "subtitle": "مراجعة وإضافة وتحديث مشاريع الحوال السكنية.",
+        "subtitleWithCount": "عرض {filtered} من أصل {total} عقار.",
         "placeholder": "جدول العقارات الكامل — بترقيم الصفحات من الخادم وعوامل تصفية الحالة ومعالج إضافة/تعديل العقار — يصل في الإصدار PR 3.3. حتى ذلك الحين، يقرأ الموقع العام العقارات المحلية بوضع القراءة فقط."
       },
       "leads": {
