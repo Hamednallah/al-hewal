@@ -53,4 +53,48 @@ test.describe('SEO surfaces', () => {
     await expect(page.locator('link[hreflang="ar-SA"]')).toHaveAttribute('href', /\/ar$/);
     await expect(page.locator('link[hreflang="en"]')).toHaveAttribute('href', /\/en$/);
   });
+
+  test('AR home emits brand favicon, apple-icon, and manifest links', async ({ page }) => {
+    await page.goto('/ar');
+    await expect(page.locator('link[rel="icon"][href*="favicon.ico"]')).toHaveCount(1);
+    await expect(page.locator('link[rel="icon"][href*="icon-32.png"]')).toHaveCount(1);
+    await expect(page.locator('link[rel="icon"][href*="icon-192.png"]')).toHaveCount(1);
+    await expect(page.locator('link[rel="icon"][href*="icon-512.png"]')).toHaveCount(1);
+    await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute(
+      'href',
+      /apple-icon\.png/,
+    );
+    await expect(page.locator('link[rel="manifest"]')).toHaveAttribute(
+      'href',
+      /manifest\.webmanifest/,
+    );
+  });
+
+  test('favicon assets resolve with correct content types', async ({ request }) => {
+    const expectations: Array<[string, RegExp]> = [
+      ['/favicon.ico', /image\/(x-icon|vnd\.microsoft\.icon)/],
+      ['/icon-32.png', /image\/png/],
+      ['/apple-icon.png', /image\/png/],
+      ['/icon-192.png', /image\/png/],
+      ['/icon-512.png', /image\/png/],
+    ];
+    for (const [path, mime] of expectations) {
+      const res = await request.get(path);
+      expect(res.status(), `${path} should 200`).toBe(200);
+      expect(res.headers()['content-type'], `${path} content-type`).toMatch(mime);
+    }
+  });
+
+  test('web manifest exposes brand identity', async ({ request }) => {
+    const res = await request.get('/manifest.webmanifest');
+    expect(res.status()).toBe(200);
+    const manifest = (await res.json()) as {
+      name: string;
+      theme_color: string;
+      icons: Array<{ src: string; sizes: string }>;
+    };
+    expect(manifest.name).toContain('Al Hewal');
+    expect(manifest.theme_color.toLowerCase()).toBe('#002b2b');
+    expect(manifest.icons.some((icon) => icon.sizes === '512x512')).toBe(true);
+  });
 });

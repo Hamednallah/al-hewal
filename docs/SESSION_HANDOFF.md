@@ -113,6 +113,21 @@ Full Phase 2 summary: [`docs/PHASE_2_SUMMARY.md`](PHASE_2_SUMMARY.md).
   - Test coverage: `tests/e2e/public-pages.spec.ts` (6 specs across
     `/about`, `/contact`, `/404`) + axe scans extended to both new
     pages in both locales (+4 axe runs).
+- **PR 2.10 (favicon + web manifest)** — final Phase 2 polish item.
+  - `scripts/generate-favicons.mjs` (sharp + png-to-ico) reads
+    `public/brand/logo.png` and emits `favicon.ico` (multi-size
+    16/32/48), `icon-32.png`, `apple-icon.png` (180), `icon-192.png`,
+    `icon-512.png` into `public/`. Re-run via `pnpm favicons` when
+    the brand mark changes.
+  - `src/app/manifest.ts` serves `/manifest.webmanifest` with the
+    Forest Teal `theme_color`, Canvas `background_color`, and Android
+    192/512 + iOS 180 icons. Bilingual `name` includes the Arabic
+    wordmark.
+  - `[locale]/layout.tsx#generateMetadata` now sets `icons` + `manifest`
+    so Next 15 emits the matching `<link>` tags in both AR and EN
+    document heads.
+  - Test coverage: three new specs in `tests/e2e/seo.spec.ts` —
+    head-link presence, asset 200 + content-type, manifest body shape.
 
 ---
 
@@ -412,6 +427,10 @@ Brass `#D4B982`). No token changes were needed.
 If new brand assets land, copy them into `public/brand/` and import
 via the standard `next/image` `<Image>` (or plain `<img>` in
 `not-found.tsx` since it sits outside the App Router image pipeline).
+
+**Done in PR 2.10** — favicon set + PWA manifest generated from the
+brand logo and wired through `[locale]/layout.tsx#metadata`. Re-run
+`pnpm favicons` if `public/brand/logo.png` is ever replaced.
 
 ---
 
