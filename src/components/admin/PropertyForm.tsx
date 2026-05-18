@@ -128,13 +128,14 @@ export function PropertyForm({ locale, mode, propertyId, initialValues }: Proper
         body: JSON.stringify(payload),
       });
       if (res.ok) {
-        const body = (await res.json()) as { success: true; data?: { slug?: string } };
-        const slug = body.data?.slug ?? '';
-        setStatus({ kind: 'success', slug });
         // Hard navigation: a successful create/update changes server-side
-        // data the listings page must re-fetch. `router.push` + `refresh`
-        // raced unreliably in CI Playwright; `assign` is deterministic.
-        window.location.assign(`/${locale}/admin/properties`);
+        // data the listings page must re-fetch. No `setStatus(success)` or
+        // body parse here — both add React render work between
+        // fetch-complete and navigation start, and Playwright's
+        // `toHaveURL` only waits 5s for the new document to commit.
+        // `href` assignment is the most deterministic trigger across
+        // browsers + headless modes.
+        window.location.href = `/${locale}/admin/properties`;
         return;
       }
       const body = (await res.json().catch(() => ({}))) as { error?: string };

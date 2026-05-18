@@ -1,5 +1,4 @@
 import { getTranslations } from 'next-intl/server';
-import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import type { Locale } from '@/i18n/routing';
@@ -120,9 +119,7 @@ export async function PropertyAdminFilterBar({
               client-side push inside the form with hydrated
               `defaultValue` inputs raced with form submission in CI. */}
           <Button asChild variant="outline" size="sm">
-            <Link href={action} prefetch={false}>
-              {t('clear')}
-            </Link>
+            <a href={action}>{t('clear')}</a>
           </Button>
         </div>
       </form>
