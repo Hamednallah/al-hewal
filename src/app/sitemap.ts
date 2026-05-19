@@ -24,7 +24,13 @@ import { listLivePropertySlugs } from '@/lib/data/properties';
  * trade-off vs. failing the build on transient infra.
  */
 
-export const revalidate = 3600; // 1h — matches the home page cadence
+// force-dynamic, not ISR. Same reasoning as the home + detail pages
+// (PR #28): Vercel's CDN edge cache held the cached sitemap past
+// the revalidate window and search engines were fetching a slug list
+// that didn't reflect the admin's publish/archive actions. Bot
+// fetches are infrequent (10-100/day even with Google + Bing + ROW
+// crawlers active) so the function-invocation cost is negligible.
+export const dynamic = 'force-dynamic';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Use process.env directly instead of the Zod-validated `env` Proxy:

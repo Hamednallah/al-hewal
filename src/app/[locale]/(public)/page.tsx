@@ -21,26 +21,21 @@ const WHATSAPP_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_PHONE ?? '';
  *   3. FeaturedProjects (data-driven, empty state covered)
  *   4. TrustBanner     (1-year warranty pitch, leads into footer)
  *
- * ISR with `revalidate=60` so the featured carousel reflects admin
- * `/feature` ↔ `/unfeature` toggles within at most a minute. Earlier
- * we used 3600s (1h) on the assumption that `revalidatePath` from
- * `revalidateAfterFeatureToggle` would synchronously purge the edge
- * cache; in practice the CDN edge keeps serving 304s from its cache
- * for the full hour (same pattern that bit the property detail page —
- * see PR #26 / detail page `force-dynamic`). 60s is the same window
- * the detail page used before going dynamic; it's fast enough for
- * admins to verify their toggle and still cheap on the function quota.
- *
- * `force-static` rendering tells Next.js this page does not vary per
- * request beyond the [locale] param — the featured query reads from
- * the build-time / first-request snapshot, not per visitor.
+ * force-dynamic. PR #27 tried `revalidate=60 + force-static`, but
+ * production logs proved Vercel's CDN edge cache keeps serving the
+ * cached HTML well past the revalidate window — owner unfeatured a
+ * property and the home kept showing it on the featured carousel.
+ * `revalidatePath('/<locale>', 'page')` doesn't reliably evict the
+ * edge cache, and longer windows compound the staleness. Going
+ * `force-dynamic` so every visit hits Supabase fresh and the carousel
+ * always reflects the current `featured=true` set. Free-tier impact
+ * stays inside the 100k/mo Function cap by orders of magnitude.
  *
  * Emits a JSON-LD `Organization` schema inline (PR 2.6 / SEO). The
  * `RealEstateListing` schema lives on the property detail page (PR 2.4).
  * Both flow into Google's knowledge graph + rich-results pipeline.
  */
-export const revalidate = 60;
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
