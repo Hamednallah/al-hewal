@@ -52,11 +52,12 @@ export async function POST(req: NextRequest) {
   // Invite link redirects to `/auth/recovery` (Route Handler) so the
   // PKCE code exchange happens in a context where Supabase's cookie
   // writes are honoured — see src/app/auth/recovery/route.ts. The
-  // handler then forwards to `/<locale>/auth/reset-password` for the
-  // password form. Pass the invitee's language pref as a query param
-  // so the post-exchange UI lands in the right locale.
+  // handler then forwards to `/<locale>/auth/set-password` (NOT
+  // /reset-password) because the invitee is choosing a password for
+  // the first time, not recovering a forgotten one. The two pages
+  // share the same form but use different copy/tone.
   const locale = input.language_pref;
-  const redirectTo = `${env.NEXT_PUBLIC_SITE_URL}/auth/recovery?locale=${locale}`;
+  const redirectTo = `${env.NEXT_PUBLIC_SITE_URL}/auth/recovery?locale=${locale}&type=invite`;
 
   const result = await inviteAdmin({
     email: input.email,

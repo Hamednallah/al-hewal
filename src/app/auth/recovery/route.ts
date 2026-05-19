@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 /**
- * GET /auth/recovery?code=<supabase-pkce-code>&locale=<ar|en>
+ * GET /auth/recovery?code=<supabase-pkce-code>&locale=<ar|en>&type=<invite|reset>
  *
  * Code-exchange landing for the invite + password-recovery flows.
  *
@@ -32,6 +32,8 @@ export const runtime = 'nodejs';
  * deliver a `?code=` query parameter on the configured `redirectTo`,
  * so this single handler covers both flows.
  */
+type RecoveryType = 'invite' | 'reset';
+
 function isLocale(value: string | null): value is Locale {
   return (routing.locales as readonly string[]).includes(value ?? '');
 }
@@ -40,10 +42,22 @@ function resolveLocale(value: string | null): Locale {
   return isLocale(value) ? value : routing.defaultLocale;
 }
 
+function resolveType(value: string | null): RecoveryType {
+  // Default to 'reset' for back-compat with the previous redirectTo
+  // shape (PR #34 emails didn't carry `type`). Invite emails from the
+  // new flow set `type=invite` explicitly.
+  return value === 'invite' ? 'invite' : 'reset';
+}
+
+function destinationPath(locale: Locale, type: RecoveryType): string {
+  return type === 'invite' ? `/${locale}/auth/set-password` : `/${locale}/auth/reset-password`;
+}
+
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const code = url.searchParams.get('code');
   const locale = resolveLocale(url.searchParams.get('locale'));
+  const type = resolveType(url.searchParams.get('type'));
 
   if (!code) {
     const forgot = new URL(`/${locale}/auth/forgot`, req.url);
@@ -61,6 +75,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Exchange succeeded — Supabase cookies are now set on this response.
-  // Send the user to the form-only page where they can pick a password.
-  return NextResponse.redirect(new URL(`/${locale}/auth/reset-password`, req.url));
+  // Route the user to the right form depending on whether they were
+  // invited (first-time set) or recovering a forgotten password.
+  return NextResponse.redirect(new URL(destinationPath(locale, type), req.url));
 }

@@ -6,16 +6,44 @@ import { useActionState } from 'react';
 import { Link } from '@/i18n/navigation';
 import type { Locale } from '@/i18n/routing';
 
-import { setNewPassword, type ResetState } from './actions';
+import { setNewPassword, type ResetState } from '@/app/[locale]/auth/reset-password/actions';
+
+/**
+ * Shared password-set form used by both the invite-acceptance page
+ * (`/<locale>/auth/set-password`) and the password-recovery page
+ * (`/<locale>/auth/reset-password`).
+ *
+ * The two flows share the same Supabase plumbing (`exchangeCodeForSession`
+ * runs in `/auth/recovery`, then this form calls
+ * `supabase.auth.updateUser({password})` via the `setNewPassword`
+ * server action), but the UX intent is opposite:
+ *
+ *   - `invite`: new admin onboarding. Welcoming tone, "set your
+ *     password for the first time".
+ *   - `reset` : existing admin lost their password. Recovery tone,
+ *     "pick a new password".
+ *
+ * The `namespace` prop drives which i18n bundle to read from:
+ *
+ *   - `admin.auth.setPassword` for the invite flow
+ *   - `admin.auth.reset`       for the recovery flow
+ *
+ * Both bundles MUST expose the same key shape (title, intro,
+ * passwordLabel, confirmLabel, submit, submitting, backToLogin,
+ * errors.{invalidInput,mismatch,expiredSession,notAdmin,supabase}).
+ */
 
 const INITIAL_STATE: ResetState = { status: 'idle' };
 
-interface ResetPasswordFormProps {
+export type PasswordFormNamespace = 'admin.auth.setPassword' | 'admin.auth.reset';
+
+interface PasswordFormProps {
   locale: Locale;
+  namespace: PasswordFormNamespace;
 }
 
-export default function ResetPasswordForm({ locale }: ResetPasswordFormProps) {
-  const t = useTranslations('admin.auth.reset');
+export default function PasswordForm({ locale, namespace }: PasswordFormProps) {
+  const t = useTranslations(namespace);
   const [state, action, isPending] = useActionState(setNewPassword, INITIAL_STATE);
 
   return (
