@@ -89,11 +89,14 @@ export async function POST(request: NextRequest) {
     if (err instanceof BlobNotConfiguredError) {
       return NextResponse.json({ success: false, error: 'blob_not_configured' }, { status: 503 });
     }
+    const name = err instanceof Error ? err.name : 'UnknownError';
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes('invalid_payload')) {
       return NextResponse.json({ success: false, error: 'invalid_body' }, { status: 400 });
     }
-    console.warn('[POST /api/upload] handleUpload failed:', scrubPii(message));
+    // Log the error name alongside the message so a `BlobContentTypeNotAllowedError`,
+    // `BlobClientTokenExpiredError`, etc., is identifiable in the Vercel logs.
+    console.warn(`[POST /api/upload] handleUpload failed [${name}]:`, scrubPii(message));
     return NextResponse.json(
       { success: false, error: 'upload_failed' },
       // 400 is the right status for handleUpload errors per @vercel/blob docs —

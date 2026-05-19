@@ -58,6 +58,9 @@ export function MobileDrawer({ links, locale: _locale }: MobileDrawerProps) {
           )}
         />
         <Dialog.Content
+          // Drawer has a Title but no Description — opting out per Radix
+          // contract (sets the dialog's aria-describedby to nothing).
+          aria-describedby={undefined}
           className={cn(
             'bg-teal-forest-700 text-canvas fixed inset-y-0 end-0 z-50 flex w-72 max-w-[80vw] flex-col gap-8 p-8 shadow-2xl',
             'data-[state=open]:animate-in data-[state=open]:slide-in-from-end',

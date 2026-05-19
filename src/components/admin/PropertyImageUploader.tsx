@@ -114,9 +114,22 @@ export function PropertyImageUploader({ propertyId, nextPosition }: PropertyImag
       if (fileInputRef.current) fileInputRef.current.value = '';
       router.refresh();
     } catch (err) {
+      // Surface the @vercel/blob error class name (e.g.
+      // `BlobContentTypeNotAllowedError`, `BlobClientTokenExpiredError`,
+      // `BlobFileTooLargeError`) so the user can screenshot a real
+      // diagnostic to support. The plain `.message` alone collapses
+      // every error class to the same generic CORS/400 string.
+      const name = err instanceof Error ? err.name : 'UnknownError';
       const detail = err instanceof Error ? err.message : String(err);
-      console.warn('[PropertyImageUploader] upload failed:', detail);
-      setState({ kind: 'error', message: t('uploadError', { filename: file.name }) });
+      console.warn(
+        `[PropertyImageUploader] upload failed [${name}]:`,
+        detail,
+        err instanceof Error ? err.stack : undefined,
+      );
+      setState({
+        kind: 'error',
+        message: `${t('uploadError', { filename: file.name })} (${name})`,
+      });
     }
   }
 

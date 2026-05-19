@@ -100,11 +100,28 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     }
     return NextResponse.json({ success: true, data: updated });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (message.includes('duplicate key') || message.includes('properties_slug_key')) {
+    // Supabase PostgrestError is a plain object (not Error). Read its
+    // `code` field directly so the 23505 unique violation surfaces as
+    // a clean `slug_taken` 409 instead of a generic 500.
+    const pgError = err as { code?: string; message?: string; details?: string };
+    const pgCode = typeof pgError?.code === 'string' ? pgError.code : null;
+    const pgMessage =
+      typeof pgError?.message === 'string'
+        ? pgError.message
+        : err instanceof Error
+          ? err.message
+          : String(err);
+    if (
+      pgCode === '23505' ||
+      pgMessage.includes('duplicate key') ||
+      pgMessage.includes('properties_slug_key')
+    ) {
       return NextResponse.json({ success: false, error: 'slug_taken' }, { status: 409 });
     }
-    console.warn('[PATCH /api/properties/:id] update failed:', message);
+    console.warn(
+      '[PATCH /api/properties/:id] update failed:',
+      JSON.stringify({ code: pgCode, message: pgMessage, details: pgError?.details ?? null }),
+    );
     return NextResponse.json({ success: false, error: 'update_failed' }, { status: 500 });
   }
 }
