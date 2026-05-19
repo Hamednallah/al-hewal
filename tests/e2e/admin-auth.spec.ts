@@ -79,7 +79,10 @@ test.describe('admin password reset (PR phase-3-auth-password)', () => {
     // `expiredSession` if there's no Supabase cookie.
     await page.goto('/en/auth/reset-password');
     await expect(page.getByRole('heading', { level: 1, name: 'Set a new password' })).toBeVisible();
-    await expect(page.getByLabel('New password')).toBeVisible();
+    // `getByLabel` is non-exact by default — "New password" is a
+    // substring of "Confirm new password", so we need `exact: true`
+    // to keep this from resolving to 2 elements (strict-mode violation).
+    await expect(page.getByLabel('New password', { exact: true })).toBeVisible();
     await expect(page.getByLabel('Confirm new password')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Save password' })).toBeVisible();
   });
