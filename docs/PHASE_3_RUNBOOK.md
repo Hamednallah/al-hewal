@@ -234,3 +234,92 @@ drop type inquiry_type;
 ```
 
 Same `pnpm supabase db push` to ship the rollback.
+
+---
+
+## 6. Provisioning Vercel Blob (PR 3.5a — image upload)
+
+The admin property form's image upload (`/api/upload`) writes to Vercel
+Blob via the `@vercel/blob` SDK. Without a token configured the route
+returns **503 `blob_not_configured`** by design — admins see a real
+status, not a 500. Provisioning is a one-time setup per Vercel project.
+
+### Step 1 — Create a Blob store
+
+1. Open https://vercel.com/dashboard → select the **al-hewal** project.
+2. Click the **Storage** tab in the top nav.
+3. Click **Create Database** → choose **Blob** → click **Continue**.
+4. Name the store `al-hewal-images` → choose **Primary region** =
+   `Frankfurt (fra1)` (closest hop to Saudi visitors among the EU options).
+5. Click **Create**. Vercel auto-creates a `BLOB_READ_WRITE_TOKEN`
+   environment variable and links it to **all three Vercel environments**
+   (Development / Preview / Production) for this project.
+
+### Step 2 — Pull the token into your local `.env`
+
+Local `pnpm dev` needs the same token so admins can test uploads
+without a deployed preview. From the project root:
+
+```powershell
+# From d:\Work\Projects\AL-Hewal\al-hewal
+pnpm vercel env pull .env.local
+# Or, if .env is your local convention:
+pnpm vercel env pull .env
+```
+
+Either command writes every Vercel env var (including the new
+`BLOB_READ_WRITE_TOKEN`) into the file. The file is `.gitignored`.
+
+### Step 3 — Verify
+
+Quick sanity check that the env loader sees the token:
+
+```powershell
+pnpm exec node -e "console.log('token len:', (process.env.BLOB_READ_WRITE_TOKEN ?? '').length)"
+```
+
+Expect a length around 60+ characters (the token is a long
+`vercel_blob_rw_...` string). A `length: 0` means the env wasn't
+loaded — check the file path you pulled into.
+
+Then start the dev server and hit the route as an admin:
+
+```powershell
+pnpm dev
+# In another shell, with admin cookie set:
+# (the upload UI lands in PR 3.5b — for now this just confirms the gate)
+```
+
+The route should **stop returning 503** once the token is present —
+the next failure mode is the actual handleUpload + sharp pipeline,
+which only fires on a real client upload from PR 3.5b's UI.
+
+### Step 4 — Local-dev webhook caveat
+
+Vercel Blob's client-upload pattern delivers the **`onUploadCompleted`
+webhook** to your deployment URL. On `pnpm dev` that's
+`http://localhost:3000`, which Vercel **cannot reach**. The browser
+upload itself works locally; the post-upload sharp processing only
+fires once you test on a Vercel preview deployment or use a tunnel
+(e.g. `ngrok http 3000` and set its public URL as the callback).
+
+For PR 3.5a we accept this — the actual upload happy-path testing
+moves to a preview deployment when 3.5b's UI lands. CI's E2E suite
+only exercises the pre-Blob gates (auth, JSON validity, missing-token
+503), which work without a real token.
+
+### Free-tier sanity check
+
+Vercel Blob's Hobby plan includes **5 GB storage** and **100 GB
+bandwidth** per month. Each upload produces 2 stored variants (AVIF
+
+- WebP) capped at 2400 px longest edge ≈ ~150–500 KB combined per
+  photo. That headroom hosts ~5 000+ property photos comfortably.
+  Monitor in the Vercel dashboard → Storage → the store you created.
+
+### Rotating the token
+
+The `BLOB_READ_WRITE_TOKEN` rotates from the same Storage page in
+the Vercel dashboard (**Settings** → **Rotate token**). After
+rotation re-run `pnpm vercel env pull` locally. Production picks up
+the new token on the next deployment automatically.

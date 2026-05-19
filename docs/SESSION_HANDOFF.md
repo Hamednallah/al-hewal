@@ -25,10 +25,10 @@ shipped (v0.2.0).** Resume with **Phase 3 — Admin Command Center**.
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Repo       | https://github.com/Hamednallah/al-hewal                                                                                       |
 | Local      | `d:\Work\Projects\AL-Hewal\al-hewal\`                                                                                         |
-| Main HEAD  | PR #19 (Phase 3.4 — single-page property create/edit form + API) — merged as `907c278`                                        |
+| Main HEAD  | PR #20 (Phase 3.3b — row-action mutation routes + tier-aware UI) — merged as `cafd0d8`                                        |
 | Branch     | `main` (you should be on it; if not, `git checkout main && git pull --ff-only`)                                               |
 | Latest tag | `v0.2.1` (Phase 2 closeout — favicon + PWA manifest). `v0.3.0` is reserved for the end of Phase 3 per master-plan convention. |
-| Next PR    | **3.5 — Image upload pipeline** (`/api/upload` → Vercel Blob + sharp resize / AVIF + WebP / EXIF strip)                       |
+| Next PR    | **3.5b — Image upload UI** (drag-drop + reorder + alt_ar/en in PropertyForm, wired to the 3.5a backend on a preview deploy)   |
 
 ---
 
@@ -343,7 +343,64 @@ failureToast}` in both AR + EN.
   both call `revalidatePropertyPages(slug)` from `src/lib/cache.ts`
   on success.
 
-### PR 3.5 — Image upload pipeline
+### PR 3.5a — Image upload backend ✅ shipped
+
+- `src/lib/blob.ts` — thin `@vercel/blob` wrapper. Centralises the
+  `BLOB_READ_WRITE_TOKEN` lookup (read from `lib/env.ts`, not the
+  SDK's process.env default) and exposes a clean
+  `BlobNotConfiguredError` so the route can 503 cleanly when ops
+  haven't provisioned the store yet.
+- `src/lib/image-pipeline.ts` — server-side `sharp` pipeline:
+  EXIF-strip (sharp default), apply orientation via `.rotate()`, cap
+  longest edge at 2400 px, emit both an AVIF (q=65) and WebP (q=80)
+  variant in parallel + a 4x4 blurhash for inline LQIP. Hard caps:
+  25 MB byte limit, 50 MP pixel limit. Throws a typed
+  `ImagePipelineError` for the route to map to user copy in 3.5b.
+- `src/lib/validators/property-image.ts` — Zod schema for the
+  client-upload metadata (propertyId UUID, alt_ar/en non-empty,
+  position 0–99, allowlist-only contentType). Server re-validates
+  before sharp runs.
+- `src/app/api/upload/route.ts` — Vercel Blob `handleUpload`
+  pattern (`@vercel/blob/client`). Phase 1 (`onBeforeGenerateToken`):
+  admin auth + Zod parse + return a token scoped to ONE specific
+  content type. Phase 2 (`onUploadCompleted`): fetch the original,
+  run sharp, upload AVIF + WebP variants, insert
+  `property_images` row, delete the source. `withAudit`-equivalent
+  audit-log write in the success path. `maxDuration = 30s`.
+- Local-dev caveat: Vercel can't webhook `localhost`, so the
+  `onUploadCompleted` phase only fires on a preview deploy (or via
+  a tunnel). The pre-Blob gates work without a token — see the new
+  `tests/e2e/admin-upload.spec.ts` for what CI does cover.
+- Runbook: [`docs/PHASE_3_RUNBOOK.md`](PHASE_3_RUNBOOK.md) §6 walks
+  through the click-by-click Vercel Blob setup, token pull, local
+  verify, and the tunnel option for end-to-end testing.
+- Tests: 14 new specs — `image-pipeline.test.ts` (9 covering AVIF +
+  WebP encode, dimension preservation, blurhash format, EXIF strip
+  - 3 error branches), `property-image.test.ts` (validators), and 3
+    Playwright API-gate specs for `/api/upload` (401, invalid JSON,
+    503 missing token).
+- New dep: `@vercel/blob@2.4.0` (exact pin, ~7 transitive packages).
+  `sharp` + `blurhash` were already installed for `next/image` +
+  Phase 1's favicon generator. No new pnpm-workspace.yaml entries.
+
+### PR 3.5b — Image upload UI (next)
+
+- `src/components/admin/PropertyImageUploader.tsx` — drag-drop
+  zone (browser-native `dataTransfer.files`), file-type validation
+  mirror of the server allowlist, per-file progress, alt_ar/en
+  inline fields, and a hero/order picker.
+- Wire into `PropertyForm` (edit mode only — create flow first
+  needs a draft property row so `propertyId` exists; bootstrap that
+  via auto-save). Mark the image step inactive on `mode='create'`
+  with a "save the draft first" affordance.
+- Update `property_images` writes to capture WebP sibling URL
+  (today PR 3.5a stores only the AVIF URL; the row needs both for
+  the public `<picture>` to render the WebP fallback). Decide:
+  schema column vs. naming convention.
+- Tests: Playwright happy-path against a preview deployment with
+  the token set; unit tests for the file-type/size client checks.
+
+### PR 3.5 (legacy spec — superseded by 3.5a + 3.5b above)
 
 - `src/app/api/upload/route.ts` — issues signed Vercel Blob URL,
   receives the file, runs `sharp`: resize (max 2400px), AVIF + WebP
