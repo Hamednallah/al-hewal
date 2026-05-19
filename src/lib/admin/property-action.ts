@@ -78,16 +78,27 @@ export async function handlePropertyAction(
     }
     return NextResponse.json({ success: true, data: { id, slug: result.slug } });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
+    // PostgrestError shape (not an Error instance): { code, message, details, hint }
+    const pgError = err as { code?: string; message?: string; details?: string };
+    const pgCode = typeof pgError?.code === 'string' ? pgError.code : null;
+    const message =
+      typeof pgError?.message === 'string'
+        ? pgError.message
+        : err instanceof Error
+          ? err.message
+          : String(err);
     // Audit the failure too so admins can see attempted-but-failed actions.
     await writeAuditLog({
       actorId: admin.sub,
       action: config.auditAction,
       entity: 'property',
       entityId: id,
-      diff: { error: scrubPii(message) },
+      diff: { error: scrubPii(message), code: pgCode },
     });
-    console.warn(`[property-action:${config.auditAction}] failed:`, message);
+    console.warn(
+      `[property-action:${config.auditAction}] failed:`,
+      JSON.stringify({ code: pgCode, message, details: pgError?.details ?? null }),
+    );
     return NextResponse.json({ success: false, error: 'mutation_failed' }, { status: 500 });
   }
 }

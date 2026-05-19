@@ -57,6 +57,9 @@ export function AdminMobileMenu({ openLabel, closeLabel, title, children }: Admi
           )}
         />
         <Dialog.Content
+          // Drawer has a Title but no Description — opting out per Radix
+          // contract (sets the dialog's aria-describedby to nothing).
+          aria-describedby={undefined}
           className={cn(
             'fixed inset-y-0 start-0 z-50 flex w-72 max-w-[80vw] flex-col shadow-2xl',
             'data-[state=open]:animate-in data-[state=open]:slide-in-from-start',

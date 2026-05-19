@@ -11,8 +11,8 @@ import { MobileContactBar } from '@/components/public/property-detail/MobileCont
 import { Specs } from '@/components/public/property-detail/Specs';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
-import { type Locale, routing } from '@/i18n/routing';
-import { getPropertyBySlug, listLivePropertySlugs } from '@/lib/data/properties';
+import { type Locale } from '@/i18n/routing';
+import { getPropertyBySlug } from '@/lib/data/properties';
 import { env } from '@/lib/env';
 import { formatPrice } from '@/lib/format';
 
@@ -34,24 +34,18 @@ import { formatPrice } from '@/lib/format';
  * Results can verify it. Required fields: name, description, address,
  * geo, image, offers (with priceCurrency=SAR).
  */
-// 60s gives the publish → catalog cycle a tight feedback loop without
-// hammering Supabase. Previously 86400 (24h), which also cached the
-// 404 response for newly-published rows: a visitor who hit the URL
-// while the property was still a draft would get the cached 404 served
-// from the CDN for a full day, and `revalidatePath` from `/publish`
-// didn't always evict it in time. 60s sidesteps that cleanly.
-export const revalidate = 60;
-export const dynamicParams = true;
+// force-dynamic, not ISR. Earlier we used revalidate=86400 then 60s,
+// but both still cached the 404 response for newly-published rows: a
+// visitor who hit the URL while the property was still a draft (RLS
+// hides drafts from anon) would get a cached 404 served from the CDN
+// edge — and `revalidatePath` from `/publish` did not reliably evict
+// the cached miss. At Al Hewal's scale (~50 properties, modest KSA
+// traffic) the extra function invocations are well inside the 100k/mo
+// free tier, and the trade is worth eliminating the "I just published
+// but the URL still 404s" papercut entirely.
+export const dynamic = 'force-dynamic';
 
 type PageParams = { locale: string; slug: string };
-
-export async function generateStaticParams() {
-  const slugs = await listLivePropertySlugs();
-  // Pre-render every locale × every slug combination. If Supabase is
-  // unreachable at build, returns []; Next still serves the route on
-  // demand via the dynamic ISR fallback.
-  return routing.locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
-}
 
 export async function generateMetadata({
   params,

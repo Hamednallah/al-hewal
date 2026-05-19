@@ -92,11 +92,31 @@ export async function POST(req: NextRequest) {
     await revalidatePropertyPages(created.slug);
     return NextResponse.json({ success: true, data: created }, { status: 201 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (message.includes('duplicate key') || message.includes('properties_slug_key')) {
+    // Supabase PostgrestError is a plain object (not an Error instance) with
+    // `code` / `message` / `details` / `hint`. Earlier code only inspected
+    // `err.message`, which collapsed to `[object Object]` for these
+    // PostgrestErrors and prevented us from detecting the 23505 unique
+    // violation — admins saw a generic 500 instead of the proper
+    // `slug_taken` 409. Read the postgres error fields directly.
+    const pgError = err as { code?: string; message?: string; details?: string };
+    const pgCode = typeof pgError?.code === 'string' ? pgError.code : null;
+    const pgMessage =
+      typeof pgError?.message === 'string'
+        ? pgError.message
+        : err instanceof Error
+          ? err.message
+          : String(err);
+    if (
+      pgCode === '23505' ||
+      pgMessage.includes('duplicate key') ||
+      pgMessage.includes('properties_slug_key')
+    ) {
       return NextResponse.json({ success: false, error: 'slug_taken' }, { status: 409 });
     }
-    console.warn('[POST /api/properties] insert failed:', message);
+    console.warn(
+      '[POST /api/properties] insert failed:',
+      JSON.stringify({ code: pgCode, message: pgMessage, details: pgError?.details ?? null }),
+    );
     return NextResponse.json({ success: false, error: 'insert_failed' }, { status: 500 });
   }
 }
