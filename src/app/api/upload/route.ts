@@ -199,6 +199,22 @@ export async function POST(request: NextRequest) {
         : err instanceof Error
           ? err.message
           : String(err);
+
+    // Vercel Blob: the store was provisioned with `private` access but
+    // our `uploadToBlob` requests `access: 'public'` (catalog images are
+    // public). Access mode is set at store creation and cannot be
+    // changed in place — the owner has to delete the private store and
+    // recreate it as public. See docs/PHASE_3_RUNBOOK.md §6 for the
+    // walk-through. Surfacing as a distinct 503 + error code so the
+    // admin chip reads "Blob store is private; ask the owner to recreate
+    // it with public access" instead of a generic "upload_failed".
+    if (message.includes('private store') || message.includes('private access')) {
+      console.warn(
+        `[POST /api/upload] blob_store_not_public — recreate the Vercel Blob store with PUBLIC access per docs/PHASE_3_RUNBOOK.md §6.`,
+      );
+      return NextResponse.json({ success: false, error: 'blob_store_not_public' }, { status: 503 });
+    }
+
     console.warn(
       `[POST /api/upload] failed [${name}]:`,
       JSON.stringify({ code: pgCode, message: scrubPii(message) }),
