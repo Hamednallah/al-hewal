@@ -215,6 +215,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'blob_store_not_public' }, { status: 503 });
     }
 
+    // Vercel Blob: the token in the env points at a store that no longer
+    // exists. Owner has typically just recreated the store (e.g. to flip
+    // it from private → public) and Production / Preview still carries
+    // the old store's token. See docs/PHASE_3_RUNBOOK.md §6 "Recovery"
+    // for the click-by-click env reset.
+    if (message.includes('store does not exist') || message.includes('store_not_found')) {
+      console.warn(
+        `[POST /api/upload] blob_store_not_found — BLOB_READ_WRITE_TOKEN points at a missing store. Reconnect the Vercel Blob store to the project in the dashboard env vars and redeploy. See docs/PHASE_3_RUNBOOK.md §6.`,
+      );
+      return NextResponse.json({ success: false, error: 'blob_store_not_found' }, { status: 503 });
+    }
+
     console.warn(
       `[POST /api/upload] failed [${name}]:`,
       JSON.stringify({ code: pgCode, message: scrubPii(message) }),

@@ -313,6 +313,38 @@ Recovery:
 No data loss to worry about — the store was empty (the upload bug
 prevented any blobs from being written in the first place).
 
+#### Recovery: "Vercel Blob: This store does not exist."
+
+After deleting + recreating the store, the upload chip / Vercel
+runtime log shows:
+
+```
+[POST /api/upload] failed [Error]: {"code":null,"message":"Vercel Blob:
+This store does not exist."}
+```
+
+…and the chip reads `(blob_store_not_found)`. The
+`BLOB_READ_WRITE_TOKEN` that production is using points at the
+deleted store. Setting `.env` / `.env.local` locally does NOT touch
+what Production serves.
+
+**Fix it from the Vercel dashboard:**
+
+1. Project → **Settings** → **Environment Variables**.
+2. Find every `BLOB_READ_WRITE_TOKEN` row. If multiple exist (one
+   per store create), **delete every row** (every scope).
+3. Project → **Storage** → the new `al-hewal-images` store →
+   **Connect Project** → al-hewal. Vercel re-issues a fresh token
+   and links it to Production / Preview / Development automatically.
+4. Project → **Deployments** → latest → **⋯** → **Redeploy** →
+   uncheck "Use existing Build Cache" → confirm. The new token only
+   takes effect on a deploy.
+5. Locally, re-run `pnpm vercel env pull .env.local` so dev matches
+   prod.
+
+The next upload either succeeds with a 200 OR the chip reports a
+different error code that pinpoints the next layer.
+
 ### Step 2 — Pull the token into your local `.env`
 
 Local `pnpm dev` needs the same token so admins can test uploads
