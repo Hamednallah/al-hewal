@@ -46,10 +46,13 @@ export async function requestPasswordReset(
     return { status: 'error', errorKey: 'invalidEmail' };
   }
 
-  const redirectTo = new URL(
-    `/${parsed.data.locale}/auth/reset-password`,
-    env.NEXT_PUBLIC_SITE_URL,
-  );
+  // Route the recovery email through `/auth/recovery` (Route Handler)
+  // so the PKCE code exchange happens where Supabase's cookie writes
+  // are honoured. The handler forwards to
+  // `/<locale>/auth/reset-password` once the session is established.
+  // See `src/app/auth/recovery/route.ts` for the root-cause writeup.
+  const redirectTo = new URL('/auth/recovery', env.NEXT_PUBLIC_SITE_URL);
+  redirectTo.searchParams.set('locale', parsed.data.locale);
 
   try {
     const supabase = await createSupabaseServerClient();
