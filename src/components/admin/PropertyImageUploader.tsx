@@ -1,6 +1,5 @@
 'use client';
 
-import { upload } from '@vercel/blob/client';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useId, useRef, useState } from 'react';
@@ -12,23 +11,25 @@ import { cn } from '@/lib/utils';
 
 /**
  * Drag-and-drop image uploader for the admin property edit form
- * (PR 3.5b).
+ * (PR 3.5d).
  *
- * Talks to Vercel Blob's client-upload helper (`@vercel/blob/client#upload`)
- * which:
- *   1. POSTs metadata to `/api/upload` (our route runs Phase 1 of
- *      `handleUpload` and returns a signed token).
- *   2. PUTs the file bytes directly from the browser to Vercel Blob.
- *   3. Pings `/api/upload` again so Phase 2 (sharp + DB insert) runs
- *      server-side. In production the webhook is delivered by Vercel
- *      Blob automatically; in `pnpm dev` it never reaches localhost
- *      (see docs/PHASE_3_RUNBOOK.md §6).
+ * POSTs `multipart/form-data` directly to `/api/upload`. The server
+ * route runs the sharp pipeline + uploads both AVIF/WebP variants to
+ * Vercel Blob + inserts the `property_images` row in one shot. On
+ * success the form calls `router.refresh()` so the parent server-
+ * component grid re-fetches the new row.
+ *
+ * Why not `@vercel/blob/client#upload`: the two-phase client-upload
+ * flow (PR 3.5a) failed in production — the browser PUT to
+ * `vercel.com/api/blob` returned an opaque CORS-shaped 400 with no
+ * actionable error class. The `property_images` table and Blob store
+ * stayed empty end-to-end. The server-side path eliminates the
+ * webhook dance entirely; the row + Blob files exist iff the response
+ * is 200.
  *
  * Why only one file at a time: each upload needs distinct alt_ar/en
  * (a11y requirement on the public catalog). A multi-file batch form
- * with per-file alt inputs is queued for PR 3.5c. Today the form
- * captures one file + its alts, uploads, then router.refresh()es so
- * the parent server-rendered grid picks up the new row.
+ * with per-file alt inputs is queued for PR 3.5c.
  */
 
 interface PropertyImageUploaderProps {
@@ -88,44 +89,43 @@ export function PropertyImageUploader({ propertyId, nextPosition }: PropertyImag
       return;
     }
     const file = state.file;
-    const mime = state.mime;
     setState({ kind: 'uploading', file });
     try {
-      await upload(file.name, file, {
-        access: 'public',
-        handleUploadUrl: '/api/upload',
-        contentType: mime,
-        clientPayload: JSON.stringify({
-          propertyId,
-          alt_ar: altAr.trim(),
-          alt_en: altEn.trim(),
-          position: nextPosition,
-          filename: file.name,
-          contentType: mime,
-        }),
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('propertyId', propertyId);
+      formData.append('alt_ar', altAr.trim());
+      formData.append('alt_en', altEn.trim());
+      formData.append('position', String(nextPosition));
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
       });
+
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        const errorCode = body.error ?? `http_${res.status}`;
+        console.warn(`[PropertyImageUploader] upload failed [${errorCode}] status=${res.status}`);
+        setState({
+          kind: 'error',
+          message: `${t('uploadError', { filename: file.name })} (${errorCode})`,
+        });
+        return;
+      }
+
       // Reset, then trigger the parent server component to re-fetch
-      // the images list. The new row may not be in the DB yet (the
-      // webhook is async); router.refresh() also re-runs whenever
-      // the admin returns to the form, so we accept the small race.
+      // the images list. router.refresh() re-runs the server render
+      // with `force-dynamic`, so the new row appears immediately.
       setAltAr('');
       setAltEn('');
       setState({ kind: 'idle' });
       if (fileInputRef.current) fileInputRef.current.value = '';
       router.refresh();
     } catch (err) {
-      // Surface the @vercel/blob error class name (e.g.
-      // `BlobContentTypeNotAllowedError`, `BlobClientTokenExpiredError`,
-      // `BlobFileTooLargeError`) so the user can screenshot a real
-      // diagnostic to support. The plain `.message` alone collapses
-      // every error class to the same generic CORS/400 string.
       const name = err instanceof Error ? err.name : 'UnknownError';
       const detail = err instanceof Error ? err.message : String(err);
-      console.warn(
-        `[PropertyImageUploader] upload failed [${name}]:`,
-        detail,
-        err instanceof Error ? err.stack : undefined,
-      );
+      console.warn(`[PropertyImageUploader] upload failed [${name}]:`, detail);
       setState({
         kind: 'error',
         message: `${t('uploadError', { filename: file.name })} (${name})`,
