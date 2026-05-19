@@ -60,6 +60,7 @@ export default defineConfig({
         'src/components/public/PropertyCard.tsx',
         'src/components/public/FilterBar.tsx',
         'src/components/public/Pagination.tsx',
+        'src/components/public/LangSwitcher.tsx',
         // PR 2.9 — contact-form client component is fully covered by
         // Playwright in tests/e2e/public-pages.spec.ts (renders form,
         // surfaces inline errors, submits to /api/leads). Unit testing
@@ -83,6 +84,16 @@ export default defineConfig({
         'src/lib/audit.ts',
         'src/lib/ratelimit.ts',
         'src/lib/cache.ts',
+        'src/lib/blob.ts',
+        // PR phase-3-auth-password — establishAdminSession integrates
+        // service-role Supabase + cookies(); covered end-to-end via the
+        // admin-auth Playwright specs. A vitest unit test would only
+        // assert on mocks of those dependencies.
+        'src/lib/auth/establish-session.ts',
+        // Server actions are integration-heavy by definition (form
+        // submission + Supabase + cookies + redirect); they are covered
+        // by the admin-auth + admin-property-* Playwright specs.
+        'src/app/**/actions.{ts,tsx}',
         'src/app/**/{layout,page,not-found,error,global-error,opengraph-image,sitemap,robots,manifest}.{ts,tsx}',
         'src/app/**/route.{ts,tsx}',
       ],

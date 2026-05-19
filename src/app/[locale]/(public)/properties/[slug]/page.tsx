@@ -34,7 +34,13 @@ import { formatPrice } from '@/lib/format';
  * Results can verify it. Required fields: name, description, address,
  * geo, image, offers (with priceCurrency=SAR).
  */
-export const revalidate = 86400; // 24h
+// 60s gives the publish → catalog cycle a tight feedback loop without
+// hammering Supabase. Previously 86400 (24h), which also cached the
+// 404 response for newly-published rows: a visitor who hit the URL
+// while the property was still a draft would get the cached 404 served
+// from the CDN for a full day, and `revalidatePath` from `/publish`
+// didn't always evict it in time. 60s sidesteps that cleanly.
+export const revalidate = 60;
 export const dynamicParams = true;
 
 type PageParams = { locale: string; slug: string };
