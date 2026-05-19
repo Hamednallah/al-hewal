@@ -18,34 +18,53 @@ That keeps drive-by visitors from seeding accounts, but it also means the
 first super-admin must be created manually. Do this once per environment
 (local Supabase, then production).
 
-### Step 1 — Add the user to `auth.users`
+### Step 1 — Add the user to `auth.users` (with a password)
 
-Two paths:
+> **Updated for the email + password flow (PR phase-3-auth-password).**
+> Magic-link OTP is deprecated; admins sign in with email + password.
+> Supabase's invite email is no longer part of the bootstrap path
+> because Supabase Hobby SMTP is unreliable — set the password directly
+> via SQL and hand the credentials to the admin out of band.
 
-**Easier path — Supabase Studio.**
+**Recommended — Supabase Studio → Add user → Create new user.**
 
 1. Open <https://supabase.com/dashboard/project/gvjmnwsqaymkxcsabjur/auth/users>
-   (or your local Studio at <http://localhost:54323> for Docker Supabase).
-2. Click **Add user → Send invitation** (the green "Send Invitation" button).
-3. Enter the admin's email address (e.g. `owner@al-hewal.sa`). Leave
-   "Auto-confirm user" checked.
-4. Submit. Supabase emails them a sign-in link. **Copy the new user's UUID
-   from the user list** — you need it for step 2.
+   (or local Studio at <http://localhost:54323>).
+2. Click **Add user → Create new user** (NOT "Send Invitation").
+3. Fill the form:
+   - **Email**: `owner@al-hewal.sa`
+   - **Password**: a strong one — share via your password manager / encrypted channel
+   - **Auto-confirm user**: ✅ checked
+4. Submit. **Copy the new user's UUID** from the users list — you'll need it for step 2.
 
 **Power-user path — SQL.**
 
 ```sql
--- Run in Supabase SQL Editor. Replace the email.
-insert into auth.users (id, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data)
+-- Run in Supabase SQL Editor. Replace the email + password.
+insert into auth.users (id, email, email_confirmed_at, encrypted_password,
+                        raw_app_meta_data, raw_user_meta_data)
 values (
   gen_random_uuid(),
   'owner@al-hewal.sa',
   now(),
-  '{"provider":"email"}'::jsonb,
+  extensions.crypt('ReplaceWithStrongPassword!', extensions.gen_salt('bf')),
+  '{"provider":"email","providers":["email"]}'::jsonb,
   '{}'::jsonb
 )
 returning id, email;
 ```
+
+**Resetting an existing admin's password (no email required).**
+
+```sql
+update auth.users
+   set encrypted_password = extensions.crypt('NewStrongPassword!', extensions.gen_salt('bf')),
+       email_confirmed_at = coalesce(email_confirmed_at, now())
+ where email = 'owner@al-hewal.sa';
+```
+
+This is the canonical recovery path when the admin can't receive
+email — bypasses Supabase SMTP entirely.
 
 ### Step 2 — Insert the matching `public.admins` row
 
@@ -68,20 +87,27 @@ values (
 ### Step 3 — First sign-in
 
 1. Visit `/<locale>/auth/login` (e.g. `https://al-hewal.com/ar/auth/login`).
-2. Enter the email. Submit.
-3. Open the mail Supabase sent and click the magic link.
-4. The link hits `/auth/callback?code=…`, which exchanges the OTP for a
-   Supabase session, looks up the `public.admins` row, signs our HMAC
-   session cookie (1-hour TTL), and redirects to `/<locale>/admin`.
+2. Enter the email + password set in step 1. Submit.
+3. The action calls `supabase.auth.signInWithPassword`, looks up the
+   `public.admins` row, signs the HMAC session cookie (1-hour TTL),
+   and redirects to `/<locale>/admin`.
 
-If anything goes wrong, the callback redirects back to the login page with
-`?error=<key>` so the user sees the right message:
+If anything goes wrong, the form surfaces an inline error:
 
-| `error` query     | Cause                                    | Fix                |
-| ----------------- | ---------------------------------------- | ------------------ |
-| `callbackInvalid` | OTP code missing or already consumed     | Request a new link |
-| `callbackExpired` | Magic link older than ~1 hour            | Request a new link |
-| `notAdmin`        | Authenticated but no active `admins` row | Repeat step 2      |
+| Error key          | Cause                                           | Fix                                        |
+| ------------------ | ----------------------------------------------- | ------------------------------------------ |
+| `wrongCredentials` | Email or password incorrect                     | Re-enter; reset via SQL above if forgotten |
+| `notAdmin`         | Authenticated but no active `public.admins` row | Re-run step 2                              |
+| `supabase`         | Network / Supabase outage                       | Retry; check Vercel logs                   |
+
+If the admin **forgets the password**, two recovery options:
+
+1. **`/<locale>/auth/forgot`** — Supabase emails them a reset link.
+   Subject to the same SMTP-reliability issues noted above; OK for
+   occasional self-service when email is working.
+2. **SQL reset** (from step 1's "Resetting an existing admin's
+   password" snippet) — bypasses email entirely. Use this when SMTP
+   is flaky.
 
 ### Step 4 — Subsequent admins (after PR 3.4)
 

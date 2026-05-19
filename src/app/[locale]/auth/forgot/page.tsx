@@ -1,51 +1,33 @@
 import type { Metadata } from 'next';
-import { getTranslations, setRequestLocale } from 'next-intl/server';
-import { notFound } from 'next/navigation';
-import Link from 'next/link';
 import { hasLocale } from 'next-intl';
+import { getTranslations, setRequestLocale } from 'next-intl/server';
+import Link from 'next/link';
+import { notFound } from 'next/navigation';
 
-import { routing } from '@/i18n/routing';
+import { type Locale, routing } from '@/i18n/routing';
 
-import LoginForm from './LoginForm';
-import type { LoginErrorKey } from './actions';
+import ForgotForm from './ForgotForm';
 
 export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ next?: string; error?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
-  const t = await getTranslations({ locale, namespace: 'admin.auth.login' });
+  const t = await getTranslations({ locale, namespace: 'admin.auth.forgot' });
   return {
     title: t('title'),
     robots: { index: false, follow: false },
   };
 }
 
-const ALLOWED_ERRORS = new Set<string>([
-  'invalidInput',
-  'wrongCredentials',
-  'supabase',
-  'notAdmin',
-  'callbackInvalid',
-  'callbackExpired',
-]);
-
-export default async function LoginPage({ params, searchParams }: PageProps) {
+export default async function ForgotPage({ params }: PageProps) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
-
-  const { next, error } = await searchParams;
-  const sanitizedNext = next && next.startsWith('/') && !next.startsWith('//') ? next : undefined;
-  const initialError =
-    error && ALLOWED_ERRORS.has(error)
-      ? (error as LoginErrorKey | 'callbackInvalid' | 'callbackExpired')
-      : undefined;
 
   return (
     <main className="bg-teal-forest text-canvas min-h-screen">
@@ -57,7 +39,7 @@ export default async function LoginPage({ params, searchParams }: PageProps) {
           ← Al Hewal
         </Link>
         <div className="border-canvas/15 bg-teal-forest-800/50 border p-8 shadow-2xl">
-          <LoginForm next={sanitizedNext} initialError={initialError} />
+          <ForgotForm locale={locale as Locale} />
         </div>
       </div>
     </main>

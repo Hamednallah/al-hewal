@@ -37,9 +37,13 @@ describe('admin session cookie', () => {
     expect(dot).toBeGreaterThan(0);
     const payloadB64 = token.slice(0, dot);
     const sig = token.slice(dot + 1);
-    // Flip the LAST character of the payload section. Even if the JSON
-    // happens to still parse, the signature won't match.
-    const tampered = payloadB64.slice(0, -1) + (payloadB64.slice(-1) === 'a' ? 'b' : 'a');
+    // Flip the FIRST character of the payload section. (Tampering the
+    // LAST char is unreliable: base64url's final char of a non-padded
+    // string encodes only 2-4 significant bits + padding bits — so
+    // flipping `a` ↔ `b` can produce the SAME decoded byte sequence,
+    // leaving the HMAC valid. The first char always encodes a full 6
+    // significant bits.)
+    const tampered = (payloadB64.charAt(0) === 'a' ? 'b' : 'a') + payloadB64.slice(1);
     const result = await verifyAdminSession(`${tampered}.${sig}`);
     expect(result).toBeNull();
   });
@@ -50,7 +54,9 @@ describe('admin session cookie', () => {
     expect(dot).toBeGreaterThan(0);
     const payloadB64 = token.slice(0, dot);
     const sig = token.slice(dot + 1);
-    const tamperedSig = sig.slice(0, -1) + (sig.slice(-1) === 'a' ? 'b' : 'a');
+    // Same first-char trick as above — see the comment on the
+    // tampered-payload test for the base64url-padding gotcha.
+    const tamperedSig = (sig.charAt(0) === 'a' ? 'b' : 'a') + sig.slice(1);
     const result = await verifyAdminSession(`${payloadB64}.${tamperedSig}`);
     expect(result).toBeNull();
   });

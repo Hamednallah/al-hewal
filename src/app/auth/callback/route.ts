@@ -1,14 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server';
 
 import { routing, type Locale } from '@/i18n/routing';
-import {
-  ADMIN_SESSION_COOKIE_NAME,
-  ADMIN_SESSION_TTL_SECONDS,
-  signAdminSession,
-  type AdminStatus,
-  type AdminTier,
-} from '@/lib/auth/session';
-import { getSupabaseAdminClient } from '@/lib/supabase/admin';
+import { establishAdminSession } from '@/lib/auth/establish-session';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -35,16 +28,18 @@ function loginRedirect(req: NextRequest, locale: Locale, error: string) {
 }
 
 /**
- * GET /auth/callback?code=<supabase-otp-code>&next=<post-login-path>
+ * GET /auth/callback?code=<supabase-code>&next=<post-login-path>
  *
- * Magic-link landing handler. Exchanges the Supabase one-time code for a
- * session, looks up the `admins` row by `auth.users.id`, refuses the request
- * if no row exists or the admin is not `active`, and otherwise signs our
- * HMAC session cookie (5-min admin cache spec; currently 1h — see
- * `lib/auth/session.ts`) and redirects to the requested next URL.
+ * Legacy magic-link landing handler. The primary admin auth flow is
+ * email + password (`/<locale>/auth/login`) and the password-reset flow
+ * goes directly to `/<locale>/auth/reset-password?code=...` (configured
+ * in `resetPasswordForEmail`'s `redirectTo`). This route remains so
+ * any pre-existing magic-link emails out in the wild still resolve to
+ * a working session.
  *
- * Always runs in the Node runtime — the admin Supabase client (service-role)
- * is not Edge-safe. The redirect target IS Edge-cached by Next.
+ * Delegates session establishment to `establishAdminSession` so the
+ * admin lookup + tier/status gate + HMAC cookie sign + last_login_at
+ * stamp can't drift from the password-login server action.
  */
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -65,65 +60,17 @@ export async function GET(req: NextRequest) {
     return loginRedirect(req, locale, 'callbackExpired');
   }
 
-  let adminRow: { id: string; email: string; tier: AdminTier; status: AdminStatus } | null = null;
-  try {
-    const admin = getSupabaseAdminClient();
-    const { data, error } = await admin
-      .from('admins')
-      .select('id, email, tier, status')
-      .eq('id', exchange.user.id)
-      .maybeSingle();
-    if (error) {
-      console.error('[auth/callback] admin lookup failed:', error.message);
-      await supabase.auth.signOut();
-      return loginRedirect(req, locale, 'callbackInvalid');
-    }
-    if (data) {
-      adminRow = data as { id: string; email: string; tier: AdminTier; status: AdminStatus };
-    }
-  } catch (err) {
-    console.error('[auth/callback] admin lookup threw:', err instanceof Error ? err.message : err);
+  const session = await establishAdminSession(exchange.user.id);
+  if (!session.ok) {
+    // Authenticated by Supabase but not an active admin — tear down
+    // the Supabase session so a stale cookie can't hold a foothold.
     await supabase.auth.signOut();
-    return loginRedirect(req, locale, 'callbackInvalid');
-  }
-
-  if (!adminRow || adminRow.status !== 'active') {
-    // Authenticated by Supabase but not an active admin — bounce out and
-    // tear down the auth.users session so a stale Supabase cookie can't
-    // hold a foothold on the site.
-    await supabase.auth.signOut();
-    return loginRedirect(req, locale, 'notAdmin');
-  }
-
-  // Best-effort: stamp last_login_at. Don't block the redirect on its
-  // success — RLS bypass via service role means it shouldn't fail, but if
-  // it does, the user can still sign in.
-  try {
-    await getSupabaseAdminClient()
-      .from('admins')
-      .update({ last_login_at: new Date().toISOString() })
-      .eq('id', adminRow.id);
-  } catch (err) {
-    console.warn(
-      '[auth/callback] last_login_at update non-fatal:',
-      err instanceof Error ? err.message : err,
+    return loginRedirect(
+      req,
+      locale,
+      session.reason === 'notAdmin' ? 'notAdmin' : 'callbackInvalid',
     );
   }
 
-  const cookieValue = await signAdminSession({
-    sub: adminRow.id,
-    email: adminRow.email,
-    tier: adminRow.tier,
-    status: adminRow.status,
-  });
-
-  const response = NextResponse.redirect(new URL(next, req.url));
-  response.cookies.set(ADMIN_SESSION_COOKIE_NAME, cookieValue, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: ADMIN_SESSION_TTL_SECONDS,
-  });
-  return response;
+  return NextResponse.redirect(new URL(next, req.url));
 }

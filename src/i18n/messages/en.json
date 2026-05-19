@@ -468,21 +468,51 @@
     "auth": {
       "login": {
         "title": "Admin sign-in",
-        "intro": "Enter your administrator email. We'll send you a one-time sign-in link — no password required.",
+        "intro": "Enter your administrator email and password.",
         "emailLabel": "Email address",
         "emailPlaceholder": "you@al-hewal.sa",
-        "submit": "Email me a sign-in link",
+        "passwordLabel": "Password",
+        "submit": "Sign in",
+        "submitting": "Signing in…",
+        "forgotPassword": "Forgot your password?",
+        "errors": {
+          "invalidInput": "Please enter a valid email and a password of at least 6 characters.",
+          "wrongCredentials": "Email or password is incorrect.",
+          "supabase": "We couldn't sign you in right now. Please try again in a moment.",
+          "notAdmin": "This email isn't registered as an Al Hewal administrator. Contact your super admin if this is unexpected.",
+          "callbackInvalid": "That recovery link is no longer valid. Please request a new one.",
+          "callbackExpired": "That recovery link has expired. Please request a new one."
+        }
+      },
+      "forgot": {
+        "title": "Reset your password",
+        "intro": "Enter the email registered as an Al Hewal administrator and we'll send you a reset link.",
+        "emailLabel": "Email address",
+        "emailPlaceholder": "you@al-hewal.sa",
+        "submit": "Email me a reset link",
         "submitting": "Sending…",
         "sentTitle": "Check your inbox",
-        "sentBody": "If {email} is registered as an Al Hewal administrator, a sign-in link is on its way. The link expires in one hour.",
-        "tryAnother": "Use a different email",
+        "sentBody": "If {email} is registered as an Al Hewal administrator, a password reset link is on its way. The link is single-use and expires after a short while.",
+        "backToLogin": "Back to sign-in",
         "errors": {
           "invalidEmail": "Please enter a valid email address.",
-          "rateLimited": "Too many attempts. Please wait a minute and try again.",
-          "supabase": "We couldn't send the link right now. Please try again in a moment.",
-          "notAdmin": "This email isn't registered as an Al Hewal administrator. Contact your super admin if this is unexpected.",
-          "callbackInvalid": "That sign-in link is no longer valid. Please request a new one.",
-          "callbackExpired": "That sign-in link has expired. Please request a new one."
+          "supabase": "We couldn't send the reset link right now. Please try again in a moment."
+        }
+      },
+      "reset": {
+        "title": "Set a new password",
+        "intro": "Choose a new password for your Al Hewal administrator account. Minimum 8 characters.",
+        "passwordLabel": "New password",
+        "confirmLabel": "Confirm new password",
+        "submit": "Save password",
+        "submitting": "Saving…",
+        "backToLogin": "Back to sign-in",
+        "errors": {
+          "invalidInput": "Please enter a password of at least 8 characters in both fields.",
+          "mismatch": "The two passwords don't match.",
+          "expiredSession": "Your reset session has expired. Request a new reset email.",
+          "notAdmin": "This account isn't registered as an Al Hewal administrator.",
+          "supabase": "We couldn't save the new password. Please try again."
         }
       },
       "callback": {

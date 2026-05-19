@@ -25,10 +25,10 @@ shipped (v0.2.0).** Resume with **Phase 3 — Admin Command Center**.
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Repo       | https://github.com/Hamednallah/al-hewal                                                                                       |
 | Local      | `d:\Work\Projects\AL-Hewal\al-hewal\`                                                                                         |
-| Main HEAD  | PR #21 (Phase 3.5a — `/api/upload` + sharp pipeline + Vercel Blob wrapper) — merged as `8f69a57`                              |
+| Main HEAD  | PR #23 (Phase 3 UX papercuts — plain copy, teal sidebar, lang switcher, draft banner, card listings) — merged                 |
 | Branch     | `main` (you should be on it; if not, `git checkout main && git pull --ff-only`)                                               |
 | Latest tag | `v0.2.1` (Phase 2 closeout — favicon + PWA manifest). `v0.3.0` is reserved for the end of Phase 3 per master-plan convention. |
-| Next PR    | **3.5c — Reorder + hero pick** (drag-to-reorder, set hero image, schema `properties.hero_image_id` already exists from 0001)  |
+| Next PR    | **Admin Management UI + invite flow** (super_admin can add admins from the app; new admins set password on the invite link)   |
 
 ---
 

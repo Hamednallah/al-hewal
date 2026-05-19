@@ -77,6 +77,11 @@ const config = [
     //  - src/lib/admin/** — PR 3.3b shared HOF for row-action route
     //    handlers (handlePropertyAction). Same service-role rationale
     //    as the API routes that delegate to it.
+    //  - src/lib/auth/establish-session.ts (and any future
+    //    src/lib/auth/* helper) — turns a Supabase auth.users id into
+    //    the admin row + signs the HMAC session cookie; needs
+    //    service-role to bypass RLS for the admins table lookup +
+    //    last_login_at stamp.
     files: [
       'src/lib/supabase/admin.ts',
       'src/lib/audit.ts',
@@ -84,6 +89,7 @@ const config = [
       'src/app/**/route.ts',
       'src/lib/data/admin-*.ts',
       'src/lib/admin/**/*.ts',
+      'src/lib/auth/establish-session.ts',
     ],
     rules: { 'no-restricted-imports': 'off' },
   },
