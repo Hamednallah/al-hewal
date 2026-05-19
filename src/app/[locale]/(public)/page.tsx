@@ -21,10 +21,15 @@ const WHATSAPP_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_PHONE ?? '';
  *   3. FeaturedProjects (data-driven, empty state covered)
  *   4. TrustBanner     (1-year warranty pitch, leads into footer)
  *
- * ISR with `revalidate=3600` so the page is regenerated at most once
- * per hour. Phase 2.5 will revalidate on-demand from the admin property
- * mutation endpoints via revalidateTag, so freshly-published featured
- * properties surface immediately instead of waiting an hour.
+ * ISR with `revalidate=60` so the featured carousel reflects admin
+ * `/feature` ↔ `/unfeature` toggles within at most a minute. Earlier
+ * we used 3600s (1h) on the assumption that `revalidatePath` from
+ * `revalidateAfterFeatureToggle` would synchronously purge the edge
+ * cache; in practice the CDN edge keeps serving 304s from its cache
+ * for the full hour (same pattern that bit the property detail page —
+ * see PR #26 / detail page `force-dynamic`). 60s is the same window
+ * the detail page used before going dynamic; it's fast enough for
+ * admins to verify their toggle and still cheap on the function quota.
  *
  * `force-static` rendering tells Next.js this page does not vary per
  * request beyond the [locale] param — the featured query reads from
@@ -34,7 +39,7 @@ const WHATSAPP_PHONE = process.env.NEXT_PUBLIC_WHATSAPP_PHONE ?? '';
  * `RealEstateListing` schema lives on the property detail page (PR 2.4).
  * Both flow into Google's knowledge graph + rich-results pipeline.
  */
-export const revalidate = 3600;
+export const revalidate = 60;
 export const dynamic = 'force-static';
 
 export async function generateMetadata({

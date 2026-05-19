@@ -11,8 +11,8 @@ import { MobileContactBar } from '@/components/public/property-detail/MobileCont
 import { Specs } from '@/components/public/property-detail/Specs';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
-import { type Locale } from '@/i18n/routing';
-import { getPropertyBySlug } from '@/lib/data/properties';
+import { type Locale, routing } from '@/i18n/routing';
+import { getPropertyBySlug, listLivePropertySlugs } from '@/lib/data/properties';
 import { env } from '@/lib/env';
 import { formatPrice } from '@/lib/format';
 
@@ -34,18 +34,25 @@ import { formatPrice } from '@/lib/format';
  * Results can verify it. Required fields: name, description, address,
  * geo, image, offers (with priceCurrency=SAR).
  */
-// force-dynamic, not ISR. Earlier we used revalidate=86400 then 60s,
-// but both still cached the 404 response for newly-published rows: a
-// visitor who hit the URL while the property was still a draft (RLS
-// hides drafts from anon) would get a cached 404 served from the CDN
-// edge — and `revalidatePath` from `/publish` did not reliably evict
-// the cached miss. At Al Hewal's scale (~50 properties, modest KSA
-// traffic) the extra function invocations are well inside the 100k/mo
-// free tier, and the trade is worth eliminating the "I just published
-// but the URL still 404s" papercut entirely.
-export const dynamic = 'force-dynamic';
+// ISR with a 60s revalidate window. PR #26 briefly used force-dynamic
+// to defeat a cached-404 papercut, but that traded the free-tier-cheap
+// static path for a function invocation on every visit. Per the
+// `prefer-revalidate-over-force-dynamic` rule, the right knob is the
+// revalidate window: 60s is short enough that a freshly-published
+// property's URL clears within a minute (and `revalidatePath` from
+// /publish will usually evict the CDN cache faster than that anyway).
+export const revalidate = 60;
+export const dynamicParams = true;
 
 type PageParams = { locale: string; slug: string };
+
+export async function generateStaticParams() {
+  const slugs = await listLivePropertySlugs();
+  // Pre-render every locale × every slug combination. If Supabase is
+  // unreachable at build, returns []; Next still serves the route on
+  // demand via the dynamic ISR fallback (`dynamicParams = true`).
+  return routing.locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
+}
 
 export async function generateMetadata({
   params,
