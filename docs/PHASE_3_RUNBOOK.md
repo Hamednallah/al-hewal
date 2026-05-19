@@ -323,3 +323,58 @@ The `BLOB_READ_WRITE_TOKEN` rotates from the same Storage page in
 the Vercel dashboard (**Settings** → **Rotate token**). After
 rotation re-run `pnpm vercel env pull` locally. Production picks up
 the new token on the next deployment automatically.
+
+---
+
+## 7. Applying migration 0005 (PR 3.5b — `property_images.webp_url`)
+
+PR 3.5b adds a nullable `webp_url text` column to `property_images`
+so the public `<picture>` element can declare both AVIF and WebP
+sources. Old rows (uploaded before 3.5b) leave the column NULL; the
+admin gallery + the public catalog both fall back to `blob_url`
+(AVIF) when WebP is absent.
+
+### Local (Docker Supabase)
+
+```powershell
+Set-Location "d:\Work\Projects\AL-Hewal\al-hewal"
+pnpm supabase db reset
+```
+
+This wipes the local DB, re-runs every migration (0001 → 0005), and
+re-seeds. Then regenerate the typed client:
+
+```powershell
+pnpm supabase gen types typescript --local --schema public > src/lib/supabase/database.types.ts
+```
+
+Commit the regenerated `database.types.ts` alongside the migration.
+
+### Remote (linked Supabase)
+
+```powershell
+pnpm supabase db push
+```
+
+Append-only — same rule as 0004. If anything is wrong, ship a 0006
+follow-up migration to fix it; never edit 0005 in place after the
+remote DB has applied it.
+
+### Verifying the column was created
+
+```powershell
+pnpm supabase db diff --linked
+```
+
+A clean diff means the local + remote schemas match. After a push,
+re-run `pnpm vercel env pull` is NOT required (no env vars
+changed).
+
+### Rollback
+
+```sql
+-- supabase/migrations/0006_property_images_webp_url_rollback.sql
+alter table public.property_images drop column webp_url;
+```
+
+`pnpm supabase db push` ships the rollback.

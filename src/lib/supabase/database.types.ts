@@ -7,11 +7,6 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
-  }
   public: {
     Tables: {
       admin_audit_log: {
@@ -526,6 +521,7 @@ export type Database = {
           is_hero: boolean
           position: number
           property_id: string
+          webp_url: string | null
           width: number
         }
         Insert: {
@@ -541,6 +537,7 @@ export type Database = {
           is_hero?: boolean
           position?: number
           property_id: string
+          webp_url?: string | null
           width: number
         }
         Update: {
@@ -556,6 +553,7 @@ export type Database = {
           is_hero?: boolean
           position?: number
           property_id?: string
+          webp_url?: string | null
           width?: number
         }
         Relationships: [
@@ -788,3 +786,4 @@ export const Constants = {
     },
   },
 } as const
+

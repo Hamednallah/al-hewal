@@ -180,16 +180,16 @@ async function processCompletedUpload(input: CompletedUploadInput): Promise<void
     }),
   ]);
 
-  // Persist on property_images. Primary URL is the AVIF — the catalog's
-  // `<picture>` renders AVIF first, WebP as the secondary `<source>`,
-  // and falls back to AVIF on browsers missing both. Sibling WebP URL
-  // isn't stored separately yet (3.5b will add a `webp_url` column or
-  // a sibling-pathname convention); 3.5a keeps the existing schema.
+  // Persist on property_images. Primary URL is the AVIF; sibling WebP
+  // URL goes on `webp_url` (added in 0005_property_images_webp_url.sql)
+  // so the public `<picture>` can declare both sources and fall back
+  // gracefully on browsers without AVIF.
   const client = getSupabaseAdminClient();
   const { error: insertErr } = await client.from('property_images').insert({
     property_id: payload.propertyId,
     blob_url: avifPut.url,
     blob_pathname: avifPut.pathname,
+    webp_url: webpPut.url,
     width: processed.width,
     height: processed.height,
     blurhash: processed.blurhash,

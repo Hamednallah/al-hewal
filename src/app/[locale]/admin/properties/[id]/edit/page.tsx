@@ -4,9 +4,11 @@ import { notFound } from 'next/navigation';
 
 import { AdminTopbar } from '@/components/admin/AdminTopbar';
 import { PropertyForm } from '@/components/admin/PropertyForm';
+import { PropertyImagesGrid } from '@/components/admin/PropertyImagesGrid';
+import { PropertyImageUploader } from '@/components/admin/PropertyImageUploader';
 import { type Locale, routing } from '@/i18n/routing';
 import { requireAdmin } from '@/lib/auth/admins';
-import { getAdminPropertyById } from '@/lib/data/admin-properties';
+import { getAdminPropertyById, listPropertyImages } from '@/lib/data/admin-properties';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,13 +32,18 @@ export default async function EditPropertyPage({ params }: PageProps) {
   await requireAdmin();
   const typedLocale = locale as Locale;
 
-  const [property, t, tCommon] = await Promise.all([
+  const [property, images, t, tCommon] = await Promise.all([
     getAdminPropertyById(id),
+    listPropertyImages(id),
     getTranslations({ locale: typedLocale, namespace: 'admin.properties.form' }),
     getTranslations({ locale: typedLocale, namespace: 'admin.common' }),
   ]);
 
   if (!property) notFound();
+
+  // Compute the next position so a fresh upload appends to the end of
+  // the gallery. Reorder UI lands in PR 3.5c.
+  const nextPosition = images.length > 0 ? Math.max(...images.map((i) => i.position)) + 1 : 0;
 
   // The form expects string-friendly initial values for the numeric/
   // optional fields (so an empty input stays empty instead of "0").
@@ -79,6 +86,12 @@ export default async function EditPropertyPage({ params }: PageProps) {
           mode="edit"
           propertyId={property.id}
           initialValues={initialValues}
+          imagesSlot={
+            <div className="space-y-6">
+              <PropertyImagesGrid locale={typedLocale} propertyId={property.id} images={images} />
+              <PropertyImageUploader propertyId={property.id} nextPosition={nextPosition} />
+            </div>
+          }
         />
       </div>
     </>
