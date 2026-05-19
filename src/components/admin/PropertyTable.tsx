@@ -21,13 +21,18 @@ interface PropertyTableProps {
 }
 
 /**
- * Admin Listing Management table — server-rendered, sortable rows show
- * project name (bilingual title in the active locale), location, price,
- * status, featured flag, last updated, and the contextual row-action
- * group (edit / publish / feature / archive | restore / delete).
+ * Admin Listing Management — server-rendered list of property cards.
  *
  * Pixel reference: `stitch_alhewal_bilingual_corporate_website/
  * admin_listing_management/screen.png`.
+ *
+ * Layout (PR phase-3-ux-papercuts): single-column card list at every
+ * viewport, replacing the desktop table. Each card stacks: title/slug
+ * header → data row (type · location · price · status · featured ·
+ * updated) → full-width action group below. Same data density as the
+ * old table on desktop, but renders cleanly on mobile without
+ * horizontal-scroll or wrap-stacking action buttons. The component
+ * name is retained for import-stability — the markup is the change.
  *
  * Tier rules (PR 3.3b):
  *   - `standard_admin` sees edit, publish (when draft), and
@@ -36,7 +41,7 @@ interface PropertyTableProps {
  *     destructive hard delete.
  *
  * Mutations route through `/api/properties/[id]/<action>` and trigger
- * `router.refresh()` on success; the table is server-rendered, so a
+ * `router.refresh()` on success; the list is server-rendered, so a
  * refresh re-fetches the current page worth of data.
  */
 export async function PropertyTable({ locale, rows, basePath, admin }: PropertyTableProps) {
@@ -50,145 +55,131 @@ export async function PropertyTable({ locale, rows, basePath, admin }: PropertyT
   }
 
   return (
-    <div className="bg-canvas-raised border-outline-variant/30 border">
-      <div className="overflow-x-auto">
-        <table className="w-full text-start text-sm">
-          <thead className="bg-canvas-sunken text-charcoal-muted text-xs tracking-[0.18em] uppercase">
-            <tr>
-              <th scope="col" className="px-6 py-4 font-semibold">
-                {t('project')}
-              </th>
-              <th scope="col" className="px-6 py-4 font-semibold">
-                {t('type')}
-              </th>
-              <th scope="col" className="px-6 py-4 font-semibold">
-                {t('location')}
-              </th>
-              <th scope="col" className="px-6 py-4 font-semibold">
-                {t('price')}
-              </th>
-              <th scope="col" className="px-6 py-4 font-semibold">
-                {t('status')}
-              </th>
-              <th scope="col" className="px-6 py-4 font-semibold">
-                {t('featured')}
-              </th>
-              <th scope="col" className="px-6 py-4 font-semibold">
-                {t('updated')}
-              </th>
-              <th scope="col" className="px-6 py-4 text-end font-semibold">
-                {t('actions')}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => {
-              const title = locale === 'ar' ? row.title_ar : row.title_en;
-              const isArchived = row.deleted_at !== null;
-              const updated = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-SA' : 'en-GB', {
-                day: '2-digit',
-                month: 'short',
-                year: 'numeric',
-              }).format(new Date(row.updated_at));
-              return (
-                <tr
-                  key={row.id}
-                  className="border-outline-variant/30 hover:bg-canvas-sunken/40 border-t transition-colors"
-                >
-                  <td className="px-6 py-4">
-                    <p className="text-teal-forest-700 font-semibold">{title}</p>
-                    <p className="text-charcoal-muted text-xs">{row.slug}</p>
-                  </td>
-                  <td className="text-charcoal px-6 py-4 whitespace-nowrap">{tType(row.type)}</td>
-                  <td className="text-charcoal px-6 py-4">
-                    <p className="font-medium">{row.city}</p>
-                    {row.district ? (
-                      <p className="text-charcoal-muted text-xs">{row.district}</p>
-                    ) : null}
-                  </td>
-                  <td className="text-charcoal px-6 py-4 font-medium whitespace-nowrap">
-                    {formatPrice(row.price_sar, locale)}
-                  </td>
-                  <td className="px-6 py-4">
-                    <StatusBadge locale={locale} status={row.status} isArchived={isArchived} />
-                  </td>
-                  <td className="px-6 py-4">
-                    {row.featured ? (
-                      <span className="text-brass-700 inline-flex items-center gap-1 text-xs font-semibold tracking-wide uppercase">
-                        ★ {t('featuredYes')}
-                      </span>
-                    ) : (
-                      <span className="text-charcoal-muted/60 text-xs">{t('featuredNo')}</span>
-                    )}
-                  </td>
-                  <td className="text-charcoal-muted px-6 py-4 text-xs whitespace-nowrap">
-                    {updated}
-                  </td>
-                  <td className="px-6 py-4 text-end">
-                    <div
-                      className="inline-flex flex-wrap items-start justify-end gap-2"
-                      role="group"
-                      aria-label={tActions('menuLabel', { title })}
-                    >
-                      <Link
-                        href={`${basePath}/${row.id}/edit`}
-                        prefetch={false}
-                        className="text-teal-forest-700 border-teal-forest-700/30 hover:bg-teal-forest-700 hover:text-canvas inline-flex items-center border px-2.5 py-1 text-[0.7rem] font-medium tracking-wide transition-colors"
-                      >
-                        {t('edit')}
-                      </Link>
-                      {!isArchived && row.status === 'draft' ? (
-                        <RowActionButton
-                          href={`/api/properties/${row.id}/publish`}
-                          method="POST"
-                          label={tActions('publish')}
-                          failureMessage={tActions('failureToast')}
-                        />
-                      ) : null}
-                      {isSuperAdmin && !isArchived ? (
-                        <RowActionButton
-                          href={`/api/properties/${row.id}/feature`}
-                          method="POST"
-                          body={{ featured: !row.featured }}
-                          label={row.featured ? tActions('unfeature') : tActions('feature')}
-                          failureMessage={tActions('failureToast')}
-                        />
-                      ) : null}
-                      {isArchived ? (
-                        <RowActionButton
-                          href={`/api/properties/${row.id}/restore`}
-                          method="POST"
-                          label={tActions('restore')}
-                          failureMessage={tActions('failureToast')}
-                        />
-                      ) : (
-                        <RowActionButton
-                          href={`/api/properties/${row.id}/archive`}
-                          method="POST"
-                          label={tActions('archive')}
-                          confirmMessage={tActions('archiveConfirm', { title })}
-                          tone="destructive"
-                          failureMessage={tActions('failureToast')}
-                        />
-                      )}
-                      {isSuperAdmin ? (
-                        <RowActionButton
-                          href={`/api/properties/${row.id}`}
-                          method="DELETE"
-                          label={tActions('delete')}
-                          confirmMessage={tActions('deleteConfirm', { title })}
-                          tone="destructive"
-                          failureMessage={tActions('failureToast')}
-                        />
-                      ) : null}
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+    <ul data-testid="admin-properties-cards" className="flex flex-col gap-3">
+      {rows.map((row) => {
+        const title = locale === 'ar' ? row.title_ar : row.title_en;
+        const isArchived = row.deleted_at !== null;
+        const updated = new Intl.DateTimeFormat(locale === 'ar' ? 'ar-SA' : 'en-GB', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+        }).format(new Date(row.updated_at));
+        const location = row.district ? `${row.district} · ${row.city}` : row.city;
+
+        return (
+          <li
+            key={row.id}
+            className="bg-canvas-raised border-outline-variant/30 hover:border-teal-forest-700/40 flex flex-col gap-4 border p-4 transition-colors md:p-5"
+          >
+            {/* Header — title + slug */}
+            <header className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-teal-forest-700 truncate text-base font-semibold">{title}</p>
+                <p className="text-charcoal-muted truncate text-xs">{row.slug}</p>
+              </div>
+              <StatusBadge locale={locale} status={row.status} isArchived={isArchived} />
+            </header>
+
+            {/* Data row — type, location, price, featured, updated */}
+            <dl className="text-charcoal grid grid-cols-2 gap-x-4 gap-y-2 text-sm md:grid-cols-4">
+              <CardField label={t('type')} value={tType(row.type)} />
+              <CardField label={t('location')} value={location} />
+              <CardField label={t('price')} value={formatPrice(row.price_sar, locale)} emphasis />
+              <CardField label={t('updated')} value={updated} />
+            </dl>
+
+            {row.featured ? (
+              <p className="text-brass-700 inline-flex items-center gap-1 text-xs font-semibold tracking-wide uppercase">
+                ★ {t('featuredYes')}
+              </p>
+            ) : null}
+
+            {/* Actions row — full width below */}
+            <div
+              className="border-outline-variant/30 flex flex-wrap items-start gap-2 border-t pt-3"
+              role="group"
+              aria-label={tActions('menuLabel', { title })}
+            >
+              <Link
+                href={`${basePath}/${row.id}/edit`}
+                prefetch={false}
+                className="text-teal-forest-700 border-teal-forest-700/30 hover:bg-teal-forest-700 hover:text-canvas inline-flex items-center border px-2.5 py-1 text-[0.7rem] font-medium tracking-wide transition-colors"
+              >
+                {t('edit')}
+              </Link>
+              {!isArchived && row.status === 'draft' ? (
+                <RowActionButton
+                  href={`/api/properties/${row.id}/publish`}
+                  method="POST"
+                  label={tActions('publish')}
+                  failureMessage={tActions('failureToast')}
+                />
+              ) : null}
+              {isSuperAdmin && !isArchived ? (
+                <RowActionButton
+                  href={`/api/properties/${row.id}/feature`}
+                  method="POST"
+                  body={{ featured: !row.featured }}
+                  label={row.featured ? tActions('unfeature') : tActions('feature')}
+                  failureMessage={tActions('failureToast')}
+                />
+              ) : null}
+              {isArchived ? (
+                <RowActionButton
+                  href={`/api/properties/${row.id}/restore`}
+                  method="POST"
+                  label={tActions('restore')}
+                  failureMessage={tActions('failureToast')}
+                />
+              ) : (
+                <RowActionButton
+                  href={`/api/properties/${row.id}/archive`}
+                  method="POST"
+                  label={tActions('archive')}
+                  confirmMessage={tActions('archiveConfirm', { title })}
+                  tone="destructive"
+                  failureMessage={tActions('failureToast')}
+                />
+              )}
+              {isSuperAdmin ? (
+                <RowActionButton
+                  href={`/api/properties/${row.id}`}
+                  method="DELETE"
+                  label={tActions('delete')}
+                  confirmMessage={tActions('deleteConfirm', { title })}
+                  tone="destructive"
+                  failureMessage={tActions('failureToast')}
+                />
+              ) : null}
+            </div>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+interface CardFieldProps {
+  label: string;
+  value: string;
+  emphasis?: boolean;
+}
+
+function CardField({ label, value, emphasis }: CardFieldProps) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <dt className="text-charcoal-muted text-[0.65rem] font-semibold tracking-[0.16em] uppercase">
+        {label}
+      </dt>
+      <dd
+        className={
+          emphasis
+            ? 'text-charcoal text-base font-semibold whitespace-nowrap'
+            : 'text-charcoal text-sm'
+        }
+      >
+        {value}
+      </dd>
     </div>
   );
 }

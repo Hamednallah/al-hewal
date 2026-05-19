@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { AdminTopbar } from '@/components/admin/AdminTopbar';
+import { PropertyDraftBanner } from '@/components/admin/PropertyDraftBanner';
 import { PropertyForm } from '@/components/admin/PropertyForm';
 import { PropertyImagesGrid } from '@/components/admin/PropertyImagesGrid';
 import { PropertyImageUploader } from '@/components/admin/PropertyImageUploader';
@@ -80,19 +81,27 @@ export default async function EditPropertyPage({ params }: PageProps) {
           title: typedLocale === 'ar' ? property.title_ar : property.title_en,
         })}
       />
-      <div className="bg-canvas-raised border-outline-variant/30 mx-auto mt-6 mb-12 max-w-5xl border">
-        <PropertyForm
-          locale={typedLocale}
-          mode="edit"
-          propertyId={property.id}
-          initialValues={initialValues}
-          imagesSlot={
-            <div className="space-y-6">
-              <PropertyImagesGrid locale={typedLocale} propertyId={property.id} images={images} />
-              <PropertyImageUploader propertyId={property.id} nextPosition={nextPosition} />
-            </div>
-          }
-        />
+      <div className="mx-auto mt-6 mb-12 max-w-5xl space-y-4">
+        {property.status === 'draft' && property.deleted_at === null ? (
+          <PropertyDraftBanner
+            propertyId={property.id}
+            publicHref={`/${typedLocale}/properties/${property.slug}`}
+          />
+        ) : null}
+        <div className="bg-canvas-raised border-outline-variant/30 border">
+          <PropertyForm
+            locale={typedLocale}
+            mode="edit"
+            propertyId={property.id}
+            initialValues={initialValues}
+            imagesSlot={
+              <div className="space-y-6">
+                <PropertyImagesGrid locale={typedLocale} propertyId={property.id} images={images} />
+                <PropertyImageUploader propertyId={property.id} nextPosition={nextPosition} />
+              </div>
+            }
+          />
+        </div>
       </div>
     </>
   );

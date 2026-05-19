@@ -322,6 +322,13 @@
         "actions": "Actions",
         "edit": "Edit"
       },
+      "draftBanner": {
+        "label": "This property is a draft.",
+        "body": "It won't appear on the public site until you publish it. Once published, visitors can see it at {publicHref}.",
+        "publishButton": "Publish now",
+        "publishingButton": "Publishing…",
+        "failureToast": "Couldn't publish. Please refresh and try again."
+      },
       "actions": {
         "publish": "Publish",
         "feature": "Feature",
@@ -335,8 +342,8 @@
         "failureToast": "The action failed. Please refresh and try again."
       },
       "images": {
-        "sectionDescription": "Upload high-resolution photos (JPG, PNG, WebP, AVIF, or HEIC up to 25 MB). They are automatically resized, EXIF-stripped, and converted to AVIF + WebP variants on the server.",
-        "createModeHint": "Save the property first — uploading requires the property's database row to exist. Once you've saved at least once, the image uploader will appear here.",
+        "sectionDescription": "Upload property photos. Each photo can be up to 25 MB — JPG, PNG, or WebP.",
+        "createModeHint": "Save the property first. Once it's saved, you'll be able to add photos here.",
         "dropzoneIdle": "Drag photos here, or click to choose files",
         "dropzoneActive": "Drop the files to start uploading",
         "altArLabel": "Arabic alt text",

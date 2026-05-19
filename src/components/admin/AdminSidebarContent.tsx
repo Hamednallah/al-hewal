@@ -13,6 +13,7 @@ import {
   ProfileIcon,
   SignOutIcon,
 } from './AdminIcons';
+import { AdminLangSwitcher } from './AdminLangSwitcher';
 import { AdminNavLink } from './AdminNavLink';
 
 interface AdminSidebarContentProps {
@@ -63,7 +64,7 @@ export async function AdminSidebarContent({ locale, admin }: AdminSidebarContent
   const displayName = admin.email.split('@')[0] ?? admin.email;
 
   return (
-    <div className="bg-charcoal text-canvas flex h-full flex-col justify-between py-8">
+    <div className="bg-teal-forest-700 text-canvas flex h-full flex-col justify-between py-8">
       <div className="space-y-8 px-4">
         <header className="space-y-1 px-4">
           <div
@@ -92,7 +93,10 @@ export async function AdminSidebarContent({ locale, admin }: AdminSidebarContent
         </nav>
       </div>
 
-      <div className="border-canvas/15 border-t px-4 pt-6">
+      <div className="border-canvas/15 space-y-3 border-t px-4 pt-6">
+        <div className="px-4">
+          <AdminLangSwitcher />
+        </div>
         <Link
           href={`/auth/sign-out?next=/${locale}`}
           prefetch={false}

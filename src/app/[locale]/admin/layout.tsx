@@ -57,7 +57,7 @@ export default async function AdminLayout({ children, params }: LayoutProps) {
         {/* Mobile-only top bar: hamburger + brand title. */}
         <div
           data-testid="admin-mobile-topbar"
-          className="bg-charcoal text-canvas sticky top-0 z-30 flex items-center gap-3 px-4 py-3 md:hidden"
+          className="bg-teal-forest-700 text-canvas sticky top-0 z-30 flex items-center gap-3 px-4 py-3 md:hidden"
         >
           <AdminMobileMenu
             openLabel={tCommon('openMenu')}

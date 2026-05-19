@@ -51,13 +51,17 @@ test.describe('admin property form — create (PR 3.4)', () => {
     await expect(page.getByLabel('English title')).toHaveAttribute('aria-invalid', 'true');
   });
 
-  test('a well-formed payload POSTs to /api/properties and navigates back to the listings', async ({
+  test('a well-formed payload POSTs to /api/properties and lands on the edit page for the new row', async ({
     context,
     page,
   }) => {
     await loginAsAdmin(context, { tier: 'super_admin' });
     await page.goto('/en/admin/properties/new');
 
+    // The destination edit page calls Supabase via `getAdminPropertyById`
+    // which returns null against CI's placeholder URL and triggers
+    // `notFound()`. The 404 still lives under the same /admin/properties/<id>/edit
+    // URL though, which is what we assert below.
     let capturedBody: Record<string, unknown> | null = null;
     let capturedMethod: string | null = null;
     await page.route('**/api/properties', async (route) => {
@@ -81,7 +85,10 @@ test.describe('admin property form — create (PR 3.4)', () => {
     await page.getByLabel('City').fill('Riyadh');
 
     await page.getByRole('button', { name: 'Create property' }).click();
-    await expect(page).toHaveURL(/\/en\/admin\/properties$/);
+    // Lands on the edit URL for the newly-created row so admins can
+    // immediately add images / publish — the previous "back to listings"
+    // behavior buried the row and made the next step unclear.
+    await expect(page).toHaveURL(/\/en\/admin\/properties\/test-id\/edit$/);
 
     expect(capturedMethod).toBe('POST');
     expect(capturedBody).not.toBeNull();
