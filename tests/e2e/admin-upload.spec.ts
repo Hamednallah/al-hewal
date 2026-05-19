@@ -3,29 +3,22 @@ import { expect, test } from '@playwright/test';
 import { loginAsAdmin } from './helpers/admin-auth';
 
 /**
- * Upload route gates (PR 3.5a).
+ * Upload route gates (PR 3.5d — server-side multipart rewrite).
  *
- * The route runs Vercel Blob's `handleUpload` which requires a real
- * BLOB_READ_WRITE_TOKEN + an inbound webhook to fire `onUploadCompleted`.
- * CI doesn't have either, so we don't exercise the upload happy path
- * end-to-end here — that lands in PR 3.5b alongside the drag-drop UI on
- * a preview deployment where the token is provisioned.
- *
- * What we DO assert: the pre-Blob gates we can reliably exercise in CI
- * without the token — auth (401) and the configured-token short-circuit
- * (503). The route's `invalid_json` catch is real defensive code but
- * is hard to exercise reliably from Playwright's `data: <string>`
- * shape (the body that arrives at the route handler in CI doesn't
- * fail JSON.parse the way it does locally); coverage moves to PR
- * 3.5b's preview-deploy verification where we can drive the upload
- * from the actual drag-drop UI.
+ * Route accepts `multipart/form-data` and runs the full sharp + Blob
+ * `put` + DB insert pipeline server-side. CI doesn't have
+ * `BLOB_READ_WRITE_TOKEN`, so we can't exercise the happy path
+ * end-to-end here — that lands on a preview deployment where the
+ * token is provisioned. What we DO assert: auth (401) and the
+ * missing-token short-circuit (503), the gates that fire before any
+ * form parsing.
  *
  * Same `context.request` discipline as admin-property-actions.spec.ts —
  * see that file's docblock for the `request` fixture cookie-isolation
  * trap.
  */
 
-test.describe('upload route gates (PR 3.5a)', () => {
+test.describe('upload route gates (PR 3.5d)', () => {
   test('POST /api/upload — 401 without an admin session cookie', async ({ request }) => {
     const res = await request.post('/api/upload', { data: { type: 'noop' } });
     expect(res.status()).toBe(401);
@@ -41,7 +34,7 @@ test.describe('upload route gates (PR 3.5a)', () => {
     // status code, not an opaque 500.
     await loginAsAdmin(context, { tier: 'super_admin' });
     const res = await context.request.post('/api/upload', {
-      data: { type: 'blob.generate-client-token', payload: { pathname: 'x', callbackUrl: '' } },
+      data: { type: 'noop' },
     });
     expect(res.status()).toBe(503);
     expect(await res.json()).toMatchObject({ success: false, error: 'blob_not_configured' });
