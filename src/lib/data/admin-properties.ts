@@ -178,6 +178,55 @@ export async function getAdminPropertyById(id: string): Promise<AdminPropertyEdi
   }
 }
 
+export interface AdminPropertyImageRow {
+  id: string;
+  blob_url: string;
+  webp_url: string | null;
+  width: number;
+  height: number;
+  blurhash: string | null;
+  alt_ar: string;
+  alt_en: string;
+  position: number;
+  bytes: number;
+  created_at: string;
+}
+
+/**
+ * List all images for a single property, ordered by `position` then
+ * `created_at`. Capped at 2s like the other admin readers — placeholder
+ * Supabase URLs in CI shouldn't block the form's render.
+ *
+ * Returns empty on any failure (including the row not existing) so the
+ * caller can render a "no images yet" affordance without branching on
+ * the error code.
+ */
+export async function listPropertyImages(propertyId: string): Promise<AdminPropertyImageRow[]> {
+  try {
+    const client = getSupabaseAdminClient();
+    const { data, error } = await client
+      .from('property_images')
+      .select(
+        'id, blob_url, webp_url, width, height, blurhash, alt_ar, alt_en, position, bytes, created_at',
+      )
+      .eq('property_id', propertyId)
+      .order('position', { ascending: true })
+      .order('created_at', { ascending: true })
+      .abortSignal(AbortSignal.timeout(2000));
+    if (error) {
+      console.warn('[listPropertyImages] supabase returned error:', error.message);
+      return [];
+    }
+    return (data ?? []) as AdminPropertyImageRow[];
+  } catch (err) {
+    console.warn(
+      '[listPropertyImages] unexpected failure:',
+      err instanceof Error ? err.message : err,
+    );
+    return [];
+  }
+}
+
 export interface AdminPropertyEditRow {
   id: string;
   slug: string;

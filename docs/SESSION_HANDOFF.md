@@ -25,10 +25,10 @@ shipped (v0.2.0).** Resume with **Phase 3 — Admin Command Center**.
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Repo       | https://github.com/Hamednallah/al-hewal                                                                                       |
 | Local      | `d:\Work\Projects\AL-Hewal\al-hewal\`                                                                                         |
-| Main HEAD  | PR #20 (Phase 3.3b — row-action mutation routes + tier-aware UI) — merged as `cafd0d8`                                        |
+| Main HEAD  | PR #21 (Phase 3.5a — `/api/upload` + sharp pipeline + Vercel Blob wrapper) — merged as `8f69a57`                              |
 | Branch     | `main` (you should be on it; if not, `git checkout main && git pull --ff-only`)                                               |
 | Latest tag | `v0.2.1` (Phase 2 closeout — favicon + PWA manifest). `v0.3.0` is reserved for the end of Phase 3 per master-plan convention. |
-| Next PR    | **3.5b — Image upload UI** (drag-drop + reorder + alt_ar/en in PropertyForm, wired to the 3.5a backend on a preview deploy)   |
+| Next PR    | **3.5c — Reorder + hero pick** (drag-to-reorder, set hero image, schema `properties.hero_image_id` already exists from 0001)  |
 
 ---
 
@@ -383,22 +383,61 @@ failureToast}` in both AR + EN.
   `sharp` + `blurhash` were already installed for `next/image` +
   Phase 1's favicon generator. No new pnpm-workspace.yaml entries.
 
-### PR 3.5b — Image upload UI (next)
+### PR 3.5b — Image upload UI ✅ shipped
 
-- `src/components/admin/PropertyImageUploader.tsx` — drag-drop
-  zone (browser-native `dataTransfer.files`), file-type validation
-  mirror of the server allowlist, per-file progress, alt_ar/en
-  inline fields, and a hero/order picker.
-- Wire into `PropertyForm` (edit mode only — create flow first
-  needs a draft property row so `propertyId` exists; bootstrap that
-  via auto-save). Mark the image step inactive on `mode='create'`
-  with a "save the draft first" affordance.
-- Update `property_images` writes to capture WebP sibling URL
-  (today PR 3.5a stores only the AVIF URL; the row needs both for
-  the public `<picture>` to render the WebP fallback). Decide:
-  schema column vs. naming convention.
-- Tests: Playwright happy-path against a preview deployment with
-  the token set; unit tests for the file-type/size client checks.
+- Migration `0005_property_images_webp_url.sql` — adds nullable
+  `webp_url text` so the public `<picture>` can declare AVIF + WebP
+  sources. Pre-3.5b rows leave it NULL and fall back to `blob_url`.
+  Apply via `pnpm supabase db push` per
+  [PHASE_3_RUNBOOK §7](PHASE_3_RUNBOOK.md#7-applying-migration-0005-pr-35b--property_imageswebp_url).
+- `src/lib/image-constants.ts` — extracted ACCEPTED_INPUT_MIME_TYPES
+  - size caps out of `image-pipeline.ts` so the client uploader can
+    import them without tripping `server-only`.
+- `src/lib/client-image-validation.ts` — `validateUploadCandidate`
+  helper mirroring the server pipeline's accept rules. Used by the
+  uploader for instant pre-flight feedback.
+- `src/lib/data/admin-properties.ts` — new `listPropertyImages(id)`
+  - `AdminPropertyImageRow` type, capped at the standard 2s
+    `AbortSignal.timeout`.
+- `src/app/api/properties/[id]/images/[imageId]/route.ts` —
+  `DELETE`, any active admin, deletes both Blob URLs (AVIF + WebP)
+  then the row. Idempotent — re-deleting a missing row 200s. Audit
+  logged either way; `revalidatePropertyPages(slug)` on success.
+- `src/components/admin/PropertyImageUploader.tsx` — client island,
+  drag-and-drop zone, single file at a time + alt_ar/en inline
+  fields. Uses `@vercel/blob/client#upload` so file bytes go
+  browser → Blob directly; `/api/upload` only signs + validates +
+  finalises. `router.refresh()` on success.
+- `src/components/admin/PropertyImagesGrid.tsx` — server component,
+  responsive thumbnails via `<picture>` (AVIF source + optional
+  WebP source + AVIF `<img>` fallback), bilingual alt, per-tile
+  delete button.
+- `src/components/admin/PropertyImageDeleteButton.tsx` — client
+  island, `window.confirm` + `useTransition` + `router.refresh()`.
+- `PropertyForm` now takes an `imagesSlot` prop. Edit page renders
+  `<PropertyImagesGrid /> + <PropertyImageUploader />` into the slot;
+  create page leaves it undefined so the form surfaces the
+  "save the property first" hint.
+- `/api/upload` now persists `webp_url` on the insert.
+- i18n: `admin.properties.images.*` + `form.sectionImages` in
+  both AR + EN (incl. plural rules for the AR upload-count copy).
+- Tests: 5 new unit specs (`client-image-validation.test.ts`) +
+  6 new Playwright specs in `admin-property-images.spec.ts` covering
+  the DELETE route's auth/UUID/idempotency gates + the create-mode
+  hint in both locales.
+
+### PR 3.5c — Reorder + hero pick (next)
+
+- Drag-to-reorder UI on the admin gallery (dnd-kit or native HTML5
+  drag with keyboard fallback). PATCH endpoint to write the new
+  position array atomically.
+- "Set as hero" affordance per tile → `properties.hero_image_id`
+  update (FK already exists in 0001). Hero badge on the chosen tile.
+- Public detail-page hero swap behaviour follows hero_image_id;
+  catalog card uses it as the primary thumbnail.
+- Local-dev caveat from 3.5a/3.5b remains: end-to-end upload happy
+  path only on preview deploys (Vercel webhook can't reach
+  localhost).
 
 ### PR 3.5 (legacy spec — superseded by 3.5a + 3.5b above)
 

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { ACCEPTED_INPUT_MIME_TYPES } from '@/lib/image-pipeline';
+import { ACCEPTED_INPUT_MIME_TYPES } from '@/lib/image-constants';
 
 /**
  * Schemas for the `/api/upload` route's two-phase Vercel Blob client

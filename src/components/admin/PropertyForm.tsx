@@ -66,6 +66,14 @@ interface PropertyFormProps {
   propertyId?: string;
   /** Pre-populated values when editing. */
   initialValues?: Partial<FormValues>;
+  /**
+   * Server-rendered content for the Images section (grid + uploader).
+   * The page builds it because the grid is a Server Component and the
+   * form itself is a Client Component; passing as a slot lets us keep
+   * the grid out of the client bundle. `undefined` (create mode)
+   * surfaces the "save the draft first" hint instead.
+   */
+  imagesSlot?: React.ReactNode;
 }
 
 type SubmitStatus =
@@ -98,12 +106,19 @@ const EMPTY_DEFAULTS: FormValues = {
   featured: false,
 };
 
-export function PropertyForm({ locale, mode, propertyId, initialValues }: PropertyFormProps) {
+export function PropertyForm({
+  locale,
+  mode,
+  propertyId,
+  initialValues,
+  imagesSlot,
+}: PropertyFormProps) {
   const t = useTranslations('admin.properties.form');
   const tFields = useTranslations('admin.properties.form.fields');
   const tType = useTranslations('admin.properties.type');
   const tStatus = useTranslations('admin.properties.status');
   const tErrors = useTranslations('admin.properties.form.errors');
+  const tImages = useTranslations('admin.properties.images');
   const router = useRouter();
   const [status, setStatus] = useState<SubmitStatus>({ kind: 'idle' });
 
@@ -392,6 +407,19 @@ export function PropertyForm({ locale, mode, propertyId, initialValues }: Proper
             {...register('google_maps_url')}
           />
         </div>
+      </Section>
+
+      <Section title={t('sectionImages')}>
+        {mode === 'edit' && propertyId ? (
+          imagesSlot
+        ) : (
+          <p
+            data-testid="property-images-create-hint"
+            className="text-charcoal-muted bg-canvas-sunken/30 border-outline-variant/30 border p-4 text-sm leading-relaxed"
+          >
+            {tImages('createModeHint')}
+          </p>
+        )}
       </Section>
 
       <div className="border-outline-variant/40 flex items-center justify-end gap-3 border-t pt-6">

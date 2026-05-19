@@ -3,6 +3,22 @@ import 'server-only';
 import { encode as encodeBlurhash } from 'blurhash';
 import sharp from 'sharp';
 
+import {
+  ACCEPTED_INPUT_MIME_TYPES,
+  type AcceptedInputMimeType,
+  MAX_DIMENSION_PX,
+  MAX_INPUT_BYTES,
+  MAX_INPUT_PIXELS,
+} from '@/lib/image-constants';
+
+export {
+  ACCEPTED_INPUT_MIME_TYPES,
+  type AcceptedInputMimeType,
+  MAX_DIMENSION_PX,
+  MAX_INPUT_BYTES,
+  MAX_INPUT_PIXELS,
+};
+
 /**
  * Server-side image processing pipeline (PR 3.5a).
  *
@@ -32,21 +48,6 @@ import sharp from 'sharp';
  * Blob's Hobby plan (5 GB included) that lets us host ~5000 photos
  * at ~500 KB combined per source. Comfortable for Phase 3 launch.
  */
-
-export const MAX_DIMENSION_PX = 2400;
-export const MAX_INPUT_BYTES = 25 * 1024 * 1024; // 25 MB
-export const MAX_INPUT_PIXELS = 50_000_000; // 50 MP
-
-/** Strict subset of `sharp.FormatEnum` we accept as input. */
-export const ACCEPTED_INPUT_MIME_TYPES = [
-  'image/jpeg',
-  'image/png',
-  'image/webp',
-  'image/avif',
-  'image/heic',
-  'image/heif',
-] as const;
-export type AcceptedInputMimeType = (typeof ACCEPTED_INPUT_MIME_TYPES)[number];
 
 export interface ProcessedVariant {
   /** MIME type for the `<source type="…">` and Blob `contentType` header. */
