@@ -50,6 +50,12 @@ export type PropertySummary = {
 export async function getFeaturedProperties(limit = 6): Promise<PropertySummary[]> {
   try {
     const supabase = await createSupabaseServerClient();
+    // Belt-and-suspenders filters on top of RLS: when an admin is logged
+    // in, `createSupabaseServerClient` reads their Supabase Auth session
+    // cookie, the "admins read all properties" RLS policy fires, and the
+    // anon-only `(status <> 'draft' AND deleted_at IS NULL)` policy is
+    // bypassed. Explicit filters here keep the public surfaces honest
+    // regardless of who's signed in.
     const { data, error } = await supabase
       .from('properties')
       .select(
@@ -60,6 +66,8 @@ export async function getFeaturedProperties(limit = 6): Promise<PropertySummary[
       `,
       )
       .eq('featured', true)
+      .neq('status', 'draft')
+      .is('deleted_at', null)
       .eq('property_images.is_hero', true)
       .order('featured_order', { ascending: true, nullsFirst: false })
       .limit(limit);
@@ -154,6 +162,13 @@ export async function searchProperties(filters: CatalogFilters): Promise<SearchR
     const from = (filters.page - 1) * PAGE_SIZE;
     const to = from + PAGE_SIZE - 1;
 
+    // Belt-and-suspenders filters: RLS hides drafts + archived rows from
+    // the anon role, but when an admin is logged in the "admins read all"
+    // policy fires and the catalog leaks every row. Always filter at the
+    // query level so the public surfaces stay honest regardless of who's
+    // signed in. The previous version of this query showed archived /
+    // draft properties on `/properties` to logged-in admins (cf.
+    // 2026-05-19 bug report).
     let q = supabase
       .from('properties')
       .select(
@@ -164,6 +179,8 @@ export async function searchProperties(filters: CatalogFilters): Promise<SearchR
       `,
         { count: 'exact' },
       )
+      .neq('status', 'draft')
+      .is('deleted_at', null)
       .order('created_at', { ascending: false })
       .range(from, to);
 
@@ -241,9 +258,14 @@ export async function searchProperties(filters: CatalogFilters): Promise<SearchR
 export async function listFilterableCities(): Promise<string[]> {
   try {
     const supabase = await createSupabaseServerClient();
+    // Same defence-in-depth as `searchProperties`: filter explicitly so the
+    // catalog dropdown doesn't surface cities that only have draft /
+    // archived rows when an admin is signed in.
     const { data, error } = await supabase
       .from('properties')
       .select('city')
+      .neq('status', 'draft')
+      .is('deleted_at', null)
       .order('city', { ascending: true });
     if (error || !data) return [];
     const cities = new Set<string>();
@@ -326,6 +348,10 @@ export type PropertyDetail = {
 export async function getPropertyBySlug(slug: string): Promise<PropertyDetail | null> {
   try {
     const supabase = await createSupabaseServerClient();
+    // Same defence-in-depth as `searchProperties`. Without these explicit
+    // filters, an admin who navigates to the public detail URL for a
+    // draft / archived row sees it (the "admins read all" RLS policy
+    // bypasses the anon-only "live properties only" rule).
     const { data, error } = await supabase
       .from('properties')
       .select(
@@ -341,6 +367,8 @@ export async function getPropertyBySlug(slug: string): Promise<PropertyDetail | 
       `,
       )
       .eq('slug', slug)
+      .neq('status', 'draft')
+      .is('deleted_at', null)
       .order('position', { ascending: true, referencedTable: 'property_images' })
       .maybeSingle();
 
@@ -439,7 +467,14 @@ export async function getPropertyBySlug(slug: string): Promise<PropertyDetail | 
 export async function listLivePropertySlugs(): Promise<string[]> {
   try {
     const supabase = await createSupabaseServerClient();
-    const { data, error } = await supabase.from('properties').select('slug');
+    // Same defence-in-depth — sitemap.xml MUST NOT advertise draft /
+    // archived URLs to search engines, regardless of whether an admin
+    // happened to be signed in when the sitemap was last rendered.
+    const { data, error } = await supabase
+      .from('properties')
+      .select('slug')
+      .neq('status', 'draft')
+      .is('deleted_at', null);
     if (error || !data) return [];
     return (data as unknown as Array<{ slug: string }>)
       .map((row) => row.slug)
