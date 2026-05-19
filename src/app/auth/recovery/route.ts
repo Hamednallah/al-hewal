@@ -30,7 +30,10 @@ export const runtime = 'nodejs';
  *
  * Both Supabase Auth's `inviteUserByEmail` and `resetPasswordForEmail`
  * deliver a `?code=` query parameter on the configured `redirectTo`,
- * so this single handler covers both flows.
+ * so this single handler covers both flows. The `type` query param
+ * (default `reset` for back-compat) decides which downstream form
+ * page the user lands on — set-password for invites, reset-password
+ * for recovery.
  */
 type RecoveryType = 'invite' | 'reset';
 
