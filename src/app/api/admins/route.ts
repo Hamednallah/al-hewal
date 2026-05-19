@@ -49,10 +49,14 @@ export async function POST(req: NextRequest) {
   }
   const input = parsed.data;
 
-  // Invite link redirects to the existing reset-password page; default
-  // to the inviter's language preference for a coherent first impression.
+  // Invite link redirects to `/auth/recovery` (Route Handler) so the
+  // PKCE code exchange happens in a context where Supabase's cookie
+  // writes are honoured — see src/app/auth/recovery/route.ts. The
+  // handler then forwards to `/<locale>/auth/reset-password` for the
+  // password form. Pass the invitee's language pref as a query param
+  // so the post-exchange UI lands in the right locale.
   const locale = input.language_pref;
-  const redirectTo = `${env.NEXT_PUBLIC_SITE_URL}/${locale}/auth/reset-password`;
+  const redirectTo = `${env.NEXT_PUBLIC_SITE_URL}/auth/recovery?locale=${locale}`;
 
   const result = await inviteAdmin({
     email: input.email,

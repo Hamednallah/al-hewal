@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 
 import { type Locale, routing } from '@/i18n/routing';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
 
 import ResetPasswordForm from './ResetPasswordForm';
 
@@ -27,16 +26,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 /**
- * Landing page for Supabase's recovery email.
+ * Landing page for Supabase's recovery + invite emails.
  *
- * Supabase redirects the user here with `?code=...` after they click
- * the link in the recovery email. We exchange that code into a
- * Supabase Auth session immediately so the in-page form action can
- * call `supabase.auth.updateUser({ password })` on submit.
+ * The page is form-only — the Supabase recovery code exchange runs in
+ * `/auth/recovery` (Route Handler), NOT here. Server Components in
+ * Next 15 cannot write cookies, so doing the exchange in this render
+ * silently dropped the session cookies and the form action saw no
+ * user on submit ("Your reset session has expired" even when the
+ * code was still valid). See `src/app/auth/recovery/route.ts` for
+ * the full root-cause writeup.
  *
- * If the code is missing, expired, or already consumed, the exchange
- * fails and we bounce the user back to `/auth/forgot` to request a
- * fresh email.
+ * Back-compat: in-flight emails configured before the new flow point
+ * at `/<locale>/auth/reset-password?code=...`. We detect that and
+ * redirect to `/auth/recovery?code=...&locale=...` so old links keep
+ * working through the exchange transparently.
  */
 export default async function ResetPasswordPage({ params, searchParams }: PageProps) {
   const { locale } = await params;
@@ -45,20 +48,11 @@ export default async function ResetPasswordPage({ params, searchParams }: PagePr
 
   const { code } = await searchParams;
 
-  // Exchange the recovery code for a Supabase session if one was
-  // supplied. After this, the cookie holds an `auth.users` session
-  // good enough for `updateUser({ password })` to succeed.
-  //
-  // If the user lands here without a code AND already has a session
-  // (e.g. they refreshed after a successful exchange), the form still
-  // works — Supabase's existing session is reused.
+  // Back-compat: any email link still in the wild that points
+  // here with `?code=` needs the Route-Handler exchange path.
   if (code) {
-    const supabase = await createSupabaseServerClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) {
-      console.warn('[auth/reset-password] code exchange failed:', error.message);
-      redirect(`/${locale}/auth/forgot?error=expired`);
-    }
+    const recovery = new URLSearchParams({ code, locale });
+    redirect(`/auth/recovery?${recovery.toString()}`);
   }
 
   return (
