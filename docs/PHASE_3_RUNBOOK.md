@@ -277,9 +277,41 @@ status, not a 500. Provisioning is a one-time setup per Vercel project.
 3. Click **Create Database** → choose **Blob** → click **Continue**.
 4. Name the store `al-hewal-images` → choose **Primary region** =
    `Frankfurt (fra1)` (closest hop to Saudi visitors among the EU options).
-5. Click **Create**. Vercel auto-creates a `BLOB_READ_WRITE_TOKEN`
+5. **⚠️ Access mode must be `Public`** — Vercel asks during creation.
+   The catalog renders property images via plain `<img src>` tags so
+   the bytes MUST be publicly reachable. If you accidentally pick
+   `Private`, see the "Recovery" subsection below.
+6. Click **Create**. Vercel auto-creates a `BLOB_READ_WRITE_TOKEN`
    environment variable and links it to **all three Vercel environments**
    (Development / Preview / Production) for this project.
+
+#### Recovery: my store is configured as Private
+
+The admin upload form will surface a **503 `blob_store_not_public`**
+error chip with the message "Blob store is private; recreate it with
+public access." The Vercel runtime log shows:
+
+```
+[POST /api/upload] failed [Error]: {"code":null,"message":"Vercel Blob:
+Cannot use public access on a private store. The store is configured
+with private access."}
+```
+
+Access mode is set at store creation and CANNOT be changed in place.
+Recovery:
+
+1. Open the existing store in the Vercel dashboard → **Storage**.
+2. Settings → **Delete this store**. Confirm (Vercel double-checks).
+3. Repeat **Step 1** above, this time choosing **Public**.
+4. Re-run `pnpm vercel env pull` locally to refresh
+   `BLOB_READ_WRITE_TOKEN` (deleting + recreating the store rotates
+   the token).
+5. Re-deploy production from the Vercel dashboard so the new token
+   propagates. Auto-deploys from `main` will pick it up on the next
+   commit too.
+
+No data loss to worry about — the store was empty (the upload bug
+prevented any blobs from being written in the first place).
 
 ### Step 2 — Pull the token into your local `.env`
 
