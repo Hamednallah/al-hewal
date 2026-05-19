@@ -97,13 +97,17 @@ test.describe('admin shell (PR 3.2)', () => {
       // NOTE: `/en/admin/properties` was a placeholder in PR 3.2 but PR 3.3a
       // replaced it with the real Listing Management table. The placeholder
       // assertions for that route now live in `admin-properties.spec.ts`.
+      //
+      // NOTE: `/en/admin/admins` was a placeholder in PR 3.2 but PR #33
+      // (Admin Management UI) replaced it with the real list + invite
+      // flow. The page-level assertions for that route now live in
+      // `admin-management.spec.ts`.
       { path: '/en/admin/leads', heading: /Leads Journal/, tracking: /Tracking: PR 3\.6$/ },
       {
         path: '/en/admin/analytics',
         heading: /Strategic Analytics/,
         tracking: /Tracking: Phase 4$/,
       },
-      { path: '/en/admin/admins', heading: /Admin Management/, tracking: /Tracking: PR 3\.4$/ },
       { path: '/en/admin/profile', heading: /My Profile/, tracking: /Tracking: Phase 4$/ },
     ];
 

@@ -276,6 +276,7 @@
       "comingSoon": "Coming soon",
       "superAdminOnly": "Super-admin only",
       "addNewProperty": "Add new property",
+      "inviteAdmin": "Invite admin",
       "openMenu": "Open menu",
       "closeMenu": "Close menu"
     },
@@ -457,12 +458,67 @@
       "admins": {
         "title": "Admin Management",
         "subtitle": "Invite, promote, and deactivate administrators (super-admin only).",
-        "placeholder": "The invite + tier-management UI ships in PR 3.4. Today the first super-admin is bootstrapped manually via SQL — see docs/PHASE_3_RUNBOOK.md §1."
+        "subtitleWithCount": "{total, plural, =1 {1 administrator} other {# administrators}} — invite, promote, or deactivate."
       },
       "profile": {
         "title": "My Profile",
         "subtitle": "Identity, language preference, and account security.",
         "placeholder": "The full profile editor + TOTP enrolment for super-admins lands in Phase 4. Today, language preference can be changed by re-running the bootstrap SQL with a different language_pref value."
+      }
+    },
+    "admins": {
+      "lastLoginNever": "Never",
+      "youLabel": "you",
+      "field_lastLogin": "Last login",
+      "field_languagePref": "Language",
+      "tier": {
+        "super_admin": "Super admin",
+        "standard_admin": "Standard admin"
+      },
+      "status": {
+        "active": "Active",
+        "deactivated": "Deactivated",
+        "pending_invite": "Pending invite"
+      },
+      "empty": {
+        "title": "No administrators yet",
+        "body": "Invite the first administrator. They'll receive an email with a link to set their password.",
+        "ctaLabel": "Invite first admin"
+      },
+      "actions": {
+        "menuLabel": "Actions for {name}",
+        "promote": "Promote to super admin",
+        "demote": "Demote to standard admin",
+        "deactivate": "Deactivate",
+        "deactivateConfirm": "Deactivate {name}? They will lose admin access immediately.",
+        "reactivate": "Reactivate",
+        "failureToast": "Action failed. Try again or check the server logs."
+      },
+      "invite": {
+        "pageTitle": "Invite administrator",
+        "subtitle": "Send an invitation email so the new admin can set their password.",
+        "hint": "The invitee will receive an email with a one-time link. The link expires after 24 hours.",
+        "submit": "Send invitation",
+        "submitting": "Sending…",
+        "fields": {
+          "email": "Email address",
+          "full_name": "Full name",
+          "tier": "Tier",
+          "language_pref": "Preferred language",
+          "language_en": "English",
+          "language_ar": "العربية"
+        },
+        "errors": {
+          "unauthorized": "Your session has expired. Please sign in again.",
+          "forbidden": "Only super admins can invite new administrators.",
+          "invalid_json": "We couldn't read the form payload. Please try again.",
+          "invalid_body": "Please correct the highlighted fields and submit again.",
+          "email_taken": "This email is already an administrator (or has a pending invite).",
+          "invite_failed": "Supabase rejected the invite. Check email deliverability and try again.",
+          "insert_failed": "We couldn't create the admin record. The invite email may still arrive; check the audit log.",
+          "network_error": "Connection problem. Check your internet and try again.",
+          "unknown": "Something went wrong. Please try again."
+        }
       }
     },
     "auth": {

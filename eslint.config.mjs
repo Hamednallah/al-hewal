@@ -74,6 +74,10 @@ const config = [
     //    RLS hides. Each consumer is gated by `requireAdmin()` at the
     //    page boundary; the file naming convention prevents accidental
     //    drift into public surfaces.
+    //  - src/lib/data/admins.ts — admin-management list/invite reads
+    //    (PR phase-3-admin-management-ui). Same service-role rationale
+    //    as `admin-*.ts`; the unprefixed name reads cleaner because the
+    //    table itself is `admins`.
     //  - src/lib/admin/** — PR 3.3b shared HOF for row-action route
     //    handlers (handlePropertyAction). Same service-role rationale
     //    as the API routes that delegate to it.
@@ -88,6 +92,7 @@ const config = [
       'src/app/api/**/*.ts',
       'src/app/**/route.ts',
       'src/lib/data/admin-*.ts',
+      'src/lib/data/admins.ts',
       'src/lib/admin/**/*.ts',
       'src/lib/auth/establish-session.ts',
     ],
