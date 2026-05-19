@@ -162,13 +162,21 @@ export function PropertyForm({
         body: JSON.stringify(payload),
       });
       if (res.ok) {
-        // SPA navigation via Next router. `router.push` calls
-        // `history.pushState` synchronously, so `window.location.pathname`
-        // (and Playwright's `page.url()`) updates immediately — no need to
-        // wait on a fresh document commit. Hard navigation (assign/href)
-        // failed `toHaveURL`'s 5s poll in CI because the destination's
-        // commit time exceeded the budget. App Router auto-fetches the
-        // listings RSC on push, so no explicit refresh is required.
+        // On CREATE, land the admin on the edit page for the new row so
+        // they can immediately add images / publish, rather than bouncing
+        // back to the listings and having to find the row again. On
+        // EDIT, return to the listings (same as before — admin just
+        // finished their changes).
+        if (mode === 'create') {
+          const body = (await res.json().catch(() => ({}))) as {
+            data?: { id?: string };
+          };
+          const newId = body.data?.id;
+          if (newId) {
+            router.push(`/${locale}/admin/properties/${newId}/edit`);
+            return;
+          }
+        }
         router.push(`/${locale}/admin/properties`);
         return;
       }

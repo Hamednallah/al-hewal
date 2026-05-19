@@ -64,7 +64,7 @@ export function AdminMobileMenu({ openLabel, closeLabel, title, children }: Admi
             'focus:outline-none',
           )}
         >
-          <div className="bg-charcoal flex items-center justify-between px-4 py-3">
+          <div className="bg-teal-forest-700 flex items-center justify-between px-4 py-3">
             <Dialog.Title className="text-brass text-xs tracking-[0.18em] uppercase">
               {title}
             </Dialog.Title>
@@ -78,7 +78,7 @@ export function AdminMobileMenu({ openLabel, closeLabel, title, children }: Admi
               </button>
             </Dialog.Close>
           </div>
-          <div className="bg-charcoal flex-1 overflow-y-auto">{children}</div>
+          <div className="bg-teal-forest-700 flex-1 overflow-y-auto">{children}</div>
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

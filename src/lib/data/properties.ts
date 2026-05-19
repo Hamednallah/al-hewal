@@ -345,10 +345,25 @@ export async function getPropertyBySlug(slug: string): Promise<PropertyDetail | 
       .maybeSingle();
 
     if (error) {
-      console.warn('[getPropertyBySlug] supabase returned error:', error.message);
+      // TODO(ux-papercuts): REMOVE diagnostic verbosity once the prod
+      // detail-page 404 (2026-05-19) is root-caused. Reduce back to
+      // `console.warn('[getPropertyBySlug] supabase returned error:', error.message)`.
+      console.warn(
+        `[getPropertyBySlug] supabase error for slug="${slug}" code=${error.code ?? 'none'}: ${error.message}`,
+      );
       return null;
     }
-    if (!data) return null;
+    if (!data) {
+      // TODO(ux-papercuts): REMOVE this warning once the prod 404 is
+      // root-caused. The no-row case is normal (stale slugs / draft
+      // properties); we only need the log line until we figure out why
+      // a published, catalog-visible row is returning null on the
+      // detail page in production.
+      console.warn(
+        `[getPropertyBySlug] no row returned for slug="${slug}" — RLS may have hidden a draft / soft-deleted row, OR the slug is stale.`,
+      );
+      return null;
+    }
 
     type Row = {
       id: string;
