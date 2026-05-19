@@ -11,8 +11,8 @@ import { MobileContactBar } from '@/components/public/property-detail/MobileCont
 import { Specs } from '@/components/public/property-detail/Specs';
 import { Button } from '@/components/ui/button';
 import { Link } from '@/i18n/navigation';
-import { type Locale, routing } from '@/i18n/routing';
-import { getPropertyBySlug, listLivePropertySlugs } from '@/lib/data/properties';
+import { type Locale } from '@/i18n/routing';
+import { getPropertyBySlug } from '@/lib/data/properties';
 import { env } from '@/lib/env';
 import { formatPrice } from '@/lib/format';
 
@@ -34,25 +34,20 @@ import { formatPrice } from '@/lib/format';
  * Results can verify it. Required fields: name, description, address,
  * geo, image, offers (with priceCurrency=SAR).
  */
-// ISR with a 60s revalidate window. PR #26 briefly used force-dynamic
-// to defeat a cached-404 papercut, but that traded the free-tier-cheap
-// static path for a function invocation on every visit. Per the
-// `prefer-revalidate-over-force-dynamic` rule, the right knob is the
-// revalidate window: 60s is short enough that a freshly-published
-// property's URL clears within a minute (and `revalidatePath` from
-// /publish will usually evict the CDN cache faster than that anyway).
-export const revalidate = 60;
-export const dynamicParams = true;
+// force-dynamic. PR #27 tried `revalidate=60 + generateStaticParams`
+// per the "prefer revalidate over force-dynamic" rule, but production
+// proved the rule wrong for THIS page: Vercel's CDN edge cache kept
+// returning `Cache: HIT` on /404 responses even after the 60s window
+// elapsed and `revalidatePath` had fired. Multiple post-#27 logs
+// confirmed `404 Cache: HIT` for slugs whose underlying property was
+// already published. Going back to `force-dynamic` (the PR #26 fix
+// that owner-tested green) — every request hits Supabase fresh, no
+// cached miss windows. Free-tier impact at ~50 properties + modest
+// KSA traffic stays inside the 100k/mo Function cap by orders of
+// magnitude.
+export const dynamic = 'force-dynamic';
 
 type PageParams = { locale: string; slug: string };
-
-export async function generateStaticParams() {
-  const slugs = await listLivePropertySlugs();
-  // Pre-render every locale × every slug combination. If Supabase is
-  // unreachable at build, returns []; Next still serves the route on
-  // demand via the dynamic ISR fallback (`dynamicParams = true`).
-  return routing.locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
-}
 
 export async function generateMetadata({
   params,
