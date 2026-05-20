@@ -488,10 +488,72 @@ super_admin invites a new admin, the `public.admins` row is created,
 but the invitee never receives the email. Same applies to the
 `/auth/forgot` password-recovery flow.
 
-The durable fix is to point Supabase Auth at a real transactional
-email provider. Resend has a free tier that covers a small admin team
-indefinitely (3 000 emails/month, 100/day). SendGrid, Postmark, and
-Mailgun all work the same way.
+Three paths to fix this, in order of how much setup they need:
+
+| Path                               | Setup time                | Requirements                                   | Daily cap                         | When to use                                                         |
+| ---------------------------------- | ------------------------- | ---------------------------------------------- | --------------------------------- | ------------------------------------------------------------------- |
+| **A. Gmail SMTP**                  | ~5 min                    | Owner's Gmail account + 2-Step Verification on | 500 (personal) / 2000 (Workspace) | **Now** — no domain yet, just need invites to work to any recipient |
+| **B. Resend with verified domain** | ~30 min (DNS propagation) | Owns a domain whose DNS can be edited          | 100/day, 3000/month (free)        | Production — once Al Hewal has a domain                             |
+| **C. SQL fallback**                | ~1 min per admin          | Supabase Studio access                         | n/a (no email sent)               | Emergency — SMTP broken AND a new admin needs access TODAY          |
+
+### Path A: Gmail SMTP (no domain needed)
+
+Gmail's SMTP server lets the owner send from their own Gmail address
+to any recipient without verifying a domain. Caps are 500 messages
+per day for personal Gmail (`@gmail.com`) and 2000 for Google
+Workspace (`@your-company-domain`). For Al Hewal's volume (a handful
+of invites + occasional password resets) that's effectively unlimited.
+
+#### Step A1 — Enable 2-Step Verification on the Gmail account
+
+1. https://myaccount.google.com/security
+2. Under **How you sign in to Google**, switch **2-Step Verification** to **On**.
+3. Follow the prompts (phone + SMS or Authenticator app).
+
+Google requires 2-Step Verification before it will issue an App Password.
+
+#### Step A2 — Create a Gmail App Password
+
+1. https://myaccount.google.com/apppasswords
+2. **App name**: `Supabase SMTP`.
+3. Click **Create**.
+4. Copy the 16-character password Google shows
+   (`xxxx xxxx xxxx xxxx`, spaces optional — Supabase strips them).
+   You can't see it again — store it in a password manager.
+
+#### Step A3 — Plug Gmail into Supabase
+
+1. https://supabase.com/dashboard/project/gvjmnwsqaymkxcsabjur/auth/smtp
+2. Toggle **Enable custom SMTP** to **on**.
+3. Fill in:
+   - **Sender email**: the owner's full Gmail address (e.g.
+     `hamednallah@gmail.com`). MUST match the Gmail account that
+     issued the App Password — Gmail rejects mismatched From addresses.
+   - **Sender name**: `Al Hewal Admin` (what recipients see in their inbox).
+   - **Host**: `smtp.gmail.com`
+   - **Port**: `587` (STARTTLS) — `465` (SSL) also works.
+   - **Username**: the owner's full Gmail address (same as Sender email).
+   - **Password**: the 16-character App Password from Step A2.
+   - **Minimum interval**: leave at default (60s).
+4. Click **Save**.
+
+#### Step A4 — Verify
+
+1. From the admin UI, invite a real recipient email.
+2. Recipient checks their inbox (also Spam — Gmail-from-Gmail can
+   occasionally land in Spam at first; once recipients click "Not
+   spam" once, future sends land in Inbox).
+3. Invite link clicks through `/auth/recovery` → `/auth/set-password`.
+
+#### When to switch off Path A
+
+The Gmail address is fine for an internal tool. Switch to Path B
+(Resend + verified domain) once Al Hewal has a domain — then the
+sender becomes `invites@al-hewal.com` instead of the owner's
+personal Gmail, which reads more legitimate to admin invitees and
+isolates transactional mail from the owner's inbox.
+
+### Path B: Resend with a verified domain
 
 ### Step 1 — Provision a Resend account (free tier)
 
@@ -598,12 +660,12 @@ already points at our `redirectTo` (`/auth/recovery?type=…&locale=…`):
 Leave the link as `{{ .ConfirmationURL }}` — Supabase substitutes the
 real `redirectTo` value at send time.
 
-### SQL fallback (still works)
+### Path C: SQL fallback (no SMTP at all)
 
-If SMTP is broken AND you need to add an admin immediately, runbook
-§1 ("Resetting an existing admin's password") still applies. Insert
-the `public.admins` row by hand, then set the auth.users password
-via the SQL Editor:
+If SMTP is broken AND you need to onboard an admin immediately,
+runbook §1 ("Resetting an existing admin's password") still applies.
+Insert the `public.admins` row by hand, then set the auth.users
+password via the SQL Editor:
 
 ```sql
 update auth.users
