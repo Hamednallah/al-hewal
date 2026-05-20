@@ -582,6 +582,7 @@
           "mismatch": "The two passwords don't match.",
           "expiredSession": "Your reset session has expired. Request a new reset email.",
           "notAdmin": "This account isn't registered as an Al Hewal administrator.",
+          "samePassword": "Your new password must be different from your current one. Please choose a different password.",
           "supabase": "We couldn't save the new password. Please try again."
         }
       },
@@ -598,6 +599,7 @@
           "mismatch": "The two passwords don't match.",
           "expiredSession": "Your invitation link has expired. Ask the administrator who invited you to send a fresh one.",
           "notAdmin": "Your invitation hasn't been finalised yet. Ask the administrator who invited you to retry.",
+          "samePassword": "You've already set this password for your account. Please choose a different password.",
           "supabase": "We couldn't save your password. Please try again."
         }
       },
