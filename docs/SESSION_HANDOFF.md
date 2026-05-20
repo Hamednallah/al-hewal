@@ -1,9 +1,10 @@
 # Session Handoff — read this FIRST
 
-> Last updated: 2026-05-20, after the Phase 3 stabilisation session
-> that shipped PRs #26 → #37 (papercuts cleanup → server-side upload
-> rewrite → Admin Management UI → Supabase auth flow rebuilt for the
-> implicit-flow URL fragment + invite/reset UX split).
+> Last updated: 2026-05-20 PM, after the continuation session that
+> shipped PRs #39 → #47 — finishing the invite-flow chain that #37
+> started (admin status promotion + a migration to unblock the
+> service-role bypass), then PR 3.5c (reorder + hero), PR 3.6 (Leads
+> Journal MVP + cards refactor + CSV export), and PR 3.7's a11y gate.
 > Read §0 ("Session wrap-up — pick up here") first; the rest of this
 > file is reference material that hasn't changed.
 
@@ -13,7 +14,109 @@ critical decisions are sticky.
 
 ---
 
-## 0 — Session wrap-up (2026-05-19/20) — pick up here
+## 0 — Session wrap-up (2026-05-20 PM continuation) — pick up here
+
+### What shipped this half-session (PRs #39 → #47)
+
+The morning session (covered in §0.1 below) ended with the
+invite-acceptance flow still soft-broken — the invitee could click
+the email, set a password, but bounce back to login because nothing
+flipped `public.admins.status` from `pending_invite` → `active`. The
+afternoon picked that up and finished out the master plan's Phase 3
+list except for the bilingual PDF export.
+
+| PR  | Title                                                                            | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #39 | fix(phase-3/auth): promote pending_invite admins on invite acceptance            | `establishAdminSession` now accepts `'active'` OR `'pending_invite'`, flips the row to `'active'` before signing the cookie, and (after the #40 follow-up) fail-hards with a new `'promotionFailed'` reason that callers map to the existing `notAdmin` i18n key. Solo `establishAdminSession` change wasn't enough on its own — needed migration 0006 from #40 to actually land the UPDATE.                                                                                                   |
+| #40 | fix(phase-3/auth): migration 0006 unblocks service-role admin status writes      | The migration 0003 `admins_protect_privileged_fields` trigger had a broken bypass (`rolsuper` check that never matched `service_role`). Every service-role UPDATE on `admins.{tier,status,email}` was rejected with `42501 — status may only be changed by a super_admin`. Migration 0006 rewrites the bypass to `current_user in ('service_role', 'supabase_admin', 'postgres')`. **Owner-applied.** Also unblocks promote / demote / deactivate / reactivate (silently broken since PR #33). |
+| #41 | chore(phase-3): drop diagnostic console.warns + surface samePassword copy        | Stripped the `TODO(ux-papercuts): REMOVE` diagnostics in `getPropertyBySlug` (PR #28's force-dynamic root-caused the original cached-404). Added a `samePassword` i18n key + detection so Supabase Auth's 422 "different from old password" maps to actionable copy in both set-password and reset-password.                                                                                                                                                                                   |
+| #42 | feat(phase-3/5c): drag-reorder + set-as-hero in the admin image gallery          | Native HTML5 drag (no new dep) + arrow-button keyboard fallback + "Set as hero" button + brass "Hero" ribbon. Two new endpoints: `PATCH .../images/reorder` and `PATCH .../images/[imageId]/hero`. Public detail + catalog card + home carousel already key off `is_hero`, so no public-side changes needed.                                                                                                                                                                                   |
+| #43 | fix(phase-3/5c): sync grid local state when initialImages prop updates           | Newly uploaded photos didn't appear in the grid until a hard refresh. `PropertyImagesGridClient`'s `useState(initialImages)` only ran on mount; added a `useEffect` that mirrors the prop to local state. Fixes upload + delete refresh symptoms in one stroke.                                                                                                                                                                                                                                |
+| #44 | feat(phase-3/6): Leads Journal MVP                                               | Replaces the placeholder at `/<locale>/admin/leads` with a real table + filter bar (project / source / inquiry_type / status) + per-row actions (copy phone, WhatsApp shortcut, mark contacted ↔ pending, inline notes editor). New `PATCH /api/leads/[id]` with PII-scrubbed audit diff. **Bilingual PDF export deferred** — needs IBM Plex Sans Arabic registration in `@react-pdf/renderer` for RTL shaping (master-plan risk note).                                                        |
+| #45 | test(phase-3/7): axe-core a11y scans for every admin Command Center route        | 16 new Playwright `*.a11y.spec.ts` specs (8 admin routes × 2 locales) gating WCAG 2.1 AA. First admin a11y gate landed; bundled with a `brass-600 → brass-700` contrast fix (CLAUDE.md's documented "brass on off-white = banned" rule — `brass-600` is 3.7:1 on canvas, fails AA; `brass-700` is 5.7:1, passes).                                                                                                                                                                              |
+| #46 | feat(phase-3/6): leads journal renders as cards, mirroring the property listings | Markup refactor of `LeadsTable` from `<table>` to a `<ul>` of cards. Component name retained for import stability (same convention `PropertyTable` followed in the ux-papercuts PR). Card chrome: header (name + status badge) → data row (project · source · inquiry) → contact block (phone/email LTR + message) → actions row.                                                                                                                                                              |
+| #47 | feat(phase-3/6): bilingual CSV export for the leads journal                      | `GET /api/leads/export?locale=<ar\|en>&…` returns RFC 4180 CSV with UTF-8 BOM (Excel-on-Windows reads Arabic correctly). Capped at 10k rows. Audit-logged with row count + filters but no row data (PII discipline). Export button on the LeadsFilterBar. The new `listAllLeadsForExport` reader is shaped to feed the future PDF export route too.                                                                                                                                            |
+
+### Owner-side actions completed during this half-session
+
+- ✅ Applied migration 0006 via `pnpm supabase db push` — invite
+  flow + admin-management mutations now work end-to-end against
+  the linked Supabase.
+- ✅ Verified the full invite + recovery loop with a fresh email
+  (was owner-side action #1 from the morning).
+
+### Owner-side actions still open
+
+1. **Production-grade SMTP upgrade — eventually.** Owner is still on
+   Gmail SMTP from a personal address (runbook §8 Path A). Plenty
+   for invite/reset volume today. Once Al Hewal has its own domain,
+   follow runbook §8 **Path B** (verify domain in Resend, switch
+   sender to `invites@al-hewal.com`).
+2. **Domain purchase — eventually.** `al-hewal.vercel.app` works
+   but a real domain unlocks (a) production-grade SMTP and (b)
+   Vercel Blob bandwidth via a custom domain CDN.
+
+### Phase 3 status (post-#47)
+
+| Master-plan PR                                     | Status                                                                                                                 |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| 3.1 Magic-link auth + admin guard                  | ✅ shipped (#14 → #24 password flow)                                                                                   |
+| 3.2 Admin shell                                    | ✅ shipped (#16)                                                                                                       |
+| 3.3a Listings table                                | ✅ shipped (#18)                                                                                                       |
+| 3.3b Row-action routes                             | ✅ shipped (#20)                                                                                                       |
+| 3.4 Property form (single-page, not 3-step wizard) | ✅ shipped (#19)                                                                                                       |
+| 3.5a Upload backend (server-side multipart)        | ✅ shipped (#29 — supersedes #21)                                                                                      |
+| 3.5b Upload UI                                     | ✅ shipped (#22, simplified by #29)                                                                                    |
+| **3.5c Image reorder + hero pick**                 | **✅ shipped (#42 + #43 fix-up)**                                                                                      |
+| **3.6 Leads Journal**                              | **✅ MVP shipped (#44 → cards refactor #46 → CSV export #47). PDF export deferred until `@react-pdf/renderer` spike.** |
+| **3.7 Tests + Phase 3 wrap**                       | **⏳ a11y admin gate landed (#45). Full happy-path E2E + `v0.3.0` tag still owed.**                                    |
+| Admin Management UI + invite                       | ✅ shipped (#33, hardened by #39 / #40)                                                                                |
+
+### Next PR — pick one of
+
+1. **Bilingual PDF export** (the deferred half of 3.6). Needs:
+   (a) `@react-pdf/renderer` install + IBM Plex Sans Arabic font
+   registration (probably under `public/fonts/`),
+   (b) RTL glyph shaping verification — this is the master-plan
+   risk note. If the OpenType GSUB tables on IBM Plex Sans
+   Arabic work cleanly with `@react-pdf/renderer`'s fontkit,
+   the actual document component is straightforward.
+   (c) `GET /api/leads/export.pdf` route shaped like the CSV one,
+   sharing `listAllLeadsForExport`.
+   ~250 lines + a font file. Highest-value remaining 3.6 item.
+2. **Phase 3 wrap (`v0.3.0`)** — happy-path admin E2E (login →
+   create property → upload image → publish → property visible on
+   public site). Needs a seeded Supabase, so it'll run against a
+   preview deploy, not CI's placeholder. Then tag `v0.3.0 — Admin
+Command Center` and move to Phase 4.
+3. **Phase 4 kickoff** — strategic analytics dashboards. The
+   admin shell already has the placeholder; migration 0003's
+   `page_views_daily` / `whatsapp_clicks_daily` materialized views
+   are the data source. Bigger commitment.
+
+If unsure, **PDF export** is the cleanest next-PR — it finishes 3.6
+in full and the data plumbing is already in place from #47.
+
+### Memories added this session
+
+(none new — all the relevant memories — force-dynamic, hand-held
+setup, gh.exe path, always-commit-push-pr — were added in the morning
+session and held through the afternoon.)
+
+### Working tree state at session-end (2026-05-20 PM)
+
+- Branch: `main`, in sync with origin through PR #47.
+- vitest **189/189 ✓** (was 175 at morning-end; +6 establish-session,
+  +7 admin-leads filter, +1 — wait, leads-csv is +6).
+  Actual count: 175 + 14 = 189.
+- lint clean · typecheck clean · prod build clean.
+- Branch coverage 80.57% (gate is 80%).
+- `.gitignore` still has the local duplicated line — pre-existing
+  papercut from §0.1, not pursued.
+
+---
+
+## 0.1 — Session wrap-up (2026-05-19/20 morning) — historical context
 
 ### What shipped this session (PRs #26 → #37)
 
@@ -171,10 +274,10 @@ shipped (v0.2.0).** Resume with **Phase 3 — Admin Command Center**.
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Repo       | https://github.com/Hamednallah/al-hewal                                                                                       |
 | Local      | `d:\Work\Projects\AL-Hewal\al-hewal\`                                                                                         |
-| Main HEAD  | PR #37 (Supabase implicit-flow URL fragment handler — invite + recovery now work end-to-end) — merged                         |
+| Main HEAD  | PR #47 (bilingual CSV export for the leads journal) — merged. PRs #39-#47 finished out 3.5c, 3.6 MVP, and 3.7 a11y gate.      |
 | Branch     | `main` (you should be on it; if not, `git checkout main && git pull --ff-only`)                                               |
 | Latest tag | `v0.2.1` (Phase 2 closeout — favicon + PWA manifest). `v0.3.0` is reserved for the end of Phase 3 per master-plan convention. |
-| Next PR    | **PR 3.6 — Leads Journal** OR **PR 3.5c — Image reorder + hero pick** (owner's pick — see §0 "Next PR")                       |
+| Next PR    | **Bilingual PDF export** (deferred half of 3.6) OR **Phase 3 wrap (`v0.3.0`)** OR **Phase 4 kickoff** — see §0 "Next PR"      |
 
 ---
 
