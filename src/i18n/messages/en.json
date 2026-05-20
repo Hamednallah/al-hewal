@@ -361,7 +361,19 @@
         "deleteConfirm": "Delete this photo? It will be removed from both the admin gallery and the public catalog.",
         "deleteButton": "Delete photo",
         "deleting": "Deleting…",
-        "thumbnailAlt": "Property photo, position {position}"
+        "thumbnailAlt": "Property photo, position {position}",
+        "reorderHint": "Drag a photo to reorder, or use the move buttons below each tile. The first photo is the default hero unless one is explicitly set.",
+        "moveEarlier": "Move earlier",
+        "moveLater": "Move later",
+        "moveEarlierAria": "Move photo {position} earlier",
+        "moveLaterAria": "Move photo {position} later",
+        "saving": "Saving order…",
+        "reorderFailed": "We couldn't save the new order. Please try again.",
+        "setAsHero": "Set as hero",
+        "settingAsHero": "Setting as hero…",
+        "heroBadge": "Hero",
+        "heroBadgeAria": "Current hero photo",
+        "setHeroFailed": "We couldn't set this photo as the hero. Please try again."
       },
       "pagination": {
         "previous": "Previous",
