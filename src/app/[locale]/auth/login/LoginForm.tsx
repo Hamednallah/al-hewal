@@ -11,7 +11,7 @@ const INITIAL_STATE: LoginState = { status: 'idle' };
 
 interface LoginFormProps {
   next?: string;
-  initialError?: LoginErrorKey | 'callbackInvalid' | 'callbackExpired';
+  initialError?: LoginErrorKey | 'callbackInvalid' | 'callbackExpired' | 'inviteExpired';
 }
 
 export default function LoginForm({ next, initialError }: LoginFormProps) {

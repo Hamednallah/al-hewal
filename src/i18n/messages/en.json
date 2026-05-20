@@ -538,7 +538,8 @@
           "supabase": "We couldn't sign you in right now. Please try again in a moment.",
           "notAdmin": "This email isn't registered as an Al Hewal administrator. Contact your super admin if this is unexpected.",
           "callbackInvalid": "That recovery link is no longer valid. Please request a new one.",
-          "callbackExpired": "That recovery link has expired. Please request a new one."
+          "callbackExpired": "That recovery link has expired. Please request a new one.",
+          "inviteExpired": "Your invitation link is no longer valid. Ask the admin who invited you to send a fresh invitation."
         }
       },
       "forgot": {

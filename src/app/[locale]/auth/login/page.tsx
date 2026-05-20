@@ -33,6 +33,11 @@ const ALLOWED_ERRORS = new Set<string>([
   'notAdmin',
   'callbackInvalid',
   'callbackExpired',
+  // Invite acceptance landed on /auth/recovery with an expired /
+  // already-consumed Supabase token. We send invitees here (rather
+  // than to /auth/forgot) because they have no password to recover —
+  // they need a fresh invitation, not a reset link.
+  'inviteExpired',
 ]);
 
 export default async function LoginPage({ params, searchParams }: PageProps) {
@@ -44,7 +49,7 @@ export default async function LoginPage({ params, searchParams }: PageProps) {
   const sanitizedNext = next && next.startsWith('/') && !next.startsWith('//') ? next : undefined;
   const initialError =
     error && ALLOWED_ERRORS.has(error)
-      ? (error as LoginErrorKey | 'callbackInvalid' | 'callbackExpired')
+      ? (error as LoginErrorKey | 'callbackInvalid' | 'callbackExpired' | 'inviteExpired')
       : undefined;
 
   return (
