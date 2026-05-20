@@ -517,9 +517,15 @@ Google requires 2-Step Verification before it will issue an App Password.
 1. https://myaccount.google.com/apppasswords
 2. **App name**: `Supabase SMTP`.
 3. Click **Create**.
-4. Copy the 16-character password Google shows
-   (`xxxx xxxx xxxx xxxx`, spaces optional — Supabase strips them).
-   You can't see it again — store it in a password manager.
+4. Google shows the password as `xxxx xxxx xxxx xxxx` — the spaces
+   are visual grouping ONLY, NOT part of the password. Copy the 16
+   characters WITHOUT the spaces (`xxxxxxxxxxxxxxxx` — one
+   continuous block). Pasting the spaces along with the characters
+   causes Gmail's SMTP to reject the credentials with
+   `535 5.7.8 Username and Password not accepted` (see the
+   troubleshooting block under Step A4).
+5. Store the 16-char password in a password manager — you can't
+   re-view it later.
 
 #### Step A3 — Plug Gmail into Supabase
 
