@@ -451,7 +451,9 @@
         "contactedState": "Status",
         "any": "Any",
         "apply": "Apply filters",
-        "clear": "Clear"
+        "clear": "Clear",
+        "exportCsv": "Export CSV",
+        "exportCsvAria": "Download leads matching the current filters as a CSV file"
       },
       "source": {
         "whatsapp": "WhatsApp",
