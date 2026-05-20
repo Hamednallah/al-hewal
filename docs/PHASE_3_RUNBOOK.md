@@ -496,30 +496,54 @@ Mailgun all work the same way.
 ### Step 1 — Provision a Resend account (free tier)
 
 1. https://resend.com/signup — sign up with your team email.
-2. Onboarding asks for a **domain**. Two paths:
-   - **Recommended (deliverability)**: enter your real domain (e.g.
-     `al-hewal.com`), then add the SPF + DKIM DNS records Resend
-     prints. Once verified you can send from any address on that
-     domain.
-   - **Quick start (any address)**: pick `onboarding@resend.dev` —
-     no DNS setup, but the From address is `onboarding@resend.dev`
-     which is less trustworthy in inbox filters.
+2. **Verify a domain** — this is REQUIRED, not optional. Resend's
+   shared `onboarding@resend.dev` sender refuses to email anyone
+   other than the Resend account owner (the 403 surfaces as
+   "validation_error: You can only send testing emails to your own
+   email address"). Without a verified domain the invite flow
+   appears to work but every external recipient is silently rejected.
+   - https://resend.com/domains → **Add Domain**
+   - Pick the domain you control (e.g. `al-hewal.com` — must be a
+     domain whose DNS you can edit; subdomains like `mail.al-hewal.com`
+     also work and isolate transactional mail from your apex).
+   - Resend prints 3 DNS records (SPF + DKIM + DMARC):
+     - **TXT** at the domain root: SPF (`v=spf1 include:_spf.resend.com ~all`)
+     - **TXT** at `resend._domainkey.<your-domain>`: DKIM (`p=…`)
+     - **TXT** at `_dmarc.<your-domain>`: DMARC (recommended)
+   - Paste them into your DNS provider (Cloudflare, Namecheap, GoDaddy,
+     Vercel DNS, …). Wait 1–5 minutes, click **Verify** in Resend.
 3. **API Keys** → **Create API Key** → name it `supabase-smtp` →
    permission `Sending access` → **Create**. Copy the value
    (`re_…`) — Resend only shows it once.
+
+#### Test-only workaround (no domain ready yet)
+
+If you need to validate the end-to-end invite flow before you have a
+domain, Resend will let you send from `onboarding@resend.dev` ONLY to
+the email address registered on your Resend account. To test:
+
+1. Make sure your Resend account email is your Al Hewal super-admin
+   email (or add a teammate's email to the Resend account).
+2. From the admin UI, invite that exact email address. The 403 won't
+   fire because the recipient matches.
+3. Click through the invite link, set a password, verify the flow.
+4. Then come back to Step 1.2 above and verify a real domain before
+   inviting anyone else.
 
 ### Step 2 — Plug Resend's SMTP creds into Supabase
 
 1. https://supabase.com/dashboard/project/gvjmnwsqaymkxcsabjur/auth/smtp
 2. Toggle **Enable custom SMTP** to **on**.
 3. Fill in:
-   - **Sender email**: `Al Hewal Admin <invites@al-hewal.com>`
-     (or whatever address you verified in Resend).
+   - **Sender email**: `invites@<your-verified-domain>` (e.g.
+     `invites@al-hewal.com`). MUST be on the domain you verified in
+     Step 1.2 — using `onboarding@resend.dev` here causes Resend to
+     reject every recipient other than your Resend account owner.
    - **Sender name**: `Al Hewal`.
    - **Host**: `smtp.resend.com`
    - **Port**: `587`
    - **Username**: `resend`
-   - **Password**: the `re_…` key from Step 1.
+   - **Password**: the `re_…` key from Step 1.3.
    - **Minimum interval**: leave at default (60s) — Resend has its
      own rate limits.
 4. Click **Save**.
@@ -534,6 +558,29 @@ check:
   Supabase did its part. Resend's UI shows the deliverability outcome.
 - Supabase dashboard → **Authentication** → **Logs** — if Supabase
   rejected our SMTP request, the error message is here.
+
+#### Specific failure: Resend 403 `validation_error`
+
+If the Resend Emails dashboard shows a 403 with body:
+
+```
+"name": "validation_error",
+"message": "You can only send testing emails to your own email
+address (you@example.com). To send emails to other recipients,
+please verify a domain at resend.com/domains, and change the
+`from` address to an email using this domain."
+```
+
+…that means the Supabase Sender email is still `onboarding@resend.dev`
+(or any `*.resend.dev` address). Resend refuses to email recipients
+other than the Resend account owner from the shared domain. The
+upstream chip in the admin UI surfaces this as
+`(invite_smtp_failed)`. Fix:
+
+1. Verify a domain (Step 1.2 above) if you skipped it.
+2. Update the Supabase Sender email (Step 2) to use that verified
+   domain instead of `onboarding@resend.dev`.
+3. Save and retry the invite.
 
 ### Step 4 — Customise the templates (optional)
 
