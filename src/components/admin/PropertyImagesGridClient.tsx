@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
-import { useCallback, useMemo, useState, useTransition, type DragEvent } from 'react';
+import { useCallback, useEffect, useMemo, useState, useTransition, type DragEvent } from 'react';
 
 import { cn } from '@/lib/utils';
 import type { Locale } from '@/i18n/routing';
@@ -53,6 +53,20 @@ export function PropertyImagesGridClient({
   const [error, setError] = useState<ReorderError>(null);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+
+  // Sync local state when the parent server component re-renders with a
+  // fresh images list. Triggered by `router.refresh()` after the
+  // uploader posts a new file or the delete button removes a row — the
+  // server re-fetches `listPropertyImages`, passes the new array to us,
+  // and this effect reflects it in the grid without a hard navigation.
+  //
+  // The reference-equality dep means a same-data re-render is a no-op,
+  // so any in-flight optimistic reorder/hero update we're mid-applying
+  // doesn't get clobbered between the optimistic setImages and the
+  // `router.refresh()` that runs once the server write returns 200.
+  useEffect(() => {
+    setImages(initialImages);
+  }, [initialImages]);
 
   const apply = useCallback(
     (next: AdminPropertyImageRow[]) => {
