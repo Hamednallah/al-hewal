@@ -103,7 +103,11 @@ export type InviteAdminInput = {
 
 export type InviteAdminResult =
   | { ok: true; id: string }
-  | { ok: false; code: 'email_taken' | 'invite_failed' | 'insert_failed'; detail?: string };
+  | {
+      ok: false;
+      code: 'email_taken' | 'invite_failed' | 'invite_smtp_failed' | 'insert_failed';
+      detail?: string;
+    };
 
 /**
  * Issue a Supabase Auth invite AND insert the matching `public.admins`
@@ -145,10 +149,25 @@ export async function inviteAdmin(input: InviteAdminInput): Promise<InviteAdminR
   );
   if (inviteErr || !invited?.user) {
     const detail = inviteErr?.message ?? 'unknown';
+    const status = (inviteErr as { status?: number } | null)?.status;
+    const code = (inviteErr as { code?: string } | null)?.code;
     // Supabase returns "User already registered" when the email already
     // has an auth.users row from a previous (perhaps consumed) invite.
     if (detail.toLowerCase().includes('already registered')) {
       return { ok: false, code: 'email_taken', detail };
+    }
+    // SMTP failure: Supabase Auth tried to send the invite email and
+    // the configured mail relay rejected / timed out. Surfaces as a
+    // 500 + `unexpected_failure` from /auth/v1/invite, OR an explicit
+    // `Error sending invite email` message on newer Supabase versions.
+    // Owner action: configure custom SMTP per docs/PHASE_3_RUNBOOK.md §8.
+    if (
+      status === 500 ||
+      code === 'unexpected_failure' ||
+      detail.toLowerCase().includes('sending invite email') ||
+      detail.toLowerCase().includes('smtp')
+    ) {
+      return { ok: false, code: 'invite_smtp_failed', detail };
     }
     return { ok: false, code: 'invite_failed', detail };
   }
