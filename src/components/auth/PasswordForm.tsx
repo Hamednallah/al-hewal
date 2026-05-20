@@ -30,7 +30,8 @@ import { setNewPassword, type ResetState } from '@/app/[locale]/auth/reset-passw
  *
  * Both bundles MUST expose the same key shape (title, intro,
  * passwordLabel, confirmLabel, submit, submitting, backToLogin,
- * errors.{invalidInput,mismatch,expiredSession,notAdmin,supabase}).
+ * errors.{invalidInput,mismatch,expiredSession,notAdmin,samePassword,
+ * supabase}).
  */
 
 const INITIAL_STATE: ResetState = { status: 'idle' };

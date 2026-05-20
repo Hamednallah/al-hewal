@@ -17,6 +17,7 @@ export type ResetErrorKey =
   | 'mismatch'
   | 'expiredSession'
   | 'notAdmin'
+  | 'samePassword'
   | 'supabase';
 
 export type ResetState = { status: 'idle' } | { status: 'error'; errorKey: ResetErrorKey };
@@ -62,10 +63,19 @@ export async function setNewPassword(_prev: ResetState, formData: FormData): Pro
       password: parsed.data.password,
     });
     if (updateError || !updated?.user) {
-      console.warn(
-        '[auth/reset-password] updateUser failed:',
-        updateError?.message ?? 'no user returned',
-      );
+      const msg = updateError?.message ?? 'no user returned';
+      console.warn('[auth/reset-password] updateUser failed:', msg);
+      // Supabase Auth returns 422 with message "New password should be
+      // different from the old password." (newer versions also set
+      // code='same_password') when the submitted password matches the
+      // current one. The previous behaviour mapped this to the generic
+      // `supabase` copy ("We couldn't save…") which doesn't tell the
+      // user what to fix. Detect by message OR code so older + newer
+      // GoTrue versions both surface the actionable error.
+      const code = (updateError as { code?: string } | null)?.code;
+      if (code === 'same_password' || /different from the old password/i.test(msg)) {
+        return { status: 'error', errorKey: 'samePassword' };
+      }
       return { status: 'error', errorKey: 'supabase' };
     }
 
