@@ -515,6 +515,7 @@
           "invalid_body": "Please correct the highlighted fields and submit again.",
           "email_taken": "This email is already an administrator (or has a pending invite).",
           "invite_failed": "Supabase rejected the invite. Check email deliverability and try again.",
+          "invite_smtp_failed": "Supabase couldn't send the invite email — its mail relay timed out. Configure custom SMTP (see docs/PHASE_3_RUNBOOK.md §8) and retry.",
           "insert_failed": "We couldn't create the admin record. The invite email may still arrive; check the audit log.",
           "network_error": "Connection problem. Check your internet and try again.",
           "unknown": "Something went wrong. Please try again."

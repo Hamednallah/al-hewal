@@ -76,8 +76,20 @@ export async function POST(req: NextRequest) {
       entity: 'admin',
       diff: { email: input.email, tier: input.tier, error: result.code, detail: result.detail },
     });
+    // Status mapping:
+    //   email_taken         → 409 (caller's conflict — admin already exists)
+    //   invite_failed       → 502 (Supabase rejected; unspecific)
+    //   invite_smtp_failed  → 502 (Supabase rejected because the mail
+    //                              relay broke; the new admin row was
+    //                              never created so retrying once SMTP
+    //                              works is safe)
+    //   insert_failed       → 500 (we crashed after Supabase OK'd)
     const status =
-      result.code === 'email_taken' ? 409 : result.code === 'invite_failed' ? 502 : 500;
+      result.code === 'email_taken'
+        ? 409
+        : result.code === 'invite_failed' || result.code === 'invite_smtp_failed'
+          ? 502
+          : 500;
     return NextResponse.json({ success: false, error: result.code }, { status });
   }
 

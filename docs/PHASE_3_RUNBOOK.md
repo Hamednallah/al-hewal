@@ -135,19 +135,28 @@ is reproducible.
 
 ## 3. Configure Supabase Auth redirect URLs
 
-For magic-link sign-in to land back on the site, the callback URL has to
-be allowlisted in the Supabase dashboard.
+For every Supabase Auth email flow (legacy magic-link, password
+recovery, invite acceptance) to land back on the site, the
+`redirectTo` URL has to be allowlisted in the Supabase dashboard.
 
 1. Open <https://supabase.com/dashboard/project/gvjmnwsqaymkxcsabjur/auth/url-configuration>.
-2. Add to **Redirect URLs** (Allow List), one per environment:
-   - `http://localhost:3000/auth/callback`
-   - `https://*.vercel.app/auth/callback` (covers all preview deploys)
-   - `https://al-hewal.com/auth/callback` (production — adjust to the real domain)
+2. Add to **Redirect URLs** (Allow List), once per environment:
+   - **Legacy magic-link (PR 3.1)** — `*/auth/callback`:
+     - `http://localhost:3000/auth/callback`
+     - `https://*.vercel.app/auth/callback` (covers preview deploys)
+     - `https://al-hewal.com/auth/callback` (production — adjust to the real domain)
+   - **Invite + password-recovery (PR #34 / #35)** — `*/auth/recovery`:
+     - `http://localhost:3000/auth/recovery`
+     - `https://*.vercel.app/auth/recovery`
+     - `https://al-hewal.com/auth/recovery`
 3. Set **Site URL** to the production domain (`https://al-hewal.com`).
 4. Save.
 
-Without this, Supabase rejects the `emailRedirectTo` we pass to
-`signInWithOtp` and the magic-link email never sends.
+Without these, Supabase rejects the `redirectTo` parameter and the
+invite / recovery email either never sends or sends with a broken
+link. The recovery + invite emails both land on `/auth/recovery`
+(Route Handler that does the PKCE exchange in a cookie-write-capable
+context) — see PR #34 for the full root-cause writeup.
 
 ---
 
