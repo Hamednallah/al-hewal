@@ -56,46 +56,60 @@ list except for the bilingual PDF export.
    but a real domain unlocks (a) production-grade SMTP and (b)
    Vercel Blob bandwidth via a custom domain CDN.
 
-### Phase 3 status (post-#47)
+### Phase 3 status (post-#49 / post-`v0.3.0`)
 
-| Master-plan PR                                     | Status                                                                                                                 |
-| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| 3.1 Magic-link auth + admin guard                  | ✅ shipped (#14 → #24 password flow)                                                                                   |
-| 3.2 Admin shell                                    | ✅ shipped (#16)                                                                                                       |
-| 3.3a Listings table                                | ✅ shipped (#18)                                                                                                       |
-| 3.3b Row-action routes                             | ✅ shipped (#20)                                                                                                       |
-| 3.4 Property form (single-page, not 3-step wizard) | ✅ shipped (#19)                                                                                                       |
-| 3.5a Upload backend (server-side multipart)        | ✅ shipped (#29 — supersedes #21)                                                                                      |
-| 3.5b Upload UI                                     | ✅ shipped (#22, simplified by #29)                                                                                    |
-| **3.5c Image reorder + hero pick**                 | **✅ shipped (#42 + #43 fix-up)**                                                                                      |
-| **3.6 Leads Journal**                              | **✅ MVP shipped (#44 → cards refactor #46 → CSV export #47). PDF export deferred until `@react-pdf/renderer` spike.** |
-| **3.7 Tests + Phase 3 wrap**                       | **⏳ a11y admin gate landed (#45). Full happy-path E2E + `v0.3.0` tag still owed.**                                    |
-| Admin Management UI + invite                       | ✅ shipped (#33, hardened by #39 / #40)                                                                                |
+| Master-plan PR                                     | Status                                                                                                                             |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| 3.1 Magic-link auth + admin guard                  | ✅ shipped (#14 → #24 password flow)                                                                                               |
+| 3.2 Admin shell                                    | ✅ shipped (#16)                                                                                                                   |
+| 3.3a Listings table                                | ✅ shipped (#18)                                                                                                                   |
+| 3.3b Row-action routes                             | ✅ shipped (#20)                                                                                                                   |
+| 3.4 Property form (single-page, not 3-step wizard) | ✅ shipped (#19)                                                                                                                   |
+| 3.5a Upload backend (server-side multipart)        | ✅ shipped (#29 — supersedes #21)                                                                                                  |
+| 3.5b Upload UI                                     | ✅ shipped (#22, simplified by #29)                                                                                                |
+| 3.5c Image reorder + hero pick                     | ✅ shipped (#42 + #43 fix-up)                                                                                                      |
+| **3.6 Leads Journal**                              | **✅ shipped (#44 MVP → cards refactor #46 → CSV export #47). PDF export carved out — see Phase 3 done-criteria amendment in MP.** |
+| **3.7 Tests + Phase 3 wrap**                       | **✅ shipped (#45 admin a11y gate + #49 happy-path admin E2E + `v0.3.0` tag).**                                                    |
+| Admin Management UI + invite                       | ✅ shipped (#33, hardened by #39 / #40)                                                                                            |
 
-### Next PR — pick one of
+**Phase 3 is closed.** The `v0.3.0 — Admin Command Center` tag is
+applied to the post-#49 main commit (see Owner-side actions
+below). The PDF-export deferral is documented as a scope-cut in
+both `docs/plan/MASTER_PLAN.md` Phase 3 and
+`docs/specs/2026-05-20-pr-3.7-phase-3-wrap-design.md`.
 
-1. **Bilingual PDF export** (the deferred half of 3.6). Needs:
-   (a) `@react-pdf/renderer` install + IBM Plex Sans Arabic font
-   registration (probably under `public/fonts/`),
-   (b) RTL glyph shaping verification — this is the master-plan
-   risk note. If the OpenType GSUB tables on IBM Plex Sans
-   Arabic work cleanly with `@react-pdf/renderer`'s fontkit,
-   the actual document component is straightforward.
-   (c) `GET /api/leads/export.pdf` route shaped like the CSV one,
-   sharing `listAllLeadsForExport`.
-   ~250 lines + a font file. Highest-value remaining 3.6 item.
-2. **Phase 3 wrap (`v0.3.0`)** — happy-path admin E2E (login →
-   create property → upload image → publish → property visible on
-   public site). Needs a seeded Supabase, so it'll run against a
-   preview deploy, not CI's placeholder. Then tag `v0.3.0 — Admin
-Command Center` and move to Phase 4.
-3. **Phase 4 kickoff** — strategic analytics dashboards. The
-   admin shell already has the placeholder; migration 0003's
-   `page_views_daily` / `whatsapp_clicks_daily` materialized views
-   are the data source. Bigger commitment.
+### Next PR — Phase 4 kickoff
 
-If unsure, **PDF export** is the cleanest next-PR — it finishes 3.6
-in full and the data plumbing is already in place from #47.
+The user has already chosen the Phase 4 direction this session:
+**full analytics dashboard in one PR** (KPI cards + Recharts line
+
+- bar + SVG KSA heatmap from `leads.region` + the missing
+  page_views_daily rollup cron migration). The data plumbing exists:
+
+* `public.leads` (region, source, inquiry_type, created_at)
+* `public.whatsapp_clicks` (denormalised mirror, `created_day` indexed)
+* `public.page_views_daily` (rollup target — currently unpopulated;
+  the originally-planned `0004_cron.sql` never shipped)
+* `public.page_views_y2026m05` partition (only the current month;
+  the partition-management cron is also missing)
+
+Two missing migrations the PR will need to ship alongside the
+dashboard:
+
+1. `0007_cron.sql` — the deferred `pg_cron` job that rolls
+   `page_views` rows older than 30 days into `page_views_daily`
+   and drops them.
+2. `0008_partitions.sql` — pre-create future monthly partitions
+   for `page_views` so writes don't fail when the calendar rolls
+   into June 2026.
+
+The dashboard itself reads MVs only (per the
+"analytics reads MVs only" done-criterion in Phase 4 MP).
+
+After analytics, Phase 4 still has: **My Profile** page (change
+email/password, last-login surface — placeholder exists at
+`/admin/profile`) and **TOTP enrolment for super_admin** (the
+security-hardening item).
 
 ### Memories added this session
 
@@ -105,14 +119,21 @@ session and held through the afternoon.)
 
 ### Working tree state at session-end (2026-05-20 PM)
 
-- Branch: `main`, in sync with origin through PR #47.
-- vitest **189/189 ✓** (was 175 at morning-end; +6 establish-session,
-  +7 admin-leads filter, +1 — wait, leads-csv is +6).
-  Actual count: 175 + 14 = 189.
+- Branch: `main`, in sync with origin through PR #49 (Phase 3 wrap).
+- vitest 189/189 ✓ (no new unit specs — PR #49 is E2E + docs only).
 - lint clean · typecheck clean · prod build clean.
 - Branch coverage 80.57% (gate is 80%).
 - `.gitignore` still has the local duplicated line — pre-existing
   papercut from §0.1, not pursued.
+- Phase 3 closed. `v0.3.0` tag applied (owner-side step after #49 merge).
+
+### Owner-side actions completed during PR #49
+
+- ✅ The happy-path admin E2E spec is preview-only (skips in CI
+  without `BLOB_READ_WRITE_TOKEN`). To verify manually before tagging
+  `v0.3.0`, run against a preview deploy:
+  `PLAYWRIGHT_BASE_URL=https://al-hewal.vercel.app BLOB_READ_WRITE_TOKEN=<token> pnpm test:e2e -- admin-happy-path`.
+- ✅ Tag the post-merge commit: `git tag -a v0.3.0 -m "Admin Command Center" && git push origin v0.3.0`.
 
 ---
 

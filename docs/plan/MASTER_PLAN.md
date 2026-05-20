@@ -248,8 +248,20 @@ Home (hero, value-prop grid, featured carousel, trust banner, footer). Catalog (
 **Done when:** Lighthouse mobile ≥ 90 on detail page; Playwright covers AR+EN happy paths; WhatsApp click writes lead row + 302s; axe-core zero serious violations on public routes.
 
 **Phase 3 — Admin listings + leads (weeks 4–5)**
-Magic-link login flow + `/auth/callback`. Admin guard middleware (signed-cookie cache, 5-min TTL). Admin shell (sidebar + topbar). Listings table (server-paginated, server-filtered, row-hover actions). 3-step Add/Edit Property wizard with draft autosave (localStorage + server draft row). Drag-drop upload → signed Blob URL → server `sharp` pipeline (resize, AVIF/WebP, EXIF strip). Leads Journal timeline, per-property filter, bilingual PDF export via `@react-pdf/renderer` (IBM Plex Sans Arabic registered + RTL shaping tested early).
-**Done when:** Property mutations trigger `revalidateTag` + audit log row; leads PDF renders correctly bilingual; RLS prevents standard_admin from deleting properties they don't own (if that rule is enabled); coverage ≥ 80% on admin code.
+Password-auth login flow + `/auth/recovery` (Supabase implicit flow with client-side fragment handoff, see PR #37). Admin guard middleware (signed-cookie cache, 5-min TTL). Admin shell (sidebar + topbar). Listings table (server-paginated, server-filtered, row-hover actions). Single-page Add/Edit Property form (3-step wizard reduced to one page during build — PR #19). Drag-drop upload → server-side multipart → `sharp` pipeline (resize, AVIF/WebP, EXIF strip — PR #29). Leads Journal with filter bar, status updates, inline notes, and bilingual CSV export (PR #47). Image reorder + hero pick on the property edit page (PR 3.5c).
+**Done when:** Property mutations trigger `revalidateTag` + audit log row; bilingual CSV export of leads works (Excel-on-Windows reads Arabic correctly via UTF-8 BOM); RLS prevents standard_admin from deleting properties they don't own (if that rule is enabled); coverage ≥ 80% on admin code; happy-path admin E2E (login → create → upload → publish → public visibility) green against a preview deploy.
+
+> **Scope-cut (2026-05-20):** Bilingual PDF export of leads (originally
+> via `@react-pdf/renderer` with IBM Plex Sans Arabic + RTL shaping)
+> is **deferred indefinitely pending demand**. The CSV export shipped
+> in PR #47 satisfies the bilingual export need (UTF-8 BOM + RFC 4180,
+> opens correctly in Excel and Numbers in both Arabic and English).
+> A PDF version was specced (`docs/specs/2026-05-20-pr-3.7-phase-3-wrap-design.md`
+> contains the dropped-PDF analysis): at the row caps that would make
+> the document useful, render time exceeds Vercel's free-tier 10s
+> function window and output sizes exceed the 4.5 MB response cap. If
+> a stakeholder asks for a branded PDF later, the data plumbing
+> (`listAllLeadsForExport` + the audit shape) is already in place.
 
 **Phase 4 — Admin users + analytics (week 6)**
 Admin Management (promote/deactivate/last-login). Invite flow `/api/invite-admin` → hash token, send via Supabase `inviteUserByEmail`, store `token_hash` only. Strategic Analytics: KPI cards from MVs, Recharts line + bar, bespoke SVG KSA heatmap from `leads.region` aggregation. My Profile + TOTP enrolment for super_admin.

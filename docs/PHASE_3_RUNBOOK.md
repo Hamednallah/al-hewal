@@ -784,3 +784,84 @@ begin
 end;
 $$;
 ```
+
+---
+
+## 10. Phase 3 closeout — `v0.3.0 — Admin Command Center`
+
+This is the closeout procedure that runs once PR 3.7 merges and the
+Admin Command Center ships in full. Two manual steps live here
+because they can't be automated from inside the PR itself.
+
+### 10.1. Verify the happy-path E2E against the preview deploy
+
+The new `tests/e2e/admin-happy-path.spec.ts` is preview-only — it
+skips in CI without `BLOB_READ_WRITE_TOKEN` (see the spec's header
+comment). To validate the full create → upload → publish → public
+flow against the actual preview deploy, run it locally pointed at
+the preview URL with the preview's Blob token exported:
+
+```bash
+# In a PowerShell session (Windows):
+$env:PLAYWRIGHT_BASE_URL = 'https://al-hewal.vercel.app'
+$env:BLOB_READ_WRITE_TOKEN = '<the preview deploy token from Vercel env>'
+pnpm test:e2e -- admin-happy-path
+```
+
+(Bash/zsh equivalent: `PLAYWRIGHT_BASE_URL=... BLOB_READ_WRITE_TOKEN=... pnpm test:e2e -- admin-happy-path`.)
+
+Expected: 1 test, 1 passed in ~20-30 s. The spec hard-deletes the
+property it created in `afterEach`, so re-runs do not accumulate.
+
+If the spec fails:
+
+- **Form submit returns validation error** — read
+  `getByRole('alert')` to see the localised error code; the spec's
+  inputs are deliberately above every Zod min/max, so a failure
+  here means the form schema drifted.
+- **Upload tile never appears** — confirm the Blob token is for
+  the same store the preview deploy is wired to (per runbook §6's
+  token-mismatch recovery). Stale token from a previous store
+  recreate is the most common cause.
+- **Public detail page returns 404 after publish** — confirm the
+  property's `status` actually flipped from `draft` to `published`
+  via Supabase Studio. If it did and the public page still 404s,
+  this is a force-dynamic / revalidation regression — file under
+  the same memory as `feedback_prefer_force_static`.
+
+### 10.2. Tag `v0.3.0`
+
+After PR 3.7 merges to `main`:
+
+```bash
+git checkout main
+git pull --ff-only origin main
+git tag -a v0.3.0 -m "Admin Command Center"
+git push origin v0.3.0
+```
+
+The tag's message is intentionally short — release notes live in
+the CHANGELOG (or, until one exists, in the merged PR's body and
+the master plan's Phase 3 done-criteria list).
+
+### 10.3. The bilingual PDF export scope-cut
+
+The master plan originally listed bilingual PDF export of leads as
+a Phase 3 done-criterion. After scoping during the PR 3.7 design
+session, the PDF was carved out indefinitely:
+
+- The CSV export shipped in PR #47 (UTF-8 BOM + RFC 4180) reads
+  correctly in Excel and Numbers in both Arabic and English. The
+  bilingual export need is met.
+- A branded PDF at any row cap that would make it useful (≥ 500
+  rows) exceeds Vercel's 10-second free-tier function envelope
+  during fontkit's Arabic-glyph shaping pass, and a cover-page +
+  table + per-record-appendix design would have produced a
+  ~900-page document at the 2,500-row cap the owner first chose.
+
+If a stakeholder asks for a branded PDF later, the data plumbing
+(`listAllLeadsForExport` + the audit shape) is already in place
+from PR #47, so the PDF route can be added without a refactor.
+The design exploration is captured in
+`docs/specs/2026-05-20-pr-3.7-phase-3-wrap-design.md` for the next
+session that picks this up.
