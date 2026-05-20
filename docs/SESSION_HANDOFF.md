@@ -1,8 +1,9 @@
 # Session Handoff — read this FIRST
 
-> Last updated: 2026-05-19, after the Phase 3 mid-build session that
-> shipped PRs #18 → #24 (admin listings → row-actions → property form →
-> upload backend → upload UI → UX papercuts → email+password auth).
+> Last updated: 2026-05-20, after the Phase 3 stabilisation session
+> that shipped PRs #26 → #37 (papercuts cleanup → server-side upload
+> rewrite → Admin Management UI → Supabase auth flow rebuilt for the
+> implicit-flow URL fragment + invite/reset UX split).
 > Read §0 ("Session wrap-up — pick up here") first; the rest of this
 > file is reference material that hasn't changed.
 
@@ -12,105 +13,147 @@ critical decisions are sticky.
 
 ---
 
-## 0 — Session wrap-up (2026-05-19) — pick up here
+## 0 — Session wrap-up (2026-05-19/20) — pick up here
 
-### What shipped this session (PRs #18 → #24)
+### What shipped this session (PRs #26 → #37)
 
-| PR  | Title                                                                 | Notes                                                                                               |
-| --- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| #18 | feat(phase-3/listings) read-only listings + filter bar                | URL-driven filters mirroring public catalog. 2 s `AbortSignal.timeout` on all admin Supabase reads. |
-| #19 | feat(phase-3/properties-form) create/edit form + POST/PATCH API       | RHF + Zod, bilingual title/description, audit + revalidate on success.                              |
-| #20 | feat(phase-3/row-actions) publish/archive/restore/feature/delete      | Shared `handlePropertyAction` HOF. Tier gates: feature + delete = super_admin only.                 |
-| #21 | feat(phase-3/upload-backend) /api/upload + sharp + Vercel Blob        | Two-phase `handleUpload`. EXIF strip, 2400px cap, AVIF + WebP, blurhash.                            |
-| #22 | feat(phase-3/upload-ui) image grid + uploader + delete                | Migration 0005 (`property_images.webp_url`). Drag-drop, per-image delete, draft-row hint.           |
-| #23 | feat(phase-3/ux-papercuts)                                            | Plain-language copy, teal sidebar, LangSwitcher, draft banner, card listings, diagnostic logs.      |
-| #24 | feat(phase-3/auth-password) email+password + forgot/reset + cache fix | Magic-link gone. `establishAdminSession` HOF. Detail-page `revalidate=60` (was 86400).              |
+12 PRs over two days. The session opened with #24's post-merge
+papercuts ("add property" 500, cached 404s, dialog a11y) and ended
+with the full Admin Management invite flow working end-to-end after
+diagnosing Supabase's implicit-flow / URL-fragment / cookie-write
+chain.
 
-Local DB schema is now at migration **0005**. Production DB needs
-`pnpm supabase db push` from `al-hewal/` to apply 0005 (`webp_url`
-column on `property_images`) — see [PHASE_3_RUNBOOK §7](PHASE_3_RUNBOOK.md#7-applying-migration-0005-pr-35b--property_imageswebp_url).
+| PR            | Title                                                                  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------- | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #26           | fix(phase-3): post-#24 prod papercuts                                  | `PostgrestError.code === '23505'` detection (was matching by `String(err)` which collapsed to `[object Object]`), detail-page `force-dynamic` for cached-404, Radix `aria-describedby={undefined}` on the drawers.                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| #27           | fix(phase-3/cache): revalidate=60 on home + detail                     | **Reverted in #28.** Tried `revalidate=60 + force-static` per a misread of "prefer revalidate"; production logs showed the CDN edge cache still served stale 404s + stale featured carousel within the window.                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| #28           | fix(phase-3/cache): force-dynamic on home + detail + sitemap           | The durable cache fix. `revalidatePath` does NOT reliably evict Vercel's edge cache on this project's `[locale]/(public)` route group. Going `force-dynamic` is the right default for mutable pages. Memory recorded.                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| #29           | fix(phase-3/upload): rewrite /api/upload to server-side multipart      | Dropped `@vercel/blob/client` entirely. Browser POSTs FormData → route runs sharp + Blob `put` + DB insert in one Function. The two-phase `handleUpload` SDK call had been silently broken since PR 3.5a with an opaque CORS 400.                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| #30           | fix(phase-3/upload): blob_store_not_public detection                   | Surfaced the real Vercel Blob error — store was provisioned with private access; SDK rejected every public `put`. New chip code + runbook §6 recovery (delete + recreate store as **Public**).                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| #31           | fix(phase-3/public-reads): filter drafts + archived at the query level | RLS leak when a super_admin is signed in — the "admins read all" policy fires on the anon client too if a Supabase session cookie is present, and the public catalog was leaking drafts/archived rows to logged-in admins. Belt-and-suspenders `.neq('status','draft').is('deleted_at',null)` on every public reader.                                                                                                                                                                                                                                                                                                                                     |
+| #32           | fix(phase-3/upload): blob_store_not_found detection                    | After the owner recreated the Blob store as public, production still had the OLD store's token. New chip code + runbook §6 token-mismatch recovery (delete every `BLOB_READ_WRITE_TOKEN` env, reconnect the store, redeploy).                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| #33           | feat(phase-3/admin-management): super_admin can list, invite, manage   | Replaced the PR #16 placeholder. List + invite + promote/demote/deactivate/reactivate. Shared `handleAdminAction` HOF mirroring `handlePropertyAction`. Self-action guard refuses demote/deactivate against the calling admin.                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| #34           | fix(phase-3/auth): PKCE code exchange through /auth/recovery           | First attempt at fixing "Your reset session has expired" on first click. Moved `exchangeCodeForSession` out of the Server Component (cookies can't be written) into a Route Handler. **Insufficient** — this Supabase project is on implicit flow, not PKCE.                                                                                                                                                                                                                                                                                                                                                                                              |
+| #35           | feat(phase-3/auth): split invite from recovery                         | UX correction: invitees land on a new `/<locale>/auth/set-password` page with welcoming first-time copy ("Welcome to Al Hewal — pick a password"); recovery clicks land on the existing `/<locale>/auth/reset-password`. Shared `PasswordForm` component. Also: runbook §8 with full Resend SMTP walkthrough.                                                                                                                                                                                                                                                                                                                                             |
+| #36           | fix(phase-3/admins): invite_smtp_failed diagnostic                     | Map Supabase `unexpected_failure` to a specific chip code that points at runbook §8. Added `/auth/recovery` to runbook §3 Supabase redirect-URL allowlist.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| #37           | fix(phase-3/auth): implicit-flow URL fragment handler                  | **THE actual auth fix.** Supabase Auth Logs proved the token was consumed on the FIRST email click (login_method: implicit) but our Route Handler couldn't see the session because tokens were in the URL **fragment** (browser-only). Rewrote `/auth/recovery` as a Route Handler that returns HTML + inline JS that reads `window.location.hash`, POSTs tokens to `/api/auth/finalize-session`, which calls `supabase.auth.setSession` server-side (writes HTTP-only cookies), then hard-navigates to the right page (`/set-password` for invites, `/reset-password` for recovery, `/login?error=inviteExpired` or `/forgot?error=expired` on failure). |
+| #38 (this PR) | docs: session-wrap 2026-05-19/20 + Gmail SMTP runbook path A           | Captures the above + the runbook §8 Gmail SMTP path the owner actually used to unblock invites without a domain.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
 
-### Owner-side actions that are still open
+### Owner-side actions completed during the session
 
-These block real production verification but are NOT code changes —
-they're cloud-resource provisioning the owner has to do once:
+- ✅ Vercel Blob store provisioned (then deleted + recreated as
+  **Public** per runbook §6 once the private-store error surfaced)
+- ✅ `BLOB_READ_WRITE_TOKEN` reset in Vercel env + redeploy after the
+  store recreate
+- ✅ Migration 0005 applied to remote Supabase
+- ✅ Bootstrap super-admin password set via SQL
+- ✅ Gmail SMTP configured in Supabase (App Password method, runbook
+  §8 Path A — the no-domain path)
+- ✅ Supabase Auth Redirect URLs allowlist updated with
+  `/auth/recovery` entries (in addition to the legacy
+  `/auth/callback`)
+- ✅ First admin invite delivered + accepted end-to-end through the
+  new fragment handler
 
-1. **Provision Vercel Blob store** (per [PHASE_3_RUNBOOK §6](PHASE_3_RUNBOOK.md#6-provisioning-vercel-blob-pr-35a--image-upload)).
-   Until the `BLOB_READ_WRITE_TOKEN` exists on the production Vercel
-   env, every `POST /api/upload` returns 503 `blob_not_configured` by
-   design. CI doesn't need it.
-2. **Apply migration 0005 to remote Supabase** (`pnpm supabase db push`
-   per runbook §7). Without it, the `/api/upload`'s `insert` on
-   `property_images` will reject the new `webp_url` column.
-3. **Set the bootstrap admin's password** in Supabase Studio SQL
-   editor (snippet in [PHASE_3_RUNBOOK §1](PHASE_3_RUNBOOK.md#1-bootstrap-the-very-first-super-admin-pr-31)):
-   ```sql
-   update auth.users
-      set encrypted_password = extensions.crypt('YOUR_PASSWORD', extensions.gen_salt('bf')),
-          email_confirmed_at = coalesce(email_confirmed_at, now())
-    where email = 'mshafex@gmail.com';
-   ```
-   Then `/ar/auth/login` with email + that password works without
-   touching Supabase SMTP.
+### Owner-side actions still open
 
-### Known issues + debt carried into the next session
+1. **Verify the full invite + recovery loop on the post-#37 deploy.**
+   Re-invite a fresh email from `/admin/admins/new` → click the
+   email link → expect to land on `/<locale>/auth/set-password`
+   (welcoming copy) → submit a password → end up on `/admin`
+   authenticated.
+2. **Strip the `TODO(ux-papercuts): REMOVE` console.warn lines in
+   `src/lib/data/properties.ts`.** Diagnostic logs from PR #23 to
+   debug the cached-404 issue. The issue is resolved (PR #26's
+   `force-dynamic`); the diagnostic noise should go.
+3. **Production-grade SMTP upgrade — eventually.** Owner is on
+   Gmail SMTP from a personal address. Plenty for invite/reset
+   volume today. Once Al Hewal has its own domain, follow runbook
+   §8 **Path B** (verify domain in Resend, switch sender to
+   `invites@al-hewal.com`).
+4. **Domain purchase — eventually.** `al-hewal.vercel.app` works
+   but a real domain unlocks (a) production-grade SMTP and (b)
+   Vercel Blob bandwidth via a custom domain CDN.
 
-1. **Production-side 404 on a published detail page** — owner reported
-   `/ar/properties/riyadh-umm-al-hammam` 404 (`Cache: HIT` on `/404`
-   from Vercel logs). Mitigation in #24 (revalidate 24h→60s + extra
-   diagnostic logs) should let the URL clear within 60 s after a
-   re-deploy. **Verify after deploy + owner runbook actions above.**
-   If it's still 404 once those are done, check Vercel Logs for
-   `[getPropertyBySlug]` lines.
-2. **`TODO REMOVE` markers in `src/lib/data/properties.ts`** — diagnostic
-   `console.warn` lines added in #23 (commit `9e75a02`) to surface the
-   above 404 root cause. **Once the production 404 is resolved, strip
-   those lines back to the original silent-null behaviour.** Search
-   for `TODO(ux-papercuts): REMOVE` to locate.
-3. **`section_handoff_pointer` workflow needs the new owner**:
-   onboarding additional admins is currently a manual SQL insert
-   (runbook §1 step 2). The "Admin Management UI + invite flow" PR
-   (queued below) replaces this with a UI.
-4. **`/api/upload` happy path has no E2E coverage** — only the
-   pre-Blob gates (401/503) are CI-tested. End-to-end upload
-   verification needs a preview deploy with `BLOB_READ_WRITE_TOKEN`
-   set, then a manual walkthrough; lands in PR 3.5c (reorder/hero
-   pick) on a preview environment.
-5. **Forgot-password flow depends on Supabase SMTP** (the unreliable
-   surface that triggered the auth pivot). When SMTP is flaky, owners
-   use the SQL reset snippet in runbook §1 instead. Replace fully
-   when the Admin Management UI ships and super_admin can reset peer
-   admin passwords directly.
+### Phase 3 status
 
-### Next PR — Admin Management UI + invite flow
+| Master-plan PR                                                | Status                                                                                                                                                           |
+| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3.1 Magic-link auth + admin guard                             | ✅ shipped (#14, then evolved into #24 password flow)                                                                                                            |
+| 3.2 Admin shell                                               | ✅ shipped (#16)                                                                                                                                                 |
+| 3.3a Listings table                                           | ✅ shipped (#18)                                                                                                                                                 |
+| 3.3b Row-action routes                                        | ✅ shipped (#20)                                                                                                                                                 |
+| 3.4 Property form (single-page, not 3-step wizard)            | ✅ shipped (#19)                                                                                                                                                 |
+| 3.5a Upload backend (server-side multipart, the final design) | ✅ shipped (#29 — the original two-phase #21 has been superseded)                                                                                                |
+| 3.5b Upload UI                                                | ✅ shipped (#22, simplified by #29)                                                                                                                              |
+| 3.5c Image reorder + hero pick                                | **Not started**                                                                                                                                                  |
+| 3.6 Leads Journal                                             | **Not started**                                                                                                                                                  |
+| 3.7 Tests + Phase 3 wrap                                      | Partial — coverage is at 80.57% branches (gate is 80%); admin-management has 8 unit + 9 Playwright specs; full happy-path E2E + axe-core admin scans still owed. |
+| Admin Management UI + invite                                  | ✅ shipped (#33, hardened by #34/#35/#36/#37)                                                                                                                    |
 
-Per master plan screens 9 + 10 ("Admin Management" + "Add New Admin"):
+### Auth + invite flow — final shape (after PR #37)
 
-- `/admin/admins` page — super_admin only. Lists admins (email, tier
-  badge, status, last_login, "..." menu with Promote / Deactivate /
-  Send invite-reset).
-- "Invite admin" CTA → form (email + tier) → server action calls
-  `supabase.auth.admin.inviteUserByEmail` AND inserts the matching
-  `public.admins` row with `status='pending_invite'`. Supabase emails
-  the invite link; the invitee lands on the existing
-  `/<locale>/auth/reset-password` page (the recovery + invite link
-  shape is identical — both arrive as `?code=…`).
-- Promote / Deactivate row actions — tier-aware (super_admin only),
-  audit-logged.
-- Replaces the SQL bootstrap in runbook §1 step 2 (which becomes a
-  one-time-only "first super-admin" path).
-- Tests: Playwright happy path + tier gates; unit tests for the
-  invite server action.
+Worth memorising this since it took three PRs to converge:
 
-When the invite flow ships, also delete the now-unused
-`/auth/callback` magic-link path (it's only kept alive today for
-legacy emails in flight).
+```
+Email link (Supabase /auth/v1/verify?token=…&type=invite&redirect_to=…)
+    │
+    ▼ first click → Supabase verifies + redirects with #access_token in fragment
+/auth/recovery   ← Route Handler, returns HTML + inline JS
+    │
+    ▼ JS reads window.location.hash → POSTs tokens to /api/auth/finalize-session
+/api/auth/finalize-session  ← Route Handler, supabase.auth.setSession() sets HTTP-only cookies
+    │
+    ▼ on success, hard-navigates (drops fragment from URL)
+/<locale>/auth/set-password   (invite — welcoming "Welcome to Al Hewal" copy)
+/<locale>/auth/reset-password (recovery — existing "Set a new password" copy)
+    │
+    ▼ both use the shared PasswordForm calling setNewPassword server action
+/<locale>/admin   ← authenticated, session cookie + HMAC admin cookie both set
+```
+
+Failure paths:
+
+- Invite expired → `/<locale>/auth/login?error=inviteExpired`
+  ("Your invitation link is no longer valid. Ask the admin who
+  invited you to send a fresh invitation.")
+- Reset expired → `/<locale>/auth/forgot?error=expired`
+  (existing behaviour — request a fresh email)
+
+### Memories added this session
+
+- `feedback_prefer_force_static` → renamed to "use force-dynamic over
+  revalidate" — production-proven that `revalidatePath` does not
+  reliably evict Vercel's CDN edge cache for `[locale]/(public)/*`
+  pages.
+- `feedback_always_commit_push_pr` — after green verification, commit
+  - push + open PR + queue auto-merge. Don't pause to ask.
+
+### Next PR — pick one of:
+
+1. **PR 3.5c — Image reorder + hero pick** (master plan). Now that
+   #29 + the owner's Blob+token reset have uploads working end-to-end,
+   reorder + hero-pick UX is the natural next step on the property
+   form. ~150 lines of UI work + a PATCH endpoint that writes the
+   new position array + `properties.hero_image_id`.
+2. **PR 3.6 — Leads Journal** (master plan). Timeline view of
+   `public.leads` rows with per-property filter, contact-status
+   updates, bilingual PDF export. Bigger surface, but unblocked —
+   the leads table has been receiving inserts since Phase 2.
+3. **PR 3.X — Strip diagnostic console.warn lines** (debt #2 above).
+   Tiny cleanup. Could bundle with one of the above.
+
+If unsure, **PR 3.6** (Leads Journal) is the bigger user-visible win
+since admins have ~no use for the dashboard today except the
+listings + admin management surfaces. Reorder/hero is polish.
 
 ### Working tree state at session-end
 
-- Branch: `main`, in sync with origin, working tree clean.
-- All local feature branches deleted after merge.
-- vitest 152/152 ✓ · lint clean · typecheck clean · prod build clean.
+- Branch: `main`, in sync with origin through PR #37.
+- vitest 169/169 ✓ · lint clean · typecheck clean · prod build clean.
+- Branch coverage 80.57% (gate is 80%).
+- `.gitignore` has a local duplicated line (`.env*.local` x2) —
+  pre-existing, not something to chase.
 
 ---
 
@@ -128,10 +171,10 @@ shipped (v0.2.0).** Resume with **Phase 3 — Admin Command Center**.
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | Repo       | https://github.com/Hamednallah/al-hewal                                                                                       |
 | Local      | `d:\Work\Projects\AL-Hewal\al-hewal\`                                                                                         |
-| Main HEAD  | PR #23 (Phase 3 UX papercuts — plain copy, teal sidebar, lang switcher, draft banner, card listings) — merged                 |
+| Main HEAD  | PR #37 (Supabase implicit-flow URL fragment handler — invite + recovery now work end-to-end) — merged                         |
 | Branch     | `main` (you should be on it; if not, `git checkout main && git pull --ff-only`)                                               |
 | Latest tag | `v0.2.1` (Phase 2 closeout — favicon + PWA manifest). `v0.3.0` is reserved for the end of Phase 3 per master-plan convention. |
-| Next PR    | **Admin Management UI + invite flow** (super_admin can add admins from the app; new admins set password on the invite link)   |
+| Next PR    | **PR 3.6 — Leads Journal** OR **PR 3.5c — Image reorder + hero pick** (owner's pick — see §0 "Next PR")                       |
 
 ---
 

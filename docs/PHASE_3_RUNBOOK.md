@@ -488,38 +488,130 @@ super_admin invites a new admin, the `public.admins` row is created,
 but the invitee never receives the email. Same applies to the
 `/auth/forgot` password-recovery flow.
 
-The durable fix is to point Supabase Auth at a real transactional
-email provider. Resend has a free tier that covers a small admin team
-indefinitely (3 000 emails/month, 100/day). SendGrid, Postmark, and
-Mailgun all work the same way.
+Three paths to fix this, in order of how much setup they need:
+
+| Path                               | Setup time                | Requirements                                   | Daily cap                         | When to use                                                         |
+| ---------------------------------- | ------------------------- | ---------------------------------------------- | --------------------------------- | ------------------------------------------------------------------- |
+| **A. Gmail SMTP**                  | ~5 min                    | Owner's Gmail account + 2-Step Verification on | 500 (personal) / 2000 (Workspace) | **Now** — no domain yet, just need invites to work to any recipient |
+| **B. Resend with verified domain** | ~30 min (DNS propagation) | Owns a domain whose DNS can be edited          | 100/day, 3000/month (free)        | Production — once Al Hewal has a domain                             |
+| **C. SQL fallback**                | ~1 min per admin          | Supabase Studio access                         | n/a (no email sent)               | Emergency — SMTP broken AND a new admin needs access TODAY          |
+
+### Path A: Gmail SMTP (no domain needed)
+
+Gmail's SMTP server lets the owner send from their own Gmail address
+to any recipient without verifying a domain. Caps are 500 messages
+per day for personal Gmail (`@gmail.com`) and 2000 for Google
+Workspace (`@your-company-domain`). For Al Hewal's volume (a handful
+of invites + occasional password resets) that's effectively unlimited.
+
+#### Step A1 — Enable 2-Step Verification on the Gmail account
+
+1. https://myaccount.google.com/security
+2. Under **How you sign in to Google**, switch **2-Step Verification** to **On**.
+3. Follow the prompts (phone + SMS or Authenticator app).
+
+Google requires 2-Step Verification before it will issue an App Password.
+
+#### Step A2 — Create a Gmail App Password
+
+1. https://myaccount.google.com/apppasswords
+2. **App name**: `Supabase SMTP`.
+3. Click **Create**.
+4. Google shows the password as `xxxx xxxx xxxx xxxx` — the spaces
+   are visual grouping ONLY, NOT part of the password. Copy the 16
+   characters WITHOUT the spaces (`xxxxxxxxxxxxxxxx` — one
+   continuous block). Pasting the spaces along with the characters
+   causes Gmail's SMTP to reject the credentials with
+   `535 5.7.8 Username and Password not accepted` (see the
+   troubleshooting block under Step A4).
+5. Store the 16-char password in a password manager — you can't
+   re-view it later.
+
+#### Step A3 — Plug Gmail into Supabase
+
+1. https://supabase.com/dashboard/project/gvjmnwsqaymkxcsabjur/auth/smtp
+2. Toggle **Enable custom SMTP** to **on**.
+3. Fill in:
+   - **Sender email**: the owner's full Gmail address (e.g.
+     `hamednallah@gmail.com`). MUST match the Gmail account that
+     issued the App Password — Gmail rejects mismatched From addresses.
+   - **Sender name**: `Al Hewal Admin` (what recipients see in their inbox).
+   - **Host**: `smtp.gmail.com`
+   - **Port**: `587` (STARTTLS) — `465` (SSL) also works.
+   - **Username**: the owner's full Gmail address (same as Sender email).
+   - **Password**: the 16-character App Password from Step A2.
+   - **Minimum interval**: leave at default (60s).
+4. Click **Save**.
+
+#### Step A4 — Verify
+
+1. From the admin UI, invite a real recipient email.
+2. Recipient checks their inbox (also Spam — Gmail-from-Gmail can
+   occasionally land in Spam at first; once recipients click "Not
+   spam" once, future sends land in Inbox).
+3. Invite link clicks through `/auth/recovery` → `/auth/set-password`.
+
+#### When to switch off Path A
+
+The Gmail address is fine for an internal tool. Switch to Path B
+(Resend + verified domain) once Al Hewal has a domain — then the
+sender becomes `invites@al-hewal.com` instead of the owner's
+personal Gmail, which reads more legitimate to admin invitees and
+isolates transactional mail from the owner's inbox.
+
+### Path B: Resend with a verified domain
 
 ### Step 1 — Provision a Resend account (free tier)
 
 1. https://resend.com/signup — sign up with your team email.
-2. Onboarding asks for a **domain**. Two paths:
-   - **Recommended (deliverability)**: enter your real domain (e.g.
-     `al-hewal.com`), then add the SPF + DKIM DNS records Resend
-     prints. Once verified you can send from any address on that
-     domain.
-   - **Quick start (any address)**: pick `onboarding@resend.dev` —
-     no DNS setup, but the From address is `onboarding@resend.dev`
-     which is less trustworthy in inbox filters.
+2. **Verify a domain** — this is REQUIRED, not optional. Resend's
+   shared `onboarding@resend.dev` sender refuses to email anyone
+   other than the Resend account owner (the 403 surfaces as
+   "validation_error: You can only send testing emails to your own
+   email address"). Without a verified domain the invite flow
+   appears to work but every external recipient is silently rejected.
+   - https://resend.com/domains → **Add Domain**
+   - Pick the domain you control (e.g. `al-hewal.com` — must be a
+     domain whose DNS you can edit; subdomains like `mail.al-hewal.com`
+     also work and isolate transactional mail from your apex).
+   - Resend prints 3 DNS records (SPF + DKIM + DMARC):
+     - **TXT** at the domain root: SPF (`v=spf1 include:_spf.resend.com ~all`)
+     - **TXT** at `resend._domainkey.<your-domain>`: DKIM (`p=…`)
+     - **TXT** at `_dmarc.<your-domain>`: DMARC (recommended)
+   - Paste them into your DNS provider (Cloudflare, Namecheap, GoDaddy,
+     Vercel DNS, …). Wait 1–5 minutes, click **Verify** in Resend.
 3. **API Keys** → **Create API Key** → name it `supabase-smtp` →
    permission `Sending access` → **Create**. Copy the value
    (`re_…`) — Resend only shows it once.
+
+#### Test-only workaround (no domain ready yet)
+
+If you need to validate the end-to-end invite flow before you have a
+domain, Resend will let you send from `onboarding@resend.dev` ONLY to
+the email address registered on your Resend account. To test:
+
+1. Make sure your Resend account email is your Al Hewal super-admin
+   email (or add a teammate's email to the Resend account).
+2. From the admin UI, invite that exact email address. The 403 won't
+   fire because the recipient matches.
+3. Click through the invite link, set a password, verify the flow.
+4. Then come back to Step 1.2 above and verify a real domain before
+   inviting anyone else.
 
 ### Step 2 — Plug Resend's SMTP creds into Supabase
 
 1. https://supabase.com/dashboard/project/gvjmnwsqaymkxcsabjur/auth/smtp
 2. Toggle **Enable custom SMTP** to **on**.
 3. Fill in:
-   - **Sender email**: `Al Hewal Admin <invites@al-hewal.com>`
-     (or whatever address you verified in Resend).
+   - **Sender email**: `invites@<your-verified-domain>` (e.g.
+     `invites@al-hewal.com`). MUST be on the domain you verified in
+     Step 1.2 — using `onboarding@resend.dev` here causes Resend to
+     reject every recipient other than your Resend account owner.
    - **Sender name**: `Al Hewal`.
    - **Host**: `smtp.resend.com`
    - **Port**: `587`
    - **Username**: `resend`
-   - **Password**: the `re_…` key from Step 1.
+   - **Password**: the `re_…` key from Step 1.3.
    - **Minimum interval**: leave at default (60s) — Resend has its
      own rate limits.
 4. Click **Save**.
@@ -534,6 +626,29 @@ check:
   Supabase did its part. Resend's UI shows the deliverability outcome.
 - Supabase dashboard → **Authentication** → **Logs** — if Supabase
   rejected our SMTP request, the error message is here.
+
+#### Specific failure: Resend 403 `validation_error`
+
+If the Resend Emails dashboard shows a 403 with body:
+
+```
+"name": "validation_error",
+"message": "You can only send testing emails to your own email
+address (you@example.com). To send emails to other recipients,
+please verify a domain at resend.com/domains, and change the
+`from` address to an email using this domain."
+```
+
+…that means the Supabase Sender email is still `onboarding@resend.dev`
+(or any `*.resend.dev` address). Resend refuses to email recipients
+other than the Resend account owner from the shared domain. The
+upstream chip in the admin UI surfaces this as
+`(invite_smtp_failed)`. Fix:
+
+1. Verify a domain (Step 1.2 above) if you skipped it.
+2. Update the Supabase Sender email (Step 2) to use that verified
+   domain instead of `onboarding@resend.dev`.
+3. Save and retry the invite.
 
 ### Step 4 — Customise the templates (optional)
 
@@ -551,12 +666,12 @@ already points at our `redirectTo` (`/auth/recovery?type=…&locale=…`):
 Leave the link as `{{ .ConfirmationURL }}` — Supabase substitutes the
 real `redirectTo` value at send time.
 
-### SQL fallback (still works)
+### Path C: SQL fallback (no SMTP at all)
 
-If SMTP is broken AND you need to add an admin immediately, runbook
-§1 ("Resetting an existing admin's password") still applies. Insert
-the `public.admins` row by hand, then set the auth.users password
-via the SQL Editor:
+If SMTP is broken AND you need to onboard an admin immediately,
+runbook §1 ("Resetting an existing admin's password") still applies.
+Insert the `public.admins` row by hand, then set the auth.users
+password via the SQL Editor:
 
 ```sql
 update auth.users
