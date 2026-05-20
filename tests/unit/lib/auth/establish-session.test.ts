@@ -3,15 +3,21 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 /**
  * Behaviour we want to lock in:
  *
- *   - `active`         → cookie is signed, admin row not status-mutated.
- *   - `pending_invite` → row is flipped to `active` first, then the cookie
- *                        is signed with `status: 'active'` baked in.
- *   - `deactivated`    → rejected with `notAdmin`, no cookie set.
- *   - missing row      → rejected with `notAdmin`.
- *   - select error     → rejected with `lookupFailed`.
+ *   - `active`             → cookie is signed, admin row not status-mutated.
+ *   - `pending_invite`     → row is flipped to `active` first, then the
+ *                            cookie is signed with `status: 'active'`.
+ *   - `pending_invite` +   → rejected with `promotionFailed` (no cookie).
+ *     UPDATE rejected        Callers map this to the same i18n key as
+ *                            `notAdmin`. Hard-failing keeps the user out
+ *                            of the silent middleware redirect loop that
+ *                            would happen if we signed a cookie with
+ *                            status='pending_invite'.
+ *   - `deactivated`        → rejected with `notAdmin`, no cookie set.
+ *   - missing row          → rejected with `notAdmin`.
+ *   - select error         → rejected with `lookupFailed`.
  *
  * `last_login_at` is best-effort and must NEVER cause the success path
- * to fail. We exercise the resilience branch separately.
+ * to fail.
  */
 
 const cookieSetMock = vi.fn();
@@ -143,7 +149,7 @@ describe('establishAdminSession', () => {
     expect(cookieSetMock).toHaveBeenCalledOnce();
   });
 
-  it('still establishes the session if the pending_invite promotion update fails', async () => {
+  it('rejects with promotionFailed when the pending_invite UPDATE is rejected', async () => {
     const inviteRow: AdminRow = {
       id: SUPABASE_USER_ID,
       email: 'invitee@al-hewal.test',
@@ -160,8 +166,12 @@ describe('establishAdminSession', () => {
     const { establishAdminSession } = await import('@/lib/auth/establish-session');
     const result = await establishAdminSession(SUPABASE_USER_ID);
 
-    expect(result.ok).toBe(true);
-    expect(cookieSetMock).toHaveBeenCalledOnce();
+    // Hard fail — signing a cookie with status='pending_invite' would
+    // land the user in a silent middleware redirect loop because the
+    // middleware rejects any cookie whose payload.status !== 'active'.
+    // Better to surface a clean error to the form.
+    expect(result).toEqual({ ok: false, reason: 'promotionFailed' });
+    expect(cookieSetMock).not.toHaveBeenCalled();
   });
 
   it('rejects a deactivated admin with notAdmin', async () => {

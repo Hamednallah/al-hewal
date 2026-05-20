@@ -682,3 +682,105 @@ update auth.users
 ```
 
 Hand the password to the new admin out-of-band.
+
+---
+
+## 9. Applying migration 0006 (admin trigger service-role bypass)
+
+PR fix #40 ships migration `0006_admin_trigger_service_role_bypass.sql`
+to repair the `admins_protect_privileged_fields` trigger introduced in 0003. The original trigger's bypass clause inspected `rolsuper` on
+`current_user`, which never matched `service_role` (PostgREST's role
+for service-role JWT calls — `bypassrls` but **not** `rolsuper`). As a
+result, EVERY service-role UPDATE that touched `admins.{tier, status,
+email}` was being rejected with `42501 — status may only be changed by
+a super_admin`, including:
+
+- The PR #39 invite-acceptance flip (`status: 'pending_invite' →
+'active'`) in `establishAdminSession`.
+- Every admin-management row action (promote / demote / deactivate /
+  reactivate) shipped in PR #33.
+
+The migration recreates the trigger body with a correct bypass clause:
+
+```sql
+if current_user in ('service_role', 'supabase_admin', 'postgres') then
+    return new;
+end if;
+```
+
+The non-bypass path (a signed-in authenticated user via the
+`authenticated` role) is unchanged: the trigger still calls
+`is_super_admin()` and still raises 42501 on tier / status / email /
+id diffs by a non-super_admin.
+
+### Local (Docker Supabase)
+
+```powershell
+Set-Location "d:\Work\Projects\AL-Hewal\al-hewal"
+pnpm supabase db reset
+```
+
+This wipes the local DB and re-runs every migration (0001 → 0006). No
+typed-client regeneration is required — the migration changes only the
+trigger function body; no table schema changed.
+
+### Remote (linked Supabase)
+
+```powershell
+pnpm supabase db push
+```
+
+Append-only — same rule as 0004 / 0005. If the body is wrong, ship a
+0007 follow-up; never edit 0006 in place after the remote DB has
+applied it.
+
+### Verifying the trigger body in production
+
+In Supabase Studio → SQL Editor:
+
+```sql
+select pg_get_functiondef('public.admins_protect_privileged_fields()'::regprocedure);
+```
+
+The output should include `current_user in ('service_role',
+'supabase_admin', 'postgres')`. If it still includes
+`(select rolsuper from pg_roles where rolname = current_user)`, the
+push did not land — re-run `pnpm supabase db push` and check the CLI
+output for errors.
+
+### Smoke-testing the fix (no admin needed)
+
+1. Sign in as the bootstrap super_admin at `/<locale>/auth/login`.
+2. Go to `/<locale>/admin/admins`.
+3. Invite a fresh email (use a `+test` alias if you don't have a
+   second mailbox handy: `you+invitetest@gmail.com`).
+4. Open the invite email, click the link.
+5. Land on `/<locale>/auth/set-password` (welcoming copy).
+6. Submit a password.
+7. Expected: land on `/<locale>/admin` authenticated.
+8. Back in Supabase Studio → Table editor → `public.admins`, confirm
+   the new row's `status` flipped from `pending_invite` to `active`.
+
+If steps 7 or 8 fail, re-check the trigger body via the SQL above —
+the migration must be applied before the flip works.
+
+### Rollback (only if the new bypass clause is somehow unsafe)
+
+```sql
+-- supabase/migrations/0007_admin_trigger_rollback.sql
+-- Restores the 0003 bypass clause. Re-introduces the bug that
+-- 0006 fixed; only ship this if 0006 turns out to be wrong AND
+-- there is a better replacement queued behind it.
+create or replace function public.admins_protect_privileged_fields()
+  returns trigger language plpgsql
+as $$
+declare
+  is_super boolean;
+begin
+  if (select rolsuper from pg_roles where rolname = current_user) then
+    return new;
+  end if;
+  -- ...body unchanged from 0003...
+end;
+$$;
+```

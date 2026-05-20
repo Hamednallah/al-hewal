@@ -74,7 +74,10 @@ export async function setNewPassword(_prev: ResetState, formData: FormData): Pro
       await supabase.auth.signOut();
       return {
         status: 'error',
-        errorKey: session.reason === 'notAdmin' ? 'notAdmin' : 'supabase',
+        errorKey:
+          session.reason === 'notAdmin' || session.reason === 'promotionFailed'
+            ? 'notAdmin'
+            : 'supabase',
       };
     }
   } catch (err) {
