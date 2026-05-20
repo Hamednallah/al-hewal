@@ -188,6 +188,7 @@ export interface AdminPropertyImageRow {
   alt_ar: string;
   alt_en: string;
   position: number;
+  is_hero: boolean;
   bytes: number;
   created_at: string;
 }
@@ -207,7 +208,7 @@ export async function listPropertyImages(propertyId: string): Promise<AdminPrope
     const { data, error } = await client
       .from('property_images')
       .select(
-        'id, blob_url, webp_url, width, height, blurhash, alt_ar, alt_en, position, bytes, created_at',
+        'id, blob_url, webp_url, width, height, blurhash, alt_ar, alt_en, position, is_hero, bytes, created_at',
       )
       .eq('property_id', propertyId)
       .order('position', { ascending: true })
