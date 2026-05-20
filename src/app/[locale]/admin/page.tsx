@@ -52,7 +52,7 @@ export default async function AdminDashboardPage({ params }: PageProps) {
 function SummaryCard({ label, value }: { label: string; value: string }) {
   return (
     <div className="border-outline-variant/40 flex flex-col gap-2 border p-4">
-      <p className="text-brass-600 text-xs tracking-[0.2em] uppercase">{label}</p>
+      <p className="text-brass-700 text-xs tracking-[0.2em] uppercase">{label}</p>
       <p className="text-teal-forest-700 text-base font-semibold break-words">{value}</p>
     </div>
   );
