@@ -22,20 +22,27 @@ import { getSupabaseAdminClient } from '@/lib/supabase/admin';
  * the rules can't drift across callers.
  *
  * Accepted admin statuses:
- *   - `active`         → cookie is signed as-is.
- *   - `pending_invite` → the row is flipped to `active` first, then the
- *                        cookie is signed with the post-flip status.
- *                        Reaching this path implies the invitee just set
- *                        their password through the
- *                        `/<locale>/auth/set-password` flow (or completed
- *                        the legacy `/auth/callback` exchange) — Supabase
- *                        would have blocked a normal email+password
- *                        login because no password existed before the
- *                        invite was accepted.
- *   - `deactivated`    → rejected with `notAdmin`. A deactivated admin
- *                        cannot resurrect themselves through recovery.
- *   - missing row      → rejected with `notAdmin`. The Supabase user is
- *                        not an Al Hewal admin.
+ *   - `active`             → cookie is signed as-is.
+ *   - `pending_invite`     → the row is flipped to `active` first; the
+ *                            cookie is then signed with the post-flip
+ *                            status. Reaching this path implies the
+ *                            invitee just set their password through
+ *                            `/<locale>/auth/set-password`.
+ *   - `pending_invite` +   → returns `promotionFailed`. The middleware
+ *     UPDATE rejected        rejects any cookie whose payload.status is
+ *                            not 'active', so signing a pending_invite
+ *                            cookie would silently loop the user
+ *                            between /admin and /auth/login. Callers
+ *                            map this to the same i18n key as
+ *                            `notAdmin` so the form surfaces a clean
+ *                            error. Most likely cause: migration 0006
+ *                            (docs/PHASE_3_RUNBOOK.md §9) has not yet
+ *                            been applied to the linked DB.
+ *   - `deactivated`        → rejected with `notAdmin`. A deactivated
+ *                            admin cannot resurrect themselves through
+ *                            recovery.
+ *   - missing row          → rejected with `notAdmin`. The Supabase
+ *                            user is not an Al Hewal admin.
  *
  * Returns one of:
  *   - `{ ok: true, admin }`  — cookie was set, caller should redirect.
@@ -44,7 +51,7 @@ import { getSupabaseAdminClient } from '@/lib/supabase/admin';
  *     so the form / login page can localise it.
  */
 
-export type EstablishReason = 'notAdmin' | 'lookupFailed';
+export type EstablishReason = 'notAdmin' | 'lookupFailed' | 'promotionFailed';
 
 export type EstablishResult =
   | {
@@ -85,11 +92,19 @@ export async function establishAdminSession(supabaseUserId: string): Promise<Est
   // this code path with status='pending_invite'. Promote them to active
   // before signing the cookie so the cookie payload — and every
   // downstream tier/status check that reads it — sees the post-flip
-  // state. If the UPDATE itself fails we still let the sign-in proceed
-  // (the row exists, the tier is correct), but we log the failure so an
-  // operator can reconcile manually; the next successful login will try
-  // again because the status stays at pending_invite.
+  // state.
+  //
+  // If the UPDATE fails we MUST refuse the session. The middleware
+  // rejects any session cookie whose payload.status !== 'active'
+  // (src/middleware.ts:46) so signing a cookie with status='pending_invite'
+  // would land the user in a silent redirect loop between /admin and
+  // /auth/login with no surfaced error. Returning `notAdmin` here at
+  // least gives the form a localisable error to show. Operators should
+  // grep Vercel logs for the `promotion failed` warning to find the
+  // root cause (likely a misapplied / missing migration 0006 — see
+  // docs/PHASE_3_RUNBOOK.md §9).
   if (adminRow.status === 'pending_invite') {
+    let promotionOk = false;
     try {
       const { error: promoteErr } = await getSupabaseAdminClient()
         .from('admins')
@@ -102,12 +117,16 @@ export async function establishAdminSession(supabaseUserId: string): Promise<Est
         );
       } else {
         adminRow = { ...adminRow, status: 'active' };
+        promotionOk = true;
       }
     } catch (err) {
       console.warn(
         '[establishAdminSession] pending_invite promotion threw:',
         err instanceof Error ? err.message : err,
       );
+    }
+    if (!promotionOk) {
+      return { ok: false, reason: 'promotionFailed' };
     }
   }
 

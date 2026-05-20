@@ -68,7 +68,9 @@ export async function GET(req: NextRequest) {
     return loginRedirect(
       req,
       locale,
-      session.reason === 'notAdmin' ? 'notAdmin' : 'callbackInvalid',
+      session.reason === 'notAdmin' || session.reason === 'promotionFailed'
+        ? 'notAdmin'
+        : 'callbackInvalid',
     );
   }
 
