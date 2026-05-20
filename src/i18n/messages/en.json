@@ -442,6 +442,64 @@
         }
       }
     },
+    "leads": {
+      "filter": {
+        "formAriaLabel": "Filter leads",
+        "property": "Project",
+        "source": "Source",
+        "inquiryType": "Inquiry type",
+        "contactedState": "Status",
+        "any": "Any",
+        "apply": "Apply filters",
+        "clear": "Clear"
+      },
+      "source": {
+        "whatsapp": "WhatsApp",
+        "contact_form": "Contact form",
+        "call_click": "Call"
+      },
+      "inquiryType": {
+        "general": "General",
+        "maintenance": "Maintenance"
+      },
+      "contactedState": {
+        "contacted": "Contacted",
+        "pending": "Pending"
+      },
+      "table": {
+        "received": "Received",
+        "project": "Project",
+        "name": "Name",
+        "contact": "Contact",
+        "source": "Source",
+        "inquiryType": "Inquiry",
+        "status": "Status",
+        "actions": "Actions",
+        "noProject": "—",
+        "anonymous": "Anonymous",
+        "noPhone": "No phone",
+        "noEmail": "No email",
+        "message": "Message",
+        "notes": "Notes"
+      },
+      "actions": {
+        "copyPhone": "Copy phone",
+        "copied": "Copied",
+        "openWhatsapp": "Open WhatsApp",
+        "markContacted": "Mark contacted",
+        "markPending": "Mark pending",
+        "editNotes": "Edit notes",
+        "saveNotes": "Save notes",
+        "saving": "Saving…",
+        "cancel": "Cancel",
+        "patchFailed": "We couldn't save that change. Please try again."
+      },
+      "empty": {
+        "title": "No leads yet",
+        "body": "When a visitor taps WhatsApp on a property, fills the contact form, or taps a call link, it lands here with the source tagged automatically.",
+        "filtered": "No leads match the current filters. Try widening your search."
+      }
+    },
     "pages": {
       "dashboard": {
         "title": "Dashboard",
@@ -460,7 +518,7 @@
       "leads": {
         "title": "Leads Journal",
         "subtitle": "Inbound contact attempts from WhatsApp, the contact form, and call clicks.",
-        "placeholder": "The chronological timeline with per-property filter, mark-contacted, and the bilingual PDF export ships in PR 3.6. Today every submission still lands in Supabase tagged with its source and inquiry_type — view in Supabase Studio meanwhile."
+        "subtitleWithCount": "{total, plural, =1 {1 inbound lead} other {# inbound leads}} — newest first."
       },
       "analytics": {
         "title": "Strategic Analytics",

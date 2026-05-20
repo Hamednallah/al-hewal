@@ -102,7 +102,10 @@ test.describe('admin shell (PR 3.2)', () => {
       // (Admin Management UI) replaced it with the real list + invite
       // flow. The page-level assertions for that route now live in
       // `admin-management.spec.ts`.
-      { path: '/en/admin/leads', heading: /Leads Journal/, tracking: /Tracking: PR 3\.6$/ },
+      //
+      // NOTE: `/en/admin/leads` was a placeholder in PR 3.2 but PR 3.6
+      // replaced it with the real Leads Journal table. The page-level
+      // assertions for that route now live in `admin-leads.spec.ts`.
       {
         path: '/en/admin/analytics',
         heading: /Strategic Analytics/,
