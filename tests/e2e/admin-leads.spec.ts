@@ -73,6 +73,36 @@ test.describe('PATCH /api/leads/[id] gates', () => {
   });
 });
 
+test.describe('GET /api/leads/export gates', () => {
+  test('401 without an admin session', async ({ request }) => {
+    const res = await request.get('/api/leads/export');
+    expect(res.status()).toBe(401);
+    expect(await res.json()).toMatchObject({ success: false, error: 'unauthorized' });
+  });
+
+  test('returns a CSV with the expected headers + content-disposition', async ({ context }) => {
+    await loginAsAdmin(context, { tier: 'standard_admin' });
+    const res = await context.request.get('/api/leads/export?locale=en');
+    expect(res.status()).toBe(200);
+    expect(res.headers()['content-type']).toContain('text/csv');
+    expect(res.headers()['content-disposition']).toContain('attachment');
+    expect(res.headers()['content-disposition']).toMatch(/al-hewal-leads-\d{4}-\d{2}-\d{2}\.csv/);
+    // Body starts with the UTF-8 BOM + the English header row.
+    const body = await res.text();
+    expect(body.startsWith('﻿')).toBe(true);
+    expect(body).toContain('Received at,Name,Phone');
+  });
+
+  test('AR locale switches the headers + enum labels', async ({ context }) => {
+    await loginAsAdmin(context, { tier: 'standard_admin' });
+    const res = await context.request.get('/api/leads/export?locale=ar');
+    expect(res.status()).toBe(200);
+    const body = await res.text();
+    expect(body).toContain('تاريخ الاستلام');
+    expect(body).toContain('الاسم');
+  });
+});
+
 test.describe('admin leads page chrome', () => {
   test('renders the EN topbar + filter bar + empty state', async ({ context, page }) => {
     await loginAsAdmin(context, { tier: 'standard_admin' });

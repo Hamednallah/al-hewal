@@ -451,7 +451,9 @@
         "contactedState": "الحالة",
         "any": "الكل",
         "apply": "تطبيق",
-        "clear": "مسح"
+        "clear": "مسح",
+        "exportCsv": "تصدير CSV",
+        "exportCsvAria": "تنزيل العملاء المحتملين المطابقين للفلاتر الحالية بصيغة CSV"
       },
       "source": {
         "whatsapp": "واتساب",
