@@ -524,8 +524,7 @@
       },
       "analytics": {
         "title": "Strategic Analytics",
-        "subtitle": "KPI cards, lead-velocity trend, hottest properties, and KSA region heatmap.",
-        "placeholder": "Analytics dashboards ship in Phase 4 once the materialised views in migration 0003_views.sql are populated by real admin activity. The page_views and whatsapp_clicks tables already feed those views."
+        "subtitle": "KPI snapshot, lead-velocity trend, source mix, and top cities by lead count."
       },
       "admins": {
         "title": "Admin Management",
@@ -534,8 +533,68 @@
       },
       "profile": {
         "title": "My Profile",
-        "subtitle": "Identity, language preference, and account security.",
-        "placeholder": "The full profile editor + TOTP enrolment for super-admins lands in Phase 4. Today, language preference can be changed by re-running the bootstrap SQL with a different language_pref value."
+        "subtitle": "Your identity, sign-in details, and account security."
+      }
+    },
+    "analytics": {
+      "kpi": {
+        "heading": "Key indicators (last 30 days)",
+        "leadsLast30Days": "Leads (last 30d)",
+        "whatsappLast30Days": "WhatsApp clicks (30d)",
+        "publishedProperties": "Published properties",
+        "topProperty": "Top property",
+        "topPropertyEmpty": "—",
+        "leadsBadge": "{count, plural, =1 {1 lead} other {# leads}}"
+      },
+      "charts": {
+        "leadsPerDayTitle": "Leads per day",
+        "leadsBySourceTitle": "Leads by source",
+        "topCitiesTitle": "Top 10 cities by lead count",
+        "emptyMessage": "No data yet. Charts populate once leads start arriving.",
+        "axisDate": "Date",
+        "axisLeadCount": "Leads"
+      },
+      "sources": {
+        "whatsapp": "WhatsApp",
+        "contact_form": "Contact form",
+        "call_click": "Call click"
+      }
+    },
+    "profile": {
+      "identity": {
+        "heading": "Identity",
+        "emailLabel": "Email address",
+        "tierLabel": "Tier",
+        "statusLabel": "Status",
+        "lastLoginLabel": "Last sign-in",
+        "lastLoginNever": "Never",
+        "memberSinceLabel": "Admin since"
+      },
+      "emailForm": {
+        "heading": "Change email address",
+        "intro": "Supabase will send a confirmation link to the new address. Sign-in only switches once you click that link.",
+        "currentLabel": "Current email",
+        "newLabel": "New email",
+        "submit": "Update email",
+        "submitting": "Updating…",
+        "successPending": "Check your new inbox for a confirmation link.",
+        "errorSame": "The new email must be different from the current one.",
+        "errorInvalid": "Enter a valid email address.",
+        "errorRateLimited": "Too many recent attempts. Try again in a few minutes.",
+        "errorGeneric": "Couldn’t update email. Please try again."
+      },
+      "passwordForm": {
+        "heading": "Change password",
+        "intro": "Pick a fresh password — at least 8 characters. You will stay signed in on this device.",
+        "newLabel": "New password",
+        "confirmLabel": "Confirm new password",
+        "submit": "Update password",
+        "submitting": "Updating…",
+        "successFlash": "Password updated.",
+        "errorMismatch": "The two passwords don’t match.",
+        "errorTooShort": "Use at least 8 characters.",
+        "errorSame": "The new password must be different from the current one.",
+        "errorGeneric": "Couldn’t update password. Please try again."
       }
     },
     "admins": {
