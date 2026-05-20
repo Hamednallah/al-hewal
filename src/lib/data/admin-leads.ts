@@ -125,6 +125,93 @@ export function serializeAdminLeadFilters(filters: AdminLeadFilters): URLSearchP
   return params;
 }
 
+/**
+ * Hard cap on rows returned by `listAllLeadsForExport`. Bounded to keep
+ * the CSV export route's response a single Vercel function turn — at
+ * 10k rows the body is ~2 MB which streams cleanly. If a real
+ * deployment ever needs more, paginated streaming or a job-queue
+ * fan-out is the next step.
+ */
+export const ADMIN_LEADS_EXPORT_MAX_ROWS = 10000;
+
+/**
+ * Read every lead matching `filters` (no pagination), capped at
+ * `ADMIN_LEADS_EXPORT_MAX_ROWS`. Used by the CSV export route. Returns
+ * an empty array on any Supabase failure so the caller can emit an
+ * empty file rather than 500ing the export.
+ */
+export async function listAllLeadsForExport(
+  filters: Omit<AdminLeadFilters, 'page'>,
+): Promise<AdminLeadRow[]> {
+  try {
+    const client = getSupabaseAdminClient();
+    let q = client
+      .from('leads')
+      .select(
+        `
+        id, property_id, source, inquiry_type, name, phone, email, message,
+        locale, contacted_at, notes, created_at,
+        properties ( slug, title_ar, title_en )
+      `,
+      )
+      .order('created_at', { ascending: false })
+      .range(0, ADMIN_LEADS_EXPORT_MAX_ROWS - 1)
+      .abortSignal(AbortSignal.timeout(5000));
+
+    if (filters.propertyId) q = q.eq('property_id', filters.propertyId);
+    if (filters.source) q = q.eq('source', filters.source);
+    if (filters.inquiryType) q = q.eq('inquiry_type', filters.inquiryType);
+    if (filters.contacted === 'contacted') q = q.not('contacted_at', 'is', null);
+    if (filters.contacted === 'pending') q = q.is('contacted_at', null);
+
+    const { data, error } = await q;
+    if (error) {
+      console.warn('[listAllLeadsForExport] supabase returned error:', error.message);
+      return [];
+    }
+
+    type Row = {
+      id: string;
+      property_id: string | null;
+      source: LeadSource;
+      inquiry_type: LeadInquiryType;
+      name: string | null;
+      phone: string | null;
+      email: string | null;
+      message: string | null;
+      locale: 'ar' | 'en';
+      contacted_at: string | null;
+      notes: string | null;
+      created_at: string;
+      properties: { slug: string; title_ar: string; title_en: string } | null;
+    };
+    const rows = (data ?? []) as unknown as Row[];
+    return rows.map((r) => ({
+      id: r.id,
+      property_id: r.property_id,
+      property_slug: r.properties?.slug ?? null,
+      property_title_ar: r.properties?.title_ar ?? null,
+      property_title_en: r.properties?.title_en ?? null,
+      source: r.source,
+      inquiry_type: r.inquiry_type,
+      name: r.name,
+      phone: r.phone,
+      email: r.email,
+      message: r.message,
+      locale: r.locale,
+      contacted_at: r.contacted_at,
+      notes: r.notes,
+      created_at: r.created_at,
+    }));
+  } catch (err) {
+    console.warn(
+      '[listAllLeadsForExport] unexpected failure:',
+      err instanceof Error ? err.message : err,
+    );
+    return [];
+  }
+}
+
 export async function listLeads(filters: AdminLeadFilters): Promise<AdminLeadsPage> {
   try {
     const client = getSupabaseAdminClient();

@@ -8,6 +8,7 @@ import {
   LEAD_CONTACTED_FILTERS,
   LEAD_INQUIRY_TYPES,
   LEAD_SOURCES,
+  serializeAdminLeadFilters,
 } from '@/lib/data/admin-leads';
 
 interface LeadsFilterBarProps {
@@ -89,10 +90,28 @@ export async function LeadsFilterBar({ locale, filters, properties }: LeadsFilte
           <Button asChild variant="outline" size="sm">
             <a href={action}>{t('clear')}</a>
           </Button>
+          <Button asChild variant="outline" size="sm">
+            <a
+              href={buildExportHref(locale, filters)}
+              aria-label={t('exportCsvAria')}
+              data-testid="leads-export-csv"
+            >
+              {t('exportCsv')}
+            </a>
+          </Button>
         </div>
       </form>
     </section>
   );
+}
+
+function buildExportHref(locale: Locale, filters: AdminLeadFilters): string {
+  const qs = serializeAdminLeadFilters(filters);
+  // The export route shares the same filter shape as the page; just
+  // add the locale so the CSV header + enum labels match what the
+  // admin sees on screen.
+  qs.set('locale', locale);
+  return `/api/leads/export?${qs.toString()}`;
 }
 
 interface FilterSelectProps {
