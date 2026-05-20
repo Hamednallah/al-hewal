@@ -48,11 +48,13 @@ export async function requestPasswordReset(
 
   // Route the recovery email through `/auth/recovery` (Route Handler)
   // so the PKCE code exchange happens where Supabase's cookie writes
-  // are honoured. The handler forwards to
-  // `/<locale>/auth/reset-password` once the session is established.
-  // See `src/app/auth/recovery/route.ts` for the root-cause writeup.
+  // are honoured. `type=reset` tells the handler to forward to
+  // `/<locale>/auth/reset-password` (recovery tone) — the invite flow
+  // sends `type=invite` instead which lands the user on the welcoming
+  // `/<locale>/auth/set-password` page.
   const redirectTo = new URL('/auth/recovery', env.NEXT_PUBLIC_SITE_URL);
   redirectTo.searchParams.set('locale', parsed.data.locale);
+  redirectTo.searchParams.set('type', 'reset');
 
   try {
     const supabase = await createSupabaseServerClient();

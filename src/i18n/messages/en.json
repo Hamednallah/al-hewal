@@ -571,6 +571,22 @@
           "supabase": "We couldn't save the new password. Please try again."
         }
       },
+      "setPassword": {
+        "title": "Welcome to Al Hewal",
+        "intro": "Pick a password to finish setting up your administrator account. Minimum 8 characters.",
+        "passwordLabel": "Choose a password",
+        "confirmLabel": "Confirm password",
+        "submit": "Create account",
+        "submitting": "Creating account…",
+        "backToLogin": "Back to sign-in",
+        "errors": {
+          "invalidInput": "Please enter a password of at least 8 characters in both fields.",
+          "mismatch": "The two passwords don't match.",
+          "expiredSession": "Your invitation link has expired. Ask the administrator who invited you to send a fresh one.",
+          "notAdmin": "Your invitation hasn't been finalised yet. Ask the administrator who invited you to retry.",
+          "supabase": "We couldn't save your password. Please try again."
+        }
+      },
       "callback": {
         "verifying": "Verifying your sign-in link…"
       }

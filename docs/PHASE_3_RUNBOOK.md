@@ -468,3 +468,93 @@ alter table public.property_images drop column webp_url;
 ```
 
 `pnpm supabase db push` ships the rollback.
+
+---
+
+## 8. Configure custom SMTP for invite + password-reset emails
+
+Supabase Hobby ships with a built-in SMTP relay that is **rate-limited
+to ~30 emails per hour** and frequently silently drops sends. Symptom:
+super_admin invites a new admin, the `public.admins` row is created,
+but the invitee never receives the email. Same applies to the
+`/auth/forgot` password-recovery flow.
+
+The durable fix is to point Supabase Auth at a real transactional
+email provider. Resend has a free tier that covers a small admin team
+indefinitely (3 000 emails/month, 100/day). SendGrid, Postmark, and
+Mailgun all work the same way.
+
+### Step 1 — Provision a Resend account (free tier)
+
+1. https://resend.com/signup — sign up with your team email.
+2. Onboarding asks for a **domain**. Two paths:
+   - **Recommended (deliverability)**: enter your real domain (e.g.
+     `al-hewal.com`), then add the SPF + DKIM DNS records Resend
+     prints. Once verified you can send from any address on that
+     domain.
+   - **Quick start (any address)**: pick `onboarding@resend.dev` —
+     no DNS setup, but the From address is `onboarding@resend.dev`
+     which is less trustworthy in inbox filters.
+3. **API Keys** → **Create API Key** → name it `supabase-smtp` →
+   permission `Sending access` → **Create**. Copy the value
+   (`re_…`) — Resend only shows it once.
+
+### Step 2 — Plug Resend's SMTP creds into Supabase
+
+1. https://supabase.com/dashboard/project/gvjmnwsqaymkxcsabjur/auth/smtp
+2. Toggle **Enable custom SMTP** to **on**.
+3. Fill in:
+   - **Sender email**: `Al Hewal Admin <invites@al-hewal.com>`
+     (or whatever address you verified in Resend).
+   - **Sender name**: `Al Hewal`.
+   - **Host**: `smtp.resend.com`
+   - **Port**: `587`
+   - **Username**: `resend`
+   - **Password**: the `re_…` key from Step 1.
+   - **Minimum interval**: leave at default (60s) — Resend has its
+     own rate limits.
+4. Click **Save**.
+
+### Step 3 — Verify
+
+Run `/auth/forgot` from a browser with a real admin email. The reset
+email should land in the inbox within a few seconds. Failing that,
+check:
+
+- Resend dashboard → **Emails** — if Resend received the request,
+  Supabase did its part. Resend's UI shows the deliverability outcome.
+- Supabase dashboard → **Authentication** → **Logs** — if Supabase
+  rejected our SMTP request, the error message is here.
+
+### Step 4 — Customise the templates (optional)
+
+Supabase ships default English templates that say "Confirm your
+signup" / "Reset your password". The invite email is fine as-is for
+Al Hewal's case, but for the recovery template you'll want to update
+the call-to-action URL since the `{{ .ConfirmationURL }}` placeholder
+already points at our `redirectTo` (`/auth/recovery?type=…&locale=…`):
+
+1. https://supabase.com/dashboard/project/gvjmnwsqaymkxcsabjur/auth/templates
+2. Pick **Invite user** → edit subject/body if you want
+   Arabic-bilingual copy.
+3. Pick **Reset password** → same.
+
+Leave the link as `{{ .ConfirmationURL }}` — Supabase substitutes the
+real `redirectTo` value at send time.
+
+### SQL fallback (still works)
+
+If SMTP is broken AND you need to add an admin immediately, runbook
+§1 ("Resetting an existing admin's password") still applies. Insert
+the `public.admins` row by hand, then set the auth.users password
+via the SQL Editor:
+
+```sql
+update auth.users
+   set encrypted_password = extensions.crypt('NewStrongPassword!',
+                                              extensions.gen_salt('bf')),
+       email_confirmed_at  = coalesce(email_confirmed_at, now())
+ where email = 'new-admin@al-hewal.sa';
+```
+
+Hand the password to the new admin out-of-band.
