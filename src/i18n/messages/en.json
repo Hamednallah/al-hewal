@@ -530,7 +530,31 @@
         "welcomeLabel": "Signed in as",
         "tierLabel": "Admin tier",
         "statusLabel": "Account status",
-        "body": "Use the sidebar to manage listings, review leads, and check analytics. The dashboard will grow into a real KPI surface in Phase 4."
+        "kpiHeading": "Last 30 days",
+        "kpiViewAll": "Open full analytics →",
+        "quickActionsHeading": "Quick actions",
+        "quickActions": {
+          "properties": {
+            "title": "Listing Management",
+            "description": "Browse, add, and update properties."
+          },
+          "leads": {
+            "title": "Leads Journal",
+            "description": "Inbound WhatsApp clicks, contact-form messages, and call clicks."
+          },
+          "analytics": {
+            "title": "Strategic Analytics",
+            "description": "Funnel KPIs, source mix, and top cities."
+          },
+          "admins": {
+            "title": "Admin Management",
+            "description": "Invite, promote, and deactivate administrators."
+          },
+          "profile": {
+            "title": "My Profile",
+            "description": "Identity, sign-in details, and account security."
+          }
+        }
       },
       "properties": {
         "title": "Listing Management",
