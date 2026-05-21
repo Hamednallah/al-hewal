@@ -84,7 +84,12 @@ export function buildCspHeader(isDev: boolean): string {
     'base-uri': [`'self'`],
     'form-action': [`'self'`],
     'frame-ancestors': [`'none'`],
-    'upgrade-insecure-requests': [],
+    // `upgrade-insecure-requests` is intentionally omitted in
+    // report-only mode — the browser silently ignores it there
+    // (the spec doesn't allow "report a would-be upgrade", only
+    // enforce one). Adds a console warning per request otherwise.
+    // The follow-up PR that promotes CSP to enforce should add
+    // it back here.
   };
 
   return Object.entries(directives)

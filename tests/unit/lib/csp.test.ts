@@ -18,12 +18,19 @@ describe('buildCspHeader', () => {
       'base-uri',
       'form-action',
       'frame-ancestors',
-      'upgrade-insecure-requests',
     ]) {
       expect(csp).toContain(directive);
     }
     // Joined with `; `, not newlines (single-line HTTP header value).
     expect(csp).not.toContain('\n');
+  });
+
+  it('omits upgrade-insecure-requests in report-only mode', () => {
+    // Browsers warn loudly when this directive ships in a report-only
+    // header because it's silently ignored. The follow-up promote-to-
+    // enforce PR adds it back.
+    expect(buildCspHeader(false)).not.toContain('upgrade-insecure-requests');
+    expect(buildCspHeader(true)).not.toContain('upgrade-insecure-requests');
   });
 
   it('production script-src is just self (no unsafe-eval, no inline)', () => {
@@ -68,12 +75,6 @@ describe('buildCspHeader', () => {
     expect(csp).toMatch(/frame-src 'none'/);
     expect(csp).toMatch(/object-src 'none'/);
     expect(csp).toMatch(/frame-ancestors 'none'/);
-  });
-
-  it('upgrade-insecure-requests directive has no source list', () => {
-    const csp = buildCspHeader(false);
-    // Should appear as a bare directive, not "upgrade-insecure-requests <something>"
-    expect(csp).toMatch(/(^|; )upgrade-insecure-requests(?:;|$)/);
   });
 });
 
