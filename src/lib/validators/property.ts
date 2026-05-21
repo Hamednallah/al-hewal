@@ -22,9 +22,20 @@ export const ADMIN_PROPERTY_STATUSES = [
   'reserved',
   'sold',
 ] as const;
+/**
+ * Mirrors the `properties.facade` CHECK constraint in
+ * `supabase/migrations/0001_init.sql`. The Zod schema below uses
+ * `z.enum(...)` against this list so the admin form can't submit a
+ * value the DB will reject (PR #50 follow-up — the previous
+ * free-text validator allowed any 50-char string, which produced an
+ * opaque 23514 check-constraint error when an admin typed e.g.
+ * Arabic `شمالية` instead of the enum literal `north`).
+ */
+export const ADMIN_PROPERTY_FACADES = ['north', 'south', 'east', 'west', 'corner'] as const;
 
 export type AdminPropertyType = (typeof ADMIN_PROPERTY_TYPES)[number];
 export type AdminPropertyStatus = (typeof ADMIN_PROPERTY_STATUSES)[number];
+export type AdminPropertyFacade = (typeof ADMIN_PROPERTY_FACADES)[number];
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -81,12 +92,10 @@ const baseShape = {
     .or(z.literal(''))
     .transform((v) => (v === '' || v === undefined ? undefined : Number(v))),
   facade: z
-    .string()
-    .trim()
-    .max(50)
+    .enum(ADMIN_PROPERTY_FACADES)
     .optional()
     .or(z.literal(''))
-    .transform((v) => (v === '' ? undefined : v)),
+    .transform((v) => (v === '' || v === undefined ? undefined : v)),
   lat: z.coerce
     .number()
     .min(-90)

@@ -71,6 +71,11 @@ export const viewport: Viewport = {
   initialScale: 1,
   viewportFit: 'cover',
   themeColor: '#002b2b',
+  // Tell every browser this is a designed light-mode (canvas + brass
+  // accents) site — opts OUT of Android Chrome / Samsung Internet's
+  // auto-dark inversion that was turning brass surfaces into muddy
+  // brown on phones in OS dark mode.
+  colorScheme: 'light',
 };
 
 export default async function LocaleLayout({

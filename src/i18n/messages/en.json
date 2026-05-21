@@ -241,6 +241,20 @@
         "secondaryCta": "Back to Home"
       }
     },
+    "consent": {
+      "regionLabel": "Cookie and tracking notice",
+      "body": "We use cookies for essential site functionality and to record WhatsApp lead clicks and contact form submissions you initiate. No third-party advertising trackers.",
+      "privacyLink": "Privacy notice",
+      "accept": "Accept",
+      "accepting": "Saving…"
+    },
+    "error": {
+      "eyebrow": "Unexpected error",
+      "title": "Something went wrong",
+      "body": "The error has been logged. Try again in a moment, or head back to the home page.",
+      "retry": "Try again",
+      "home": "Back to Home"
+    },
     "footer": {
       "tagline": "We build quality... and shape the future",
       "about": "Al Hewal Real Estate Development and Investment Company — a Saudi developer crafting residential and investment projects to the highest quality standards, backed by a full one-year maintenance warranty.",
@@ -309,6 +323,14 @@
         "duplex": "Duplex",
         "apartment": "Apartment",
         "investment": "Investment"
+      },
+      "facade": {
+        "none": "— Not specified —",
+        "north": "North",
+        "south": "South",
+        "east": "East",
+        "west": "West",
+        "corner": "Corner"
       },
       "table": {
         "project": "Project",
@@ -420,7 +442,6 @@
           "plot_number": "Plot number",
           "street_width_m": "Street width (m)",
           "facade": "Facade",
-          "facadePlaceholder": "e.g. North, South-East",
           "lat": "Latitude",
           "lng": "Longitude",
           "google_maps_url": "Google Maps URL",
@@ -509,7 +530,31 @@
         "welcomeLabel": "Signed in as",
         "tierLabel": "Admin tier",
         "statusLabel": "Account status",
-        "body": "Use the sidebar to manage listings, review leads, and check analytics. The dashboard will grow into a real KPI surface in Phase 4."
+        "kpiHeading": "Last 30 days",
+        "kpiViewAll": "Open full analytics →",
+        "quickActionsHeading": "Quick actions",
+        "quickActions": {
+          "properties": {
+            "title": "Listing Management",
+            "description": "Browse, add, and update properties."
+          },
+          "leads": {
+            "title": "Leads Journal",
+            "description": "Inbound WhatsApp clicks, contact-form messages, and call clicks."
+          },
+          "analytics": {
+            "title": "Strategic Analytics",
+            "description": "Funnel KPIs, source mix, and top cities."
+          },
+          "admins": {
+            "title": "Admin Management",
+            "description": "Invite, promote, and deactivate administrators."
+          },
+          "profile": {
+            "title": "My Profile",
+            "description": "Identity, sign-in details, and account security."
+          }
+        }
       },
       "properties": {
         "title": "Listing Management",

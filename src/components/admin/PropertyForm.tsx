@@ -8,7 +8,11 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
-import { ADMIN_PROPERTY_STATUSES, ADMIN_PROPERTY_TYPES } from '@/lib/validators/property';
+import {
+  ADMIN_PROPERTY_FACADES,
+  ADMIN_PROPERTY_STATUSES,
+  ADMIN_PROPERTY_TYPES,
+} from '@/lib/validators/property';
 import type { Locale } from '@/i18n/routing';
 import { cn } from '@/lib/utils';
 
@@ -117,6 +121,7 @@ export function PropertyForm({
   const tFields = useTranslations('admin.properties.form.fields');
   const tType = useTranslations('admin.properties.type');
   const tStatus = useTranslations('admin.properties.status');
+  const tFacade = useTranslations('admin.properties.facade');
   const tErrors = useTranslations('admin.properties.form.errors');
   const tImages = useTranslations('admin.properties.images');
   const router = useRouter();
@@ -377,10 +382,13 @@ export function PropertyForm({
             dir="ltr"
             {...register('plot_number')}
           />
-          <Field
+          <Select
             id="prop-facade"
             label={tFields('facade')}
-            placeholder={tFields('facadePlaceholder')}
+            options={[
+              { value: '', label: tFacade('none') },
+              ...ADMIN_PROPERTY_FACADES.map((value) => ({ value, label: tFacade(value) })),
+            ]}
             error={errors.facade?.message}
             {...register('facade')}
           />
