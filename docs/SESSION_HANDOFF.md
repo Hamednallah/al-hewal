@@ -1,12 +1,12 @@
 # Session Handoff — read this FIRST
 
-> Last updated: 2026-05-20 PM, after the continuation session that
-> shipped PRs #39 → #47 — finishing the invite-flow chain that #37
-> started (admin status promotion + a migration to unblock the
-> service-role bypass), then PR 3.5c (reorder + hero), PR 3.6 (Leads
-> Journal MVP + cards refactor + CSV export), and PR 3.7's a11y gate.
-> Read §0 ("Session wrap-up — pick up here") first; the rest of this
-> file is reference material that hasn't changed.
+> Last updated: **2026-05-21**, after the session that closed Phase 4
+> (#50 analytics + profile, #51 docs/closeout) and Phase 5 (#52 PDPL
+> banner + 500 + a11y, #53 CSP + Carto map fix + amenities admin UI
+>
+> - go-live guide rewrite + amenities seed expansion). Read §A
+>   ("2026-05-21 wrap — start here") first; everything before it is
+>   historical reference.
 
 This file is the entire context you need to pick up the Al Hewal build
 without re-reading the chat history. Read top-to-bottom once; the
@@ -14,7 +14,109 @@ critical decisions are sticky.
 
 ---
 
-## 0 — Session wrap-up (2026-05-20 PM continuation) — pick up here
+## A — Session wrap-up (2026-05-21) — pick up here
+
+### State of the build
+
+**Master plan is complete.** All 5 phases shipped. Site is live on
+`al-hewal.vercel.app`. The only remaining work is operator-side:
+walk through `docs/POST_DEPLOY_CHECKLIST.md` once a real domain is
+purchased (Search Console, GBP, Resend SMTP, Lighthouse, owner
+handover). Until then, day-to-day work is just adding properties
+via the admin and watching the leads journal.
+
+### What shipped this session (PRs #50 → #53)
+
+| PR  | Title                                                                | Highlights                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| --- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| #50 | feat(phase-4/a): strategic analytics dashboard + My Profile page     | `/admin/analytics` (4 KPI cards + Recharts line + 2 bar charts) + `/admin/profile` (change-email + change-password via Supabase Auth). Recharts@2.15.4 added. Heatmap → top-10 cities; MV-readers → raw COUNTs.                                                                                                                                                                                                                                        |
+| #51 | docs(phase-4): close Phase 4 + drop TOTP from scope                  | Master-plan + handoff amendments. TOTP enrolment deferred indefinitely. Runbook §11 with `v0.4.0` tag procedure.                                                                                                                                                                                                                                                                                                                                       |
+| #52 | feat(phase-5/a): PDPL consent banner + 500 page + a11y sweep         | KSA PDPL consent banner (server-side conditional mount + cookie-based dismiss) + `global-error.tsx` + `[locale]/error.tsx` + axe-core extended to property detail. Plus mid-PR fixes: Android auto-dark, Arabic letter-spacing breaking ligatures, facade dropdown, /admin dashboard rebuilt with KPI strip + quick-action tiles. **`v0.5.0` tagged.**                                                                                                 |
+| #53 | feat(phase-5/b): CSP + Carto map fix + amenities admin UI + ops trim | CSP report-only header + middleware. **MapEmbed swap from `demotiles.maplibre.org` (429 + CORS-broken in prod) to Carto Basemaps positron.** Amenities ticklist (closes PR 3.4's deferred amenities step). CI workflow trimmed (`pull_request` only). README dashboards + `db:types` script. Go-live guide rewrite. `upgrade-insecure-requests` removed from report-only payload (browser warning). **Amenities seed expanded by 8 (migration 0007).** |
+
+PR #53 is **open at session-end** — all gates green, awaiting
+owner merge.
+
+### Scope cuts this session (deferred indefinitely)
+
+These are real decisions, not TODOs:
+
+- **TOTP enrolment for super_admin** (was Phase 4 PR-B): zero
+  security benefit at current single-owner scale. Revisit when
+  the admin team grows or a security-sensitive customer base
+  emerges. Documented in `docs/plan/MASTER_PLAN.md` Phase 4.
+- **Sentry SDK + PII scrub** (was Phase 5-B item 2): zero
+  traffic + working error boundaries + Vercel built-in logs
+  cover the use case. Plus `@sentry/cli`'s postinstall hit
+  pnpm 11's `ERR_PNPM_IGNORED_BUILDS` gate (memory:
+  `feedback_pnpm_postinstall_friction`).
+- **DB type generation gate in CI** (was Phase 5-B item 3):
+  would require Supabase CLI in Docker on the runner (same
+  pnpm gate). `tsc --noEmit` catches drift implicitly when
+  code references missing columns. Replaced with `pnpm
+db:types` script + README docs.
+- **pg_dump backup workflow** (was Phase 5-B item 4): Supabase's
+  own daily project backups cover disaster recovery at this
+  scale.
+- **k6 load test** (was Phase 5-B item 6): no production
+  traffic to validate against.
+- **Bilingual PDF leads export** (was Phase 3-6 PDF half):
+  CSV satisfies the bilingual export need; PDF at meaningful
+  row counts exceeds Vercel's 10s function envelope.
+
+The go-live guide (`docs/POST_DEPLOY_CHECKLIST.md`) lists which
+production observation would trigger each one to be re-evaluated.
+
+### Owner-side actions still open after PR #53 merges
+
+1. **Merge PR #53** (CI green, awaiting your click).
+2. **Tag.** Either re-tag `v0.5.0` against the new commit, or
+   tag `v0.5.1` (semver-cleaner if you want 5-A and 5-B at
+   distinct points). Both work.
+3. **Apply migration 0007** to production:
+   `pnpm supabase db push` — appends 8 amenities (elevator,
+   pool, family_lounge, children_room, office, balcony,
+   furnished, solar_panels) to the catalog.
+4. **Set the Al Dana property's amenities** via the new
+   editor at `/ar/admin/properties/al-dana-project-no-21-duplex/edit`
+   — scroll to the **المرافق** section, tick: walk_in_closet,
+   formal_dining, majlis, storage_room, laundry_room,
+   water_meter, one_year_warranty, saudi_building_code. After
+   migration 0007 lands you can also tick family_lounge for
+   the `صالة` from the ad.
+5. **Backfill the `v0.3.0` and `v0.4.0` tags** (cosmetic): they
+   were owner-side per the runbook and never pushed. Skip if
+   you don't care about clean release history.
+6. **When a real domain is purchased:** work through
+   `docs/POST_DEPLOY_CHECKLIST.md` start-to-finish. That doc
+   was rewritten this session to be a chronological,
+   click-by-click guide.
+
+### Memories added this session
+
+- `feedback_phase_as_one_pr` — ship each phase as 1 PR, 2 if too
+  big, never 3+. Phase 3's many-small-PR cadence was the
+  exception.
+- `feedback_pnpm_postinstall_friction` — adding a dep with a
+  native postinstall costs ~30+ min of pnpm yak-shaving in
+  pnpm 11.0.9. Prefer postinstall-free alternatives. This is
+  why Sentry got dropped from PR 5-B.
+
+### Working tree state at session-end (2026-05-21)
+
+- Branch: `feat/phase-5-b-infra` (open PR #53 awaiting merge).
+- Local `main` is one commit behind origin (PR #52's merge).
+- vitest 218/218 ✓; coverage **82.49% branches** (gate 80%).
+- typecheck clean · lint clean · prod build green.
+- `pnpm install` still emits the pre-existing
+  `ERR_PNPM_IGNORED_BUILDS` warning for `@sentry/cli` IF you
+  redo the install — but after my session, `@sentry/cli` is
+  no longer in `pnpm-lock.yaml`, so the warning shouldn't
+  surface again unless someone re-installs Sentry.
+
+---
+
+## 0 — Session wrap-up (2026-05-20 PM continuation) — historical context
 
 ### What shipped this half-session (PRs #39 → #47)
 
