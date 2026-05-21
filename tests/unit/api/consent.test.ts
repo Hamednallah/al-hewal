@@ -67,4 +67,16 @@ describe('POST /api/consent', () => {
     const res = await POST(makeRequest({ origin: 'not-a-url' }) as any);
     expect(res.status).toBe(403);
   });
+
+  it('rejects POST with malformed Referer (no Origin)', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = await POST(makeRequest({ referer: 'not-a-url' }) as any);
+    expect(res.status).toBe(403);
+  });
+
+  it('rejects POST with cross-origin Referer (no Origin)', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const res = await POST(makeRequest({ referer: `${OTHER_ORIGIN}/path` }) as any);
+    expect(res.status).toBe(403);
+  });
 });

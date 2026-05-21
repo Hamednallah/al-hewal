@@ -66,6 +66,14 @@ export default defineConfig({
         // surfaces inline errors, submits to /api/leads). Unit testing
         // RHF + fetch would be testing mocks rather than behaviour.
         'src/components/public/ContactForm.tsx',
+        // PR 5-A — consent banner is a client component with two
+        // local state branches (dismissed / pending); covered by
+        // Playwright in tests/e2e/consent-banner.spec.ts (first
+        // visit shows banner, Accept dismisses + persists,
+        // pre-existing cookie skips render). Unit testing the
+        // setState calls would assert on internals rather than
+        // behaviour.
+        'src/components/public/ConsentBanner.tsx',
         // Property detail components — visual / interactive, covered by
         // Playwright in PR 2.7 (per docs/SESSION_HANDOFF.md PR 2.4 plan).
         'src/components/public/property-detail/**',
