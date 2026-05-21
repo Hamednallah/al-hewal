@@ -119,6 +119,44 @@ managed through Vercel and Supabase environment scopes — never committed.
 See [`SECURITY.md`](SECURITY.md) for the full policy, incident response
 procedure, and the secret rotation schedule.
 
+## Free-tier dashboards (operator)
+
+The platform runs entirely on free tiers. Bookmark the dashboards below;
+check them periodically to spot quota pressure before it bites.
+
+| Service                | Dashboard                                                       | Free-tier quota                                       | What to watch                                                       |
+| ---------------------- | --------------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------- |
+| **Vercel** (app + CDN) | `vercel.com/<org>/al-hewal`                                     | 100k function invocations/mo · 100 GB bandwidth/mo    | Function invocation count; bandwidth on heavy-image months          |
+| **Vercel Blob**        | `vercel.com/<org>/~/stores/blob`                                | 1 GB storage · 100 GB bandwidth/mo                    | Storage size (resized variants accumulate); bandwidth               |
+| **Supabase**           | `supabase.com/dashboard/project/<project-ref>/reports/database` | 500 MB DB · 2 GB egress/mo · 50k MAU                  | DB size (especially `leads` + `page_views`); egress; paused warning |
+| **Supabase logs**      | `supabase.com/dashboard/project/<project-ref>/logs/explorer`    | Bundled with project                                  | Auth errors, RLS denials, slow queries                              |
+| **Upstash Redis**      | `console.upstash.com/redis/<db>?tab=metrics`                    | 10k commands/day · 256 MB                             | Command count (rate-limit endpoints are the volume drivers)         |
+| **GitHub Actions**     | `github.com/<org>/al-hewal/actions/usage`                       | 2,000 minutes/mo (private repo) — unlimited if public | CI minutes consumed; cron-triggered runs                            |
+
+### Alerts to set up (one-time, optional)
+
+- **Vercel:** project settings → notifications → enable "Function
+  invocations approaching limit" + "Bandwidth approaching limit".
+- **Supabase:** project settings → notifications → enable "Database
+  size > 80%" + "Egress > 80%" + "Project paused" alerts.
+- **GitHub:** account settings → billing → notifications → "Actions
+  spending limit reached".
+
+### Database type regeneration
+
+Whenever you author a new migration in `supabase/migrations/`, regenerate
+the TypeScript types and commit the result:
+
+```bash
+pnpm db:types
+```
+
+The script runs `supabase gen types typescript --local`, which spins
+up the local Supabase stack from `supabase/migrations/` and writes
+the typed schema to `src/lib/supabase/database.types.ts`. CI catches
+drift implicitly — code that references a column missing from the
+types file fails `pnpm typecheck`.
+
 ## Accessibility & Internationalisation
 
 The platform meets WCAG 2.1 AA. Arabic content uses IBM Plex Sans Arabic with

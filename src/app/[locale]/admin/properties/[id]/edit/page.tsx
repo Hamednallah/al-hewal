@@ -3,12 +3,14 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 
 import { AdminTopbar } from '@/components/admin/AdminTopbar';
+import { PropertyAmenitiesEditor } from '@/components/admin/PropertyAmenitiesEditor';
 import { PropertyDraftBanner } from '@/components/admin/PropertyDraftBanner';
 import { PropertyForm } from '@/components/admin/PropertyForm';
 import { PropertyImagesGrid } from '@/components/admin/PropertyImagesGrid';
 import { PropertyImageUploader } from '@/components/admin/PropertyImageUploader';
 import { type Locale, routing } from '@/i18n/routing';
 import { requireAdmin } from '@/lib/auth/admins';
+import { getPropertyAmenityIds, listAmenities } from '@/lib/data/admin-amenities';
 import { getAdminPropertyById, listPropertyImages } from '@/lib/data/admin-properties';
 
 export const dynamic = 'force-dynamic';
@@ -33,9 +35,11 @@ export default async function EditPropertyPage({ params }: PageProps) {
   await requireAdmin();
   const typedLocale = locale as Locale;
 
-  const [property, images, t, tCommon] = await Promise.all([
+  const [property, images, amenityCatalog, selectedAmenityIds, t, tCommon] = await Promise.all([
     getAdminPropertyById(id),
     listPropertyImages(id),
+    listAmenities(),
+    getPropertyAmenityIds(id),
     getTranslations({ locale: typedLocale, namespace: 'admin.properties.form' }),
     getTranslations({ locale: typedLocale, namespace: 'admin.common' }),
   ]);
@@ -102,6 +106,12 @@ export default async function EditPropertyPage({ params }: PageProps) {
             }
           />
         </div>
+        <PropertyAmenitiesEditor
+          propertyId={property.id}
+          locale={typedLocale}
+          catalog={amenityCatalog}
+          initialSelectedIds={selectedAmenityIds}
+        />
       </div>
     </>
   );

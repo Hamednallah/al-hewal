@@ -26,11 +26,16 @@ import { formatNumber } from '@/lib/format';
  * AND no fallback URL — the caller is responsible for not showing the
  * section header in that case.
  *
- * Tile source: OpenStreetMap raster tiles via the demo style. Free, no
- * API key, attribution baked into the style. If the owner adds a Google
- * Maps key later, env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY can switch this
- * to a different provider without a schema change.
+ * Tile source: Carto Basemaps "positron" style — light/clean look that
+ * lets the brass marker pop. Free for non-commercial + small-commercial
+ * use, no API key, attribution baked into the style.json. We previously
+ * used `demotiles.maplibre.org` (PR 1.x) but production hit HTTP 429
+ * rate-limiting + CORS blocks; Carto is the reliable drop-in replacement.
+ * If the owner adds a Google Maps key later,
+ * `env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` can switch this to a different
+ * provider without a schema change.
  */
+const TILE_STYLE_URL = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json';
 type MapEmbedProps = {
   lat: number | null;
   lng: number | null;
@@ -92,10 +97,11 @@ export function MapEmbed({ lat, lng, label, locale, googleMapsUrl }: MapEmbedPro
 
       const map = new maplibregl.Map({
         container: mount,
-        // Demo style hosted by MapLibre. Production-safe: rate-limits
-        // are documented and we can swap to a self-hosted style or
-        // MapTiler/Stadia when traffic warrants.
-        style: 'https://demotiles.maplibre.org/style.json',
+        // Carto Basemaps "positron" — free OSM-rendered light style with
+        // CORS-permissive headers + no API key required at our traffic
+        // volume. Replaced the former `demotiles.maplibre.org` (rate-
+        // limited + CORS-blocking in production).
+        style: TILE_STYLE_URL,
         center: [lng!, lat!],
         zoom: 13,
         attributionControl: false,

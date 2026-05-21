@@ -364,6 +364,20 @@
         "archiveConfirm": "Archive \"{title}\"? The listing will be hidden from the public site but can be restored.",
         "failureToast": "The action failed. Please refresh and try again."
       },
+      "amenities": {
+        "heading": "Amenities",
+        "hint": "Tick the features that apply. Changes save automatically.",
+        "saving": "Saving…",
+        "savedBadge": "{count, plural, =0 {No amenities} =1 {1 amenity selected} other {# amenities selected}}",
+        "saveFailed": "Couldn't save that change. Refresh the page and try again.",
+        "categories": {
+          "interior": "Interior",
+          "exterior": "Exterior",
+          "safety": "Safety",
+          "smart": "Smart-home",
+          "other": "Other"
+        }
+      },
       "images": {
         "sectionDescription": "Upload property photos. Each photo can be up to 25 MB — JPG, PNG, or WebP.",
         "createModeHint": "Save the property first. Once it's saved, you'll be able to add photos here.",
