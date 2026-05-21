@@ -865,3 +865,76 @@ from PR #47, so the PDF route can be added without a refactor.
 The design exploration is captured in
 `docs/specs/2026-05-20-pr-3.7-phase-3-wrap-design.md` for the next
 session that picks this up.
+
+---
+
+## 11. Phase 4 closeout — `v0.4.0 — Admin users + analytics`
+
+Phase 4 closes with **PR #50** (`feat(phase-4/a): strategic
+analytics dashboard + My Profile page`). The originally-planned
+PR 4-B (TOTP enrolment for super_admin) was **dropped during the
+Phase 4 brainstorm** — see the master-plan scope amendment.
+Email + password auth is acceptable for the current single-tenant
+Saudi-owner deployment; introducing a second factor at this stage
+would add enrolment + recovery-code + lockout surface without a
+threat model that justifies it.
+
+### 11.1. Smoke-test the analytics dashboard against the preview deploy
+
+The `/admin/analytics` page reads from real Supabase tables (no
+mocking). On a fresh production database with zero seeded data,
+the dashboard should render:
+
+- KPI cards: 0 leads · 0 WhatsApp clicks · 0 published properties · "—" (top property)
+- Line chart: 30 zero-value points with the "No data yet" overlay
+- Both bar charts: the empty-state overlay
+
+Sign in to the preview deploy as super_admin → navigate to
+`/admin/analytics` → confirm the above. If a Supabase query
+times out (placeholder URL in non-preview environments), the
+reader returns the zero shape gracefully and the page still
+renders — no 500.
+
+### 11.2. Smoke-test My Profile
+
+Sign in → `/admin/profile`. Confirm:
+
+- Identity block shows your email (current), tier, status,
+  last sign-in, and member-since dates rendered in the page locale.
+- The change-email form pre-fills your current email read-only.
+- The change-password form has two `type=password` inputs and a
+  client-side minLength of 8.
+
+**Do not exercise the change-email + change-password flows
+against production** — they round-trip Supabase Auth and can
+lock you out if the new password isn't recorded. Use a throwaway
+test admin if you want full coverage.
+
+### 11.3. Tag `v0.4.0`
+
+After PR #50 (and any follow-up closeout docs PRs like this one)
+have merged to `main`:
+
+```bash
+git checkout main
+git pull --ff-only origin main
+git tag -a v0.4.0 -m "Admin users + analytics"
+git push origin v0.4.0
+```
+
+The tag message stays short — release notes live in the merged
+PR bodies and the master plan's Phase 4 amended section.
+
+### 11.4. Deferrals carried into Phase 5
+
+Items intentionally deferred from Phase 4 to revisit later:
+
+- **TOTP enrolment + enforcement.** Dropped; revisit if the admin
+  team grows beyond the owner or a security-sensitive customer
+  base emerges.
+- **`page_views_daily` rollup + partition migrations
+  (`0007_cron.sql`, `0008_partitions.sql`).** Premature
+  optimisation at current scale; revisit when raw `page_views`
+  rows become a real query cost.
+- **Configurable analytics date ranges.** Today the window is
+  hard-coded to "last 30 days". Add when stakeholders ask for it.

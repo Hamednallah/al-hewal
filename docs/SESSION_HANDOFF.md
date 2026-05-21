@@ -78,38 +78,54 @@ below). The PDF-export deferral is documented as a scope-cut in
 both `docs/plan/MASTER_PLAN.md` Phase 3 and
 `docs/specs/2026-05-20-pr-3.7-phase-3-wrap-design.md`.
 
-### Next PR — Phase 4 kickoff
+### Phase 4 — closed (post-#50)
 
-The user has already chosen the Phase 4 direction this session:
-**full analytics dashboard in one PR** (KPI cards + Recharts line
+PR #50 — `feat(phase-4/a): strategic analytics dashboard + My
+Profile page` — merged on 2026-05-21. Closes Phase 4. The
+originally-planned PR 4-B (TOTP enrolment for super_admin) was
+**dropped during the Phase 4 brainstorm** — see the master-plan
+scope-amendment note. Email + password auth (PR #24 + #37) is
+acceptable for the current single-tenant Saudi-owner deployment;
+TOTP can be revisited when the admin team grows.
 
-- bar + SVG KSA heatmap from `leads.region` + the missing
-  page_views_daily rollup cron migration). The data plumbing exists:
+What PR #50 shipped:
 
-* `public.leads` (region, source, inquiry_type, created_at)
-* `public.whatsapp_clicks` (denormalised mirror, `created_day` indexed)
-* `public.page_views_daily` (rollup target — currently unpopulated;
-  the originally-planned `0004_cron.sql` never shipped)
-* `public.page_views_y2026m05` partition (only the current month;
-  the partition-management cron is also missing)
+- `/admin/analytics` — 4 KPI cards (leads 30d · WhatsApp clicks
+  30d · published properties · top property by leads) + Recharts
+  line chart (leads/day 30d, zero-filled) + Recharts bar charts
+  (leads-by-source, top-10 cities) + per-chart empty-state
+  overlay.
+- `/admin/profile` — identity block (email/tier/status/last
+  sign-in/member since) + change-email form (round-trips
+  `supabase.auth.updateUser({ email })`) + change-password form
+  (round-trips `supabase.auth.updateUser({ password })`).
+- New dep: `recharts@2.15.4` (React 19 compatible).
+- Master-plan amendments: SVG KSA heatmap → top-10 cities bar;
+  page_views_daily rollup deferred; TOTP dropped.
 
-Two missing migrations the PR will need to ship alongside the
-dashboard:
+Two scope-cuts that surfaced during the Phase 4 brainstorm and
+are still TRUE deferrals (not done):
 
-1. `0007_cron.sql` — the deferred `pg_cron` job that rolls
-   `page_views` rows older than 30 days into `page_views_daily`
-   and drops them.
-2. `0008_partitions.sql` — pre-create future monthly partitions
-   for `page_views` so writes don't fail when the calendar rolls
-   into June 2026.
+1. `page_views_daily` rollup + partition migrations
+   (`0007_cron.sql`, `0008_partitions.sql`) — premature
+   optimisation at current scale; revisit when traffic
+   meaningfully grows.
+2. Configurable date ranges on the analytics dashboard — today
+   the window is hard-coded to "last 30 days". Add when
+   stakeholders ask for it.
 
-The dashboard itself reads MVs only (per the
-"analytics reads MVs only" done-criterion in Phase 4 MP).
+### Next PR — Phase 5 kickoff
 
-After analytics, Phase 4 still has: **My Profile** page (change
-email/password, last-login surface — placeholder exists at
-`/admin/profile`) and **TOTP enrolment for super_admin** (the
-security-hardening item).
+Phase 5 is the polish / perf / a11y / security phase. Master plan
+calls for: axe-core on every route (admin already covered by PR
+#45); full RTL audit pass; CSP report-only → enforce; Sentry
+wired with PII scrub; favicon + manifest (already done in PR 2.10);
+404/500 polished (404 done in PR 2.9); load test (k6); free-tier
+dashboards documented in README; weekly pg_dump backup via
+GitHub Actions; database type generation pinned in CI; KSA PDPL
+consent banner. Ship as 1 PR per the
+[[feedback_phase_as_one_pr]] preference unless the surface grows
+beyond ~1500 LOC.
 
 ### Memories added this session
 
@@ -117,15 +133,18 @@ security-hardening item).
 setup, gh.exe path, always-commit-push-pr — were added in the morning
 session and held through the afternoon.)
 
-### Working tree state at session-end (2026-05-20 PM)
+### Working tree state at session-end (2026-05-21)
 
-- Branch: `main`, in sync with origin through PR #49 (Phase 3 wrap).
-- vitest 189/189 ✓ (no new unit specs — PR #49 is E2E + docs only).
+- Branch: `main`, in sync with origin through PR #50 (Phase 4-A).
+- vitest **201/201 ✓** (+12 new for `admin-analytics` readers).
 - lint clean · typecheck clean · prod build clean.
-- Branch coverage 80.57% (gate is 80%).
+- Branch coverage 81.64% (gate is 80%).
+- `/admin/analytics` First Load JS: 220 kB (Recharts is the
+  delta). Public site unaffected.
 - `.gitignore` still has the local duplicated line — pre-existing
-  papercut from §0.1, not pursued.
-- Phase 3 closed. `v0.3.0` tag applied (owner-side step after #49 merge).
+  papercut, not pursued.
+- Phase 3 closed (v0.3.0 tag — owner step).
+- Phase 4 closed (v0.4.0 tag — owner step; see runbook §11).
 
 ### Owner-side actions completed during PR #49
 

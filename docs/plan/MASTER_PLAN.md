@@ -264,15 +264,22 @@ Password-auth login flow + `/auth/recovery` (Supabase implicit flow with client-
 > (`listAllLeadsForExport` + the audit shape) is already in place.
 
 **Phase 4 — Admin users + analytics (week 6)**
-Admin Management (promote/deactivate/last-login) shipped early as PR #33 (hardened by #39/#40). Phase 4 splits into **two PRs** per the 1-PR-per-phase preference (the combined surface is ~1550-1850 LOC, over the single-PR ceiling):
+Admin Management (promote/deactivate/last-login) shipped early as PR #33 (hardened by #39/#40). The remaining Phase 4 surface shipped as **PR 4-A (#50)** — Strategic Analytics + My Profile — closing the phase. The originally-planned PR 4-B (TOTP) was dropped, so Phase 4 ships as a single PR after all (lines up with the 1-PR-per-phase preference).
 
-- **PR 4-A: Strategic Analytics + My Profile.** Dashboard at `/admin/analytics` with 4 KPI cards (leads 30d, WhatsApp clicks 30d, published properties, top property by leads) + Recharts line chart (leads/day, 30d) + Recharts bar charts (leads-by-source, top-10 cities by lead count). My Profile at `/admin/profile` with identity block + change-email + change-password forms via `supabase.auth.updateUser`.
-- **PR 4-B: TOTP enrolment for super_admin.** Security-hardening; ships with its own design surface (recovery codes, QR generation, enforce-on-login policy, library choice).
+- **PR 4-A (#50, merged): Strategic Analytics + My Profile.** Dashboard at `/admin/analytics` with 4 KPI cards (leads 30d, WhatsApp clicks 30d, published properties, top property by leads) + Recharts line chart (leads/day, 30d) + Recharts bar charts (leads-by-source, top-10 cities by lead count). My Profile at `/admin/profile` with identity block + change-email + change-password forms via `supabase.auth.updateUser`.
 
-**Done when:** super_admin can invite/promote/deactivate (already done in PR #33); standard_admin sees no admin-management nav (done); analytics dashboard renders the 4 KPI cards + 3 charts with locale-driven RTL/LTR + empty-state copy when zero data; My Profile lets the admin update email + password through Supabase Auth; TOTP enforced on super_admin login (PR 4-B).
+**Done when:** super_admin can invite/promote/deactivate (PR #33 ✅); standard_admin sees no admin-management nav (PR #33 ✅); analytics dashboard renders the 4 KPI cards + 3 charts with locale-driven RTL/LTR + empty-state copy when zero data (PR #50 ✅); My Profile lets the admin update email + password through Supabase Auth (PR #50 ✅). Tag `v0.4.0 — Admin users + analytics` after PR #50 is verified against the preview deploy (runbook §11).
 
-> **Scope amendments (2026-05-21, PR 4-A brainstorm):**
+> **Scope amendments (2026-05-21, Phase 4 brainstorm + closeout):**
 >
+> - **TOTP enrolment for super_admin** — the originally-planned PR 4-B
+>   — is **dropped indefinitely**. Email + password auth (PR #24 +
+>   the implicit-flow fragment handler in PR #37) is acceptable
+>   for the current single-tenant Saudi-owner deployment; introducing
+>   a second factor at this stage would add enrolment + recovery-code
+>   - lockout surface without a corresponding threat model that
+>     justifies it. Revisit if/when the admin user count grows beyond
+>     the owner or the team gains a security-sensitive customer base.
 > - Originally specced "bespoke SVG KSA heatmap from `leads.region`
 >   aggregation" → replaced with **top-10 cities bar chart from
 >   `leads.city` aggregation**. Saves ~150 LOC + a 50 KB SVG asset
