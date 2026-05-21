@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 import { routing } from '@/i18n/routing';
 import { ADMIN_SESSION_COOKIE_NAME, verifyAdminSession } from '@/lib/auth/session';
+import { CSP_REPORT_ONLY_HEADER_NAME, buildCspHeader } from '@/lib/csp';
 
 /**
  * Root middleware.
@@ -34,6 +35,23 @@ const intlMiddleware = createIntlMiddleware(routing);
 // the redirect and the second hop trips this matcher.
 const LOCALE_ADMIN_PATH_RE = /^\/(ar|en)\/admin(?:\/|$)/;
 
+const IS_PROD = process.env.NODE_ENV === 'production';
+
+/**
+ * Attach the CSP header to every response. Shipped in **report-only**
+ * mode for this PR — violations show in the browser console (and at
+ * any report endpoint we add later) but nothing is blocked. The
+ * master plan stages CSP as "report-only -> enforce"; a follow-up PR
+ * promotes the header name once observation against a real deploy
+ * shows zero violations.
+ *
+ * See `src/lib/csp.ts` for the directive list + rationale.
+ */
+function applyCspHeader(response: NextResponse): NextResponse {
+  response.headers.set(CSP_REPORT_ONLY_HEADER_NAME, buildCspHeader(!IS_PROD));
+  return response;
+}
+
 export default async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
   const adminMatch = LOCALE_ADMIN_PATH_RE.exec(pathname);
@@ -46,11 +64,11 @@ export default async function middleware(req: NextRequest) {
     if (!payload || payload.status !== 'active') {
       const loginUrl = new URL(`/${locale}/auth/login`, req.url);
       loginUrl.searchParams.set('next', pathname + search);
-      return NextResponse.redirect(loginUrl);
+      return applyCspHeader(NextResponse.redirect(loginUrl));
     }
   }
 
-  return intlMiddleware(req);
+  return applyCspHeader(intlMiddleware(req));
 }
 
 export const config = {

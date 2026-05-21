@@ -1,10 +1,18 @@
 ﻿name: CI
 
 on:
-  push:
-    branches: [main]
+  # pull_request validates every change BEFORE merge. We deliberately
+  # do NOT trigger on `push: branches: [main]` — that would re-run
+  # CI on the merge commit even though the exact same source was
+  # already validated on the PR branch. Direct pushes to main are
+  # forbidden per CLAUDE.md, so the only thing landing on main is
+  # the result of a green PR.
   pull_request:
     branches: [main]
+  # Manual fallback if a CI run needs to be retried against main
+  # (e.g. a flaky network blip the PR run didn't surface, or a
+  # cron-triggered backfill).
+  workflow_dispatch:
 
 # Cancel superseded runs on the same ref to save minutes on the free tier.
 concurrency:

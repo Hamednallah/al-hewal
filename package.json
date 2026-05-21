@@ -31,6 +31,7 @@
     "audit:signatures": "pnpm audit signatures",
     "audit:deps": "pnpm audit --audit-level=high",
     "favicons": "node scripts/generate-favicons.mjs",
+    "db:types": "supabase gen types typescript --local > src/lib/supabase/database.types.ts",
     "prepare": "husky"
   },
   "dependencies": {

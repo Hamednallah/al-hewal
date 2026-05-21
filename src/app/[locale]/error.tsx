@@ -33,8 +33,8 @@ export default function LocaleErrorBoundary({ error, reset }: ErrorBoundaryProps
 
   useEffect(() => {
     // Surface the digest in dev logs so the error is easy to
-    // correlate with server logs. PR 5-B replaces this with a
-    // Sentry capture.
+    // correlate with server logs. A future PR will wire this up
+    // to Sentry alongside the SDK install.
     if (process.env.NODE_ENV !== 'production') {
       console.error('[LocaleErrorBoundary]', error.message, error.digest ?? '');
     }
