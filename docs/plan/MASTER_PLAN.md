@@ -264,8 +264,27 @@ Password-auth login flow + `/auth/recovery` (Supabase implicit flow with client-
 > (`listAllLeadsForExport` + the audit shape) is already in place.
 
 **Phase 4 — Admin users + analytics (week 6)**
-Admin Management (promote/deactivate/last-login). Invite flow `/api/invite-admin` → hash token, send via Supabase `inviteUserByEmail`, store `token_hash` only. Strategic Analytics: KPI cards from MVs, Recharts line + bar, bespoke SVG KSA heatmap from `leads.region` aggregation. My Profile + TOTP enrolment for super_admin.
-**Done when:** super_admin can invite/promote/deactivate; standard_admin sees no admin-management nav; analytics reads MVs only; TOTP enforced on super_admin login.
+Admin Management (promote/deactivate/last-login) shipped early as PR #33 (hardened by #39/#40). Phase 4 splits into **two PRs** per the 1-PR-per-phase preference (the combined surface is ~1550-1850 LOC, over the single-PR ceiling):
+
+- **PR 4-A: Strategic Analytics + My Profile.** Dashboard at `/admin/analytics` with 4 KPI cards (leads 30d, WhatsApp clicks 30d, published properties, top property by leads) + Recharts line chart (leads/day, 30d) + Recharts bar charts (leads-by-source, top-10 cities by lead count). My Profile at `/admin/profile` with identity block + change-email + change-password forms via `supabase.auth.updateUser`.
+- **PR 4-B: TOTP enrolment for super_admin.** Security-hardening; ships with its own design surface (recovery codes, QR generation, enforce-on-login policy, library choice).
+
+**Done when:** super_admin can invite/promote/deactivate (already done in PR #33); standard_admin sees no admin-management nav (done); analytics dashboard renders the 4 KPI cards + 3 charts with locale-driven RTL/LTR + empty-state copy when zero data; My Profile lets the admin update email + password through Supabase Auth; TOTP enforced on super_admin login (PR 4-B).
+
+> **Scope amendments (2026-05-21, PR 4-A brainstorm):**
+>
+> - Originally specced "bespoke SVG KSA heatmap from `leads.region`
+>   aggregation" → replaced with **top-10 cities bar chart from
+>   `leads.city` aggregation**. Saves ~150 LOC + a 50 KB SVG asset
+>   - admin-boundary maintenance burden. Cities is more actionable
+>     for the sales team than regions.
+> - Originally specced "analytics reads MVs only" → relaxed to
+>   "analytics reads from raw `leads`/`whatsapp_clicks`/`properties`
+>   tables, indexed COUNT queries only". The `page_views_daily`
+>   rollup + `pg_cron` migrations (originally `0004_cron.sql`,
+>   never shipped) are deferred until traffic volume justifies MV
+>   infrastructure. Premature optimisation at Al Hewal's current
+>   scale.
 
 **Phase 5 — Polish / perf / a11y / security (week 7)**
 axe-core in Playwright on every route; full RTL audit pass; CSP from report-only → enforce; Sentry wired with PII scrub in `beforeSend` (strip phone/email/name); favicon + manifest set; 404/500 polished; load test (k6) on catalog + WhatsApp track; free-tier dashboards documented in README; weekly pg_dump backup via GitHub Actions to private repo; database type generation pinned in CI (fail build on drift); KSA PDPL consent banner.

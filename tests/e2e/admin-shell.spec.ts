@@ -87,40 +87,28 @@ test.describe('admin shell (PR 3.2)', () => {
     expect(await signOut.getAttribute('href')).toContain('/auth/sign-out');
   });
 
-  test('placeholder pages each render their topbar + tracking PR tag', async ({
-    context,
-    page,
-  }) => {
+  test('every admin route renders its topbar heading', async ({ context, page }) => {
     await loginAsAdmin(context, { tier: 'super_admin' });
 
-    const pages: Array<{ path: string; heading: RegExp; tracking: RegExp }> = [
-      // NOTE: `/en/admin/properties` was a placeholder in PR 3.2 but PR 3.3a
-      // replaced it with the real Listing Management table. The placeholder
-      // assertions for that route now live in `admin-properties.spec.ts`.
-      //
-      // NOTE: `/en/admin/admins` was a placeholder in PR 3.2 but PR #33
-      // (Admin Management UI) replaced it with the real list + invite
-      // flow. The page-level assertions for that route now live in
-      // `admin-management.spec.ts`.
-      //
-      // NOTE: `/en/admin/leads` was a placeholder in PR 3.2 but PR 3.6
-      // replaced it with the real Leads Journal table. The page-level
-      // assertions for that route now live in `admin-leads.spec.ts`.
-      {
-        path: '/en/admin/analytics',
-        heading: /Strategic Analytics/,
-        tracking: /Tracking: Phase 4$/,
-      },
-      { path: '/en/admin/profile', heading: /My Profile/, tracking: /Tracking: Phase 4$/ },
+    // Topbar heading assertions only. The original PR 3.2 version of this
+    // test also asserted the "Tracking: Phase N" badge that
+    // `AdminPlaceholder` rendered — but every admin route now has its
+    // real implementation:
+    //   - /admin/properties     replaced by PR 3.3a (listings table)
+    //   - /admin/admins         replaced by PR #33  (admin management)
+    //   - /admin/leads          replaced by PR 3.6  (leads journal)
+    //   - /admin/analytics      replaced by PR 4-A  (strategic analytics)
+    //   - /admin/profile        replaced by PR 4-A  (my profile)
+    // The page-level interaction assertions for each route live in the
+    // matching `admin-*.spec.ts` file.
+    const pages: Array<{ path: string; heading: RegExp }> = [
+      { path: '/en/admin/analytics', heading: /Strategic Analytics/ },
+      { path: '/en/admin/profile', heading: /My Profile/ },
     ];
 
-    for (const { path, heading, tracking } of pages) {
+    for (const { path, heading } of pages) {
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading);
-      // Anchor to the literal "Tracking: …" pill (rendered by AdminPlaceholder)
-      // so the assertion doesn't collide with the same PR string when it
-      // appears inside the placeholder body copy.
-      await expect(page.getByText(tracking)).toBeVisible();
     }
   });
 });

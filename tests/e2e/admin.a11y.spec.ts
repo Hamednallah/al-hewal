@@ -52,6 +52,10 @@ const ROUTES: AxeRoute[] = [
   { name: 'admins-list', path: '/admin/admins', tier: 'super_admin' },
   { name: 'admins-new', path: '/admin/admins/new', tier: 'super_admin' },
   { name: 'properties-new', path: '/admin/properties/new', tier: 'super_admin' },
+
+  // Phase 4 surfaces (PR 4-A).
+  { name: 'analytics', path: '/admin/analytics' },
+  { name: 'profile', path: '/admin/profile' },
 ];
 
 for (const locale of ['ar', 'en'] as const) {
