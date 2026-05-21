@@ -10,151 +10,216 @@ import type { PropertyImage } from '@/lib/data/properties';
 import { cn } from '@/lib/utils';
 
 /**
- * Property gallery: hero + up-to-two thumbnails in a CSS Grid masonry
- * layout, with a Radix Dialog lightbox that supports keyboard nav
- * (arrows + Esc), focus trap, and focus restoration to the thumbnail
- * that opened it.
+ * Property gallery: single-image slideshow on the page with prev/next
+ * controls and dot indicators, plus a Radix Dialog lightbox for
+ * fullscreen viewing.
  *
- * Why CSS Grid (and not CSS columns): CSS columns reorder visually but
- * keep DOM order. For RTL, that creates a mismatch between the visual
- * tab order and the semantic order — keyboard users tab through cards
- * out-of-order. Grid with explicit areas keeps visual + DOM order in
- * sync, which is the accessibility rule from DESIGN.md.
+ * Replaces the previous hero + thumbnails masonry grid. The slideshow
+ * surfaces one large image at a time so visitors browse intentionally;
+ * the dot strip below previews how many photos exist; the click-to-zoom
+ * lightbox keeps the fullscreen affordance.
  *
- * Tablet+ : hero on the inline-start (2/3 width × 2 rows), two thumbs
- *           stacked on the inline-end side. Matches the Stitch mockup.
- * Mobile  : hero full-width on top, two thumbs in a row below.
+ * RTL:
+ *   - Arrow icons mirror via `rtl:rotate-180` so they always point in
+ *     the reading direction.
+ *   - Arrow keys in the lightbox: in Arabic, `←` advances; in English
+ *     `→` advances. Mirrors the chevron mapping.
  *
- * The "+N photos" overlay sits on the last visible thumbnail when
- * `images.length > 3`, signalling there's more in the lightbox without
- * trying to render every thumbnail at the catalog density.
+ * Touch:
+ *   - Horizontal swipe on the active image triggers prev/next. Mostly-
+ *     vertical drags are ignored so the page can still scroll.
  */
 type GalleryProps = {
   images: PropertyImage[];
   locale: Locale;
 };
 
+// Pixels of horizontal travel required to treat a swipe as a slide change.
+// Smaller values trigger accidental changes; larger ones feel unresponsive.
+const SWIPE_THRESHOLD_PX = 50;
+
 export function Gallery({ images, locale }: GalleryProps) {
   const t = useTranslations('public.propertyDetail.gallery');
   const isAr = locale === 'ar';
-  const [openAt, setOpenAt] = useState<number | null>(null);
-  const triggerRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const [current, setCurrent] = useState(0);
+  const [lightboxAt, setLightboxAt] = useState<number | null>(null);
+  const heroButtonRef = useRef<HTMLButtonElement | null>(null);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
 
-  // The three thumbnails actually rendered on the page (hero + up to 2
-  // accents). The lightbox cycles through every image.
-  const visible = images.slice(0, 3);
-  const overflow = Math.max(0, images.length - 3);
-  const lastIndex = visible.length - 1;
+  const total = images.length;
+  const safeTotal = Math.max(1, total);
 
-  const close = useCallback(() => setOpenAt(null), []);
-  const next = useCallback(() => {
-    setOpenAt((i) => (i == null ? null : (i + 1) % images.length));
-  }, [images.length]);
-  const prev = useCallback(() => {
-    setOpenAt((i) => (i == null ? null : (i - 1 + images.length) % images.length));
-  }, [images.length]);
+  const goNext = useCallback(() => {
+    setCurrent((i) => (i + 1) % safeTotal);
+  }, [safeTotal]);
+  const goPrev = useCallback(() => {
+    setCurrent((i) => (i - 1 + safeTotal) % safeTotal);
+  }, [safeTotal]);
 
-  // Arrow-key navigation. Mirror prev/next for RTL so ← moves "forward"
-  // in reading order when the user is in Arabic.
+  const lightboxNext = useCallback(() => {
+    setLightboxAt((i) => (i == null ? null : (i + 1) % safeTotal));
+  }, [safeTotal]);
+  const lightboxPrev = useCallback(() => {
+    setLightboxAt((i) => (i == null ? null : (i - 1 + safeTotal) % safeTotal));
+  }, [safeTotal]);
+
+  // Arrow-key navigation inside the lightbox only — the on-page
+  // slideshow does not steal global key events.
   useEffect(() => {
-    if (openAt == null) return;
+    if (lightboxAt == null) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'ArrowRight') {
         e.preventDefault();
-        if (isAr) prev();
-        else next();
+        if (isAr) lightboxPrev();
+        else lightboxNext();
       } else if (e.key === 'ArrowLeft') {
         e.preventDefault();
-        if (isAr) next();
-        else prev();
+        if (isAr) lightboxNext();
+        else lightboxPrev();
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [openAt, isAr, next, prev]);
+  }, [lightboxAt, isAr, lightboxNext, lightboxPrev]);
 
-  if (images.length === 0) {
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t0 = e.touches[0];
+    if (!t0) return;
+    touchStartXRef.current = t0.clientX;
+    touchStartYRef.current = t0.clientY;
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const x0 = touchStartXRef.current;
+    const y0 = touchStartYRef.current;
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+    if (x0 == null || y0 == null) return;
+    const t1 = e.changedTouches[0];
+    if (!t1) return;
+    const dx = t1.clientX - x0;
+    const dy = t1.clientY - y0;
+    // Mostly-vertical drag — let the page scroll instead of stealing the gesture.
+    if (Math.abs(dx) < SWIPE_THRESHOLD_PX || Math.abs(dy) > Math.abs(dx)) return;
+    const swipeRight = dx > 0;
+    // LTR: swipe-right means "go back" (older image); RTL flips it.
+    if (swipeRight) {
+      if (isAr) goNext();
+      else goPrev();
+    } else {
+      if (isAr) goPrev();
+      else goNext();
+    }
+  };
+
+  if (total === 0) {
     return (
       <div className="border-outline-variant bg-canvas-sunken text-charcoal-muted flex aspect-[16/9] w-full items-center justify-center border">
-        <span className="text-xs uppercase tracking-[0.25em]">{t('noImages')}</span>
+        <span className="text-xs tracking-[0.25em] uppercase">{t('noImages')}</span>
       </div>
     );
   }
 
   const altOf = (img: PropertyImage) => (isAr ? img.alt_ar : img.alt_en);
-  const activeImage = openAt != null ? images[openAt] : null;
+  // `total > 0` is enforced by the early return above; the modulo math
+  // keeps `current` in range. Use a non-null assertion so TS narrows
+  // away the `| undefined` from `noUncheckedIndexedAccess`.
+  const active = images[current]!;
+  const activeLightboxImage = lightboxAt != null ? (images[lightboxAt] ?? null) : null;
 
   return (
     <>
-      <div
-        className={cn(
-          'grid w-full gap-3 md:gap-6',
-          'grid-cols-2 grid-rows-[auto_auto] md:grid-cols-3 md:grid-rows-2',
-        )}
-      >
-        {visible.map((img, idx) => {
-          const isHero = idx === 0;
-          const showOverflow = overflow > 0 && idx === lastIndex;
-          return (
-            <button
-              key={img.id}
-              ref={(el) => {
-                triggerRefs.current[idx] = el;
-              }}
-              type="button"
-              onClick={() => setOpenAt(idx)}
-              aria-label={t('openLightbox', { index: idx + 1 })}
-              className={cn(
-                'group focus-visible:ring-brass-400 focus-visible:ring-offset-canvas relative block overflow-hidden focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none',
-                isHero
-                  ? 'col-span-2 row-span-1 aspect-[16/10] md:col-span-2 md:row-span-2 md:aspect-auto md:h-[28rem] lg:h-[34rem]'
-                  : 'col-span-1 row-span-1 aspect-[4/3] md:aspect-auto md:h-[13.5rem] lg:h-[16.5rem]',
-              )}
-            >
-              <Image
-                src={img.blob_url}
-                alt={altOf(img)}
-                width={img.width}
-                height={img.height}
-                priority={isHero}
-                sizes={
-                  isHero
-                    ? '(min-width: 1024px) 66vw, 100vw'
-                    : '(min-width: 1024px) 33vw, 50vw'
-                }
-                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+      <div className="flex flex-col gap-4 md:gap-6">
+        <div
+          className="relative w-full overflow-hidden"
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          aria-roledescription="carousel"
+          aria-label={t('carousel')}
+        >
+          <button
+            ref={heroButtonRef}
+            type="button"
+            onClick={() => setLightboxAt(current)}
+            aria-label={t('openLightbox', { index: current + 1 })}
+            className="group focus-visible:ring-brass-400 focus-visible:ring-offset-canvas relative block w-full overflow-hidden focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          >
+            <Image
+              key={active.id}
+              src={active.blob_url}
+              alt={altOf(active)}
+              width={active.width}
+              height={active.height}
+              priority={current === 0}
+              sizes="(min-width: 1024px) 80vw, 100vw"
+              className="aspect-[16/10] w-full object-cover md:aspect-[16/9]"
+            />
+            <span className="bg-teal-forest-900/70 text-canvas absolute end-3 top-3 px-2 py-1 text-xs font-semibold tracking-[0.2em] uppercase">
+              {t('counter', { current: current + 1, total })}
+            </span>
+          </button>
+
+          {total > 1 ? (
+            <>
+              <button
+                type="button"
+                onClick={goPrev}
+                aria-label={t('previous')}
+                className="text-canvas hover:text-brass-400 focus-visible:ring-brass-400 focus-visible:ring-offset-canvas absolute start-2 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center bg-teal-forest-900/70 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:start-4"
+              >
+                <ChevronIcon direction="prev" className="rtl:rotate-180" />
+              </button>
+              <button
+                type="button"
+                onClick={goNext}
+                aria-label={t('next')}
+                className="text-canvas hover:text-brass-400 focus-visible:ring-brass-400 focus-visible:ring-offset-canvas absolute end-2 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center bg-teal-forest-900/70 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:end-4"
+              >
+                <ChevronIcon direction="next" className="rtl:rotate-180" />
+              </button>
+            </>
+          ) : null}
+        </div>
+
+        {total > 1 ? (
+          <div
+            role="tablist"
+            aria-label={t('selectImage')}
+            className="flex items-center justify-center gap-2"
+          >
+            {images.map((img, i) => (
+              <button
+                key={img.id}
+                type="button"
+                role="tab"
+                aria-selected={i === current}
+                aria-label={t('goToImage', { index: i + 1 })}
+                onClick={() => setCurrent(i)}
+                className={cn(
+                  'h-2 w-8 transition-colors',
+                  i === current
+                    ? 'bg-brass-400'
+                    : 'bg-charcoal-muted/30 hover:bg-charcoal-muted/60',
+                )}
               />
-              {showOverflow ? (
-                <div className="bg-teal-forest-900/55 text-canvas absolute inset-0 flex items-center justify-center transition-colors group-hover:bg-teal-forest-900/70">
-                  <span className="text-base font-semibold tracking-[0.15em] uppercase md:text-lg">
-                    {t('morePhotos', { count: overflow })}
-                  </span>
-                </div>
-              ) : null}
-            </button>
-          );
-        })}
+            ))}
+          </div>
+        ) : null}
       </div>
 
       <Dialog.Root
-        open={openAt != null}
+        open={lightboxAt != null}
         onOpenChange={(o) => {
           if (!o) {
-            // Restore focus to the thumbnail that opened the lightbox
-            // (Radix does the trigger-to-trigger return automatically when
-            // we use Trigger; here we open programmatically, so we focus
-            // the matching thumbnail in a microtask after close.)
-            const fromIdx = openAt ?? 0;
-            const restoreTarget = Math.min(fromIdx, lastIndex);
-            queueMicrotask(() => triggerRefs.current[restoreTarget]?.focus());
-            close();
+            queueMicrotask(() => heroButtonRef.current?.focus());
+            setLightboxAt(null);
           }
         }}
       >
         <Dialog.Portal>
           <Dialog.Overlay
             className={cn(
-              'fixed inset-0 z-50 bg-teal-forest-900/90 backdrop-blur-sm',
+              'bg-teal-forest-900/90 fixed inset-0 z-50 backdrop-blur-sm',
               'data-[state=open]:animate-in data-[state=open]:fade-in-0',
               'data-[state=closed]:animate-out data-[state=closed]:fade-out-0',
             )}
@@ -168,8 +233,8 @@ export function Gallery({ images, locale }: GalleryProps) {
           >
             <div className="flex items-center justify-between gap-4 px-6 py-4 md:px-10">
               <Dialog.Title className="text-canvas/80 text-xs tracking-[0.3em] uppercase">
-                {activeImage
-                  ? t('counter', { current: (openAt ?? 0) + 1, total: images.length })
+                {activeLightboxImage
+                  ? t('counter', { current: (lightboxAt ?? 0) + 1, total })
                   : ''}
               </Dialog.Title>
               <Dialog.Close asChild>
@@ -182,38 +247,37 @@ export function Gallery({ images, locale }: GalleryProps) {
                 </button>
               </Dialog.Close>
             </div>
-
             <div className="relative flex flex-1 items-center justify-center px-4 pb-4 md:px-10 md:pb-10">
-              {activeImage ? (
+              {activeLightboxImage ? (
                 <Image
-                  key={activeImage.id}
-                  src={activeImage.blob_url}
-                  alt={altOf(activeImage)}
-                  width={activeImage.width}
-                  height={activeImage.height}
+                  key={activeLightboxImage.id}
+                  src={activeLightboxImage.blob_url}
+                  alt={altOf(activeLightboxImage)}
+                  width={activeLightboxImage.width}
+                  height={activeLightboxImage.height}
                   sizes="(min-width: 1024px) 80vw, 100vw"
                   className="max-h-full max-w-full object-contain"
                   priority
                 />
               ) : null}
 
-              {images.length > 1 ? (
+              {total > 1 ? (
                 <>
                   <button
                     type="button"
-                    onClick={prev}
+                    onClick={lightboxPrev}
                     aria-label={t('previous')}
-                    className="text-canvas hover:text-brass-400 focus-visible:ring-brass-400 focus-visible:ring-offset-teal-forest-900 absolute start-4 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center bg-teal-forest-900/70 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:start-10"
+                    className="text-canvas hover:text-brass-400 focus-visible:ring-brass-400 focus-visible:ring-offset-teal-forest-900 bg-teal-forest-900/70 absolute start-4 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:start-10"
                   >
-                    <ChevronIcon className="rtl:rotate-180" direction="prev" />
+                    <ChevronIcon direction="prev" className="rtl:rotate-180" />
                   </button>
                   <button
                     type="button"
-                    onClick={next}
+                    onClick={lightboxNext}
                     aria-label={t('next')}
-                    className="text-canvas hover:text-brass-400 focus-visible:ring-brass-400 focus-visible:ring-offset-teal-forest-900 absolute end-4 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center bg-teal-forest-900/70 transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:end-10"
+                    className="text-canvas hover:text-brass-400 focus-visible:ring-brass-400 focus-visible:ring-offset-teal-forest-900 bg-teal-forest-900/70 absolute end-4 top-1/2 inline-flex h-12 w-12 -translate-y-1/2 items-center justify-center transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none md:end-10"
                   >
-                    <ChevronIcon className="rtl:rotate-180" direction="next" />
+                    <ChevronIcon direction="next" className="rtl:rotate-180" />
                   </button>
                 </>
               ) : null}
@@ -250,9 +314,6 @@ function ChevronIcon({
   direction: 'prev' | 'next';
   className?: string;
 }) {
-  // "next" points to the inline-end (right in LTR); "prev" to inline-start.
-  // Both get rtl:rotate-180 from the parent so they mirror visually but
-  // continue to mean "move forward/back in image order" semantically.
   const d = direction === 'next' ? 'M5 2 L11 8 L5 14' : 'M9 2 L3 8 L9 14';
   return (
     <svg

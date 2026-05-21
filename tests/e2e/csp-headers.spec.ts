@@ -25,7 +25,11 @@ for (const route of PUBLIC_ROUTES) {
     const csp = res.headers()['content-security-policy-report-only'];
     expect(csp).toBeTruthy();
     expect(csp).toContain(`default-src 'self'`);
-    expect(csp).toContain(`frame-src 'none'`);
+    // `frame-src` allows the Google Maps embed used by `MapEmbed`;
+    // `frame-ancestors 'none'` is what prevents OTHER sites from
+    // framing us.
+    expect(csp).toContain(`frame-src https://www.google.com`);
+    expect(csp).toContain(`frame-ancestors 'none'`);
     expect(csp).toContain(`object-src 'none'`);
   });
 }

@@ -1,6 +1,5 @@
 /**
- * Ambient declaration for side-effect CSS imports from node_modules
- * (e.g. `import 'maplibre-gl/dist/maplibre-gl.css'`).
+ * Ambient declaration for side-effect CSS imports from node_modules.
  *
  * Next.js + Turbopack handle these at build time, but strict TypeScript
  * needs a module shape. Declaring an empty module makes the import
