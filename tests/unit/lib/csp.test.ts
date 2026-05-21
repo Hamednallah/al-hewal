@@ -5,7 +5,6 @@ import { CSP_ENFORCE_HEADER_NAME, CSP_REPORT_ONLY_HEADER_NAME, buildCspHeader } 
 describe('buildCspHeader', () => {
   it('emits the directives in a single header value separated by "; "', () => {
     const csp = buildCspHeader(false);
-    // Every directive is present.
     for (const directive of [
       'default-src',
       'script-src',
@@ -18,7 +17,6 @@ describe('buildCspHeader', () => {
       'base-uri',
       'form-action',
       'frame-ancestors',
-      'upgrade-insecure-requests',
     ]) {
       expect(csp).toContain(directive);
     }
@@ -43,11 +41,16 @@ describe('buildCspHeader', () => {
     expect(buildCspHeader(true)).toMatch(/style-src 'self' 'unsafe-inline'/);
   });
 
-  it('img-src allows Vercel Blob and Carto Basemap tile hosts', () => {
+  it('img-src allows Vercel Blob and Google Maps static hosts', () => {
     const csp = buildCspHeader(false);
     expect(csp).toContain('https://*.public.blob.vercel-storage.com');
-    expect(csp).toContain('https://basemaps.cartocdn.com');
-    expect(csp).toContain('https://*.basemaps.cartocdn.com');
+    expect(csp).toContain('https://maps.gstatic.com');
+    expect(csp).toContain('https://www.google.com');
+  });
+
+  it('frame-src allows the Google Maps embed origin', () => {
+    const csp = buildCspHeader(false);
+    expect(csp).toMatch(/frame-src https:\/\/www\.google\.com/);
   });
 
   it('connect-src allows Supabase HTTP + websocket and Sentry ingest', () => {
@@ -63,17 +66,18 @@ describe('buildCspHeader', () => {
     expect(buildCspHeader(false)).not.toContain(' ws:');
   });
 
-  it('frame-src and object-src are locked down', () => {
+  it('object-src and frame-ancestors are locked down', () => {
     const csp = buildCspHeader(false);
-    expect(csp).toMatch(/frame-src 'none'/);
     expect(csp).toMatch(/object-src 'none'/);
     expect(csp).toMatch(/frame-ancestors 'none'/);
   });
 
-  it('upgrade-insecure-requests directive has no source list', () => {
-    const csp = buildCspHeader(false);
-    // Should appear as a bare directive, not "upgrade-insecure-requests <something>"
-    expect(csp).toMatch(/(^|; )upgrade-insecure-requests(?:;|$)/);
+  it('omits upgrade-insecure-requests in report-only mode (browser-warned otherwise)', () => {
+    // The directive cannot be reported, only enforced. Including it in a
+    // report-only policy produces a console warning on every page load.
+    // Re-add when the policy is promoted to `Content-Security-Policy`.
+    expect(buildCspHeader(false)).not.toContain('upgrade-insecure-requests');
+    expect(buildCspHeader(true)).not.toContain('upgrade-insecure-requests');
   });
 });
 

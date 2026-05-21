@@ -5,7 +5,7 @@
  * Called from `src/middleware.ts` per request. The master plan stages
  * CSP migration as **report-only first, then enforce**:
  *
- *   - **Today (PR 5-B):** every environment emits
+ *   - **Today:** every environment emits
  *     `Content-Security-Policy-Report-Only`. Violations show in the
  *     browser console (and at any report endpoint we configure) but
  *     nothing is blocked. This gives us observation time on a real
@@ -27,10 +27,12 @@
 const ALLOWED_HOSTS = {
   // Vercel Blob (property images). Pattern matches any `<storeId>.public.blob.vercel-storage.com`.
   blob: 'https://*.public.blob.vercel-storage.com',
-  // MapEmbed tile fetches — Carto Basemaps. The style.json lives at the
-  // apex (`basemaps.cartocdn.com`); the tile chunks live on subdomains.
-  cartoApex: 'https://basemaps.cartocdn.com',
-  cartoTiles: 'https://*.basemaps.cartocdn.com',
+  // Google Maps iframe embed used by `MapEmbed`. The embed loads from
+  // `www.google.com/maps?...output=embed` and pulls tile/static assets
+  // from `maps.gstatic.com` + `maps.googleapis.com`.
+  googleMaps: 'https://www.google.com',
+  googleMapsStatic: 'https://maps.gstatic.com',
+  googleMapsApi: 'https://maps.googleapis.com',
   // Supabase HTTP + realtime websocket.
   supabaseHttp: 'https://*.supabase.co',
   supabaseWs: 'wss://*.supabase.co',
@@ -64,27 +66,30 @@ export function buildCspHeader(isDev: boolean): string {
       'data:',
       'blob:',
       ALLOWED_HOSTS.blob,
-      ALLOWED_HOSTS.cartoApex,
-      ALLOWED_HOSTS.cartoTiles,
+      ALLOWED_HOSTS.googleMapsStatic,
+      ALLOWED_HOSTS.googleMaps,
     ],
-    'font-src': [`'self'`, 'data:', ALLOWED_HOSTS.cartoApex, ALLOWED_HOSTS.cartoTiles],
+    'font-src': [`'self'`, 'data:'],
     'connect-src': [
       `'self'`,
       ALLOWED_HOSTS.supabaseHttp,
       ALLOWED_HOSTS.supabaseWs,
-      ALLOWED_HOSTS.cartoApex,
-      ALLOWED_HOSTS.cartoTiles,
       ALLOWED_HOSTS.sentry,
       ALLOWED_HOSTS.sentryIngest,
       // Dev needs the websocket Next HMR opens on the same origin.
       ...(isDev ? ['ws:'] : []),
     ],
-    'frame-src': [`'none'`],
+    // Google Maps iframe embed for the property detail page.
+    'frame-src': [ALLOWED_HOSTS.googleMaps],
     'object-src': [`'none'`],
     'base-uri': [`'self'`],
     'form-action': [`'self'`],
     'frame-ancestors': [`'none'`],
-    'upgrade-insecure-requests': [],
+    // `upgrade-insecure-requests` is intentionally omitted in
+    // report-only mode — the browser silently ignores it there
+    // (the spec doesn't allow "report a would-be upgrade", only
+    // enforce one), and emits a console warning per request. The
+    // follow-up PR that promotes CSP to enforce should add it back.
   };
 
   return Object.entries(directives)

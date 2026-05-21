@@ -108,8 +108,10 @@
       "locationFallback": "{city}",
       "locationWithDistrict": "{district}, {city}",
       "gallery": {
+        "carousel": "Property image carousel",
         "openLightbox": "Open photo {index} in lightbox",
-        "morePhotos": "+{count} photos",
+        "selectImage": "Select an image",
+        "goToImage": "Go to image {index}",
         "previous": "Previous photo",
         "next": "Next photo",
         "close": "Close gallery",
@@ -156,8 +158,7 @@
       },
       "map": {
         "title": "Location Overview",
-        "loading": "Loading map…",
-        "fallback": "Map preview unavailable. Coordinates: {lat}, {lng}.",
+        "fallbackNoCoords": "Map location not yet available.",
         "openInMaps": "Open in Google Maps"
       },
       "metadata": {

@@ -108,8 +108,10 @@
       "locationFallback": "{city}",
       "locationWithDistrict": "{district}، {city}",
       "gallery": {
+        "carousel": "معرض صور العقار",
         "openLightbox": "افتح الصورة {index} في العرض المكبّر",
-        "morePhotos": "+{count} صورة",
+        "selectImage": "اختر صورة",
+        "goToImage": "اعرض الصورة رقم {index}",
         "previous": "الصورة السابقة",
         "next": "الصورة التالية",
         "close": "إغلاق المعرض",
@@ -156,8 +158,7 @@
       },
       "map": {
         "title": "نظرة على الموقع",
-        "loading": "جاري تحميل الخريطة…",
-        "fallback": "معاينة الخريطة غير متاحة. الإحداثيات: {lat}، {lng}.",
+        "fallbackNoCoords": "لم يتم تحديد موقع العقار على الخريطة بعد.",
         "openInMaps": "افتح في خرائط جوجل"
       },
       "metadata": {
