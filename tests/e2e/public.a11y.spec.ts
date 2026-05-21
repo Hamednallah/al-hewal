@@ -69,3 +69,41 @@ test('axe: AR 404 page', async ({ page }) => {
   );
   expect(blocking).toHaveLength(0);
 });
+
+// Property-detail axe scan. Conditional on at least one catalog
+// card existing — CI's placeholder Supabase URL has zero seeded
+// rows, so the catalog renders an empty state and this spec
+// skips silently. Preview deploys with seeded data exercise it.
+for (const locale of ['ar', 'en'] as const) {
+  test(`axe: ${locale} property-detail (skips when catalog empty)`, async ({ page }) => {
+    await page.goto(`/${locale}/properties`);
+    await page.locator('#main-content').waitFor({ state: 'visible' });
+
+    const firstCard = page.locator('a[href*="/properties/"]').first();
+    const cardCount = await firstCard.count();
+    test.skip(cardCount === 0, 'no seeded properties — preview-only spec');
+
+    await firstCard.click();
+    await page.waitForURL(new RegExp(`/${locale}/properties/[^/?]+$`));
+    await page.locator('article').first().waitFor({ state: 'visible' });
+
+    const results = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+      .analyze();
+
+    const blocking = results.violations.filter(
+      (v) => v.impact === 'serious' || v.impact === 'critical',
+    );
+
+    if (blocking.length > 0) {
+      const summary = blocking
+        .map(
+          (v) =>
+            `${v.id} (${v.impact}): ${v.help}\n  ${v.nodes.length} node(s); first: ${v.nodes[0]?.target}`,
+        )
+        .join('\n\n');
+      throw new Error(`axe found ${blocking.length} blocking violation(s):\n\n${summary}`);
+    }
+    expect(blocking).toHaveLength(0);
+  });
+}
