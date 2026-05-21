@@ -324,6 +324,14 @@
         "apartment": "Apartment",
         "investment": "Investment"
       },
+      "facade": {
+        "none": "— Not specified —",
+        "north": "North",
+        "south": "South",
+        "east": "East",
+        "west": "West",
+        "corner": "Corner"
+      },
       "table": {
         "project": "Project",
         "type": "Type",
@@ -434,7 +442,6 @@
           "plot_number": "Plot number",
           "street_width_m": "Street width (m)",
           "facade": "Facade",
-          "facadePlaceholder": "e.g. North, South-East",
           "lat": "Latitude",
           "lng": "Longitude",
           "google_maps_url": "Google Maps URL",

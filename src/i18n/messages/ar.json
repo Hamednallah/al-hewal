@@ -324,6 +324,14 @@
         "apartment": "شقة",
         "investment": "استثماري"
       },
+      "facade": {
+        "none": "— غير محدد —",
+        "north": "شمالية",
+        "south": "جنوبية",
+        "east": "شرقية",
+        "west": "غربية",
+        "corner": "زاوية"
+      },
       "table": {
         "project": "المشروع",
         "type": "النوع",
@@ -434,7 +442,6 @@
           "plot_number": "رقم القطعة",
           "street_width_m": "عرض الشارع (م)",
           "facade": "الواجهة",
-          "facadePlaceholder": "مثال: شمالية، جنوبية شرقية",
           "lat": "خط العرض",
           "lng": "خط الطول",
           "google_maps_url": "رابط Google Maps",

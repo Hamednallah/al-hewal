@@ -14,13 +14,14 @@ const OTHER_ORIGIN = 'https://evil.example.com';
 // node's fetch implementation refuses to surface "forbidden" headers
 // like Origin/Referer that came from script land (matches the
 // browser fetch spec). The route reads them via `req.headers.get(...)`
-// so the test just hands it a minimal shape with that method. The
-// route doesn't touch any other Request surface, so this is enough.
-function makeRequest(opts: { origin?: string | null; referer?: string | null }) {
+// and also reads `req.url` (for the same-origin host comparison), so
+// the test hands it a minimal shape with those two surfaces.
+function makeRequest(opts: { origin?: string | null; referer?: string | null; url?: string }) {
   const map = new Map<string, string>();
   if (opts.origin) map.set('origin', opts.origin);
   if (opts.referer) map.set('referer', opts.referer);
   return {
+    url: opts.url ?? `${SAME_ORIGIN}/api/consent`,
     headers: {
       get: (name: string) => map.get(name.toLowerCase()) ?? null,
     },

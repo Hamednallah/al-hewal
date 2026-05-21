@@ -20,23 +20,38 @@ const COOKIE_VALUE = 'v1';
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365; // 1 year
 
 function isAllowedOrigin(req: NextRequest): boolean {
+  // Compare against the REQUEST's host rather than NEXT_PUBLIC_SITE_URL.
+  // Reasons:
+  //   1. Resilient across environments — works under any port the dev
+  //      server picks (CI runs on a non-default port sometimes), under
+  //      vercel.app preview deploys, under custom domains, without
+  //      touching env config.
+  //   2. The original env-based check silently rejected in CI because
+  //      the Next dev server's NEXT_PUBLIC_SITE_URL didn't match the
+  //      Playwright baseURL — see the PR 5-A CI failure.
+  //   3. CSRF semantics are preserved: a same-site browser cannot
+  //      forge an Origin/Referer that matches the request's own host
+  //      from a different site.
+  let reqHost: string;
+  try {
+    reqHost = new URL(req.url).host;
+  } catch {
+    return false;
+  }
+
   const origin = req.headers.get('origin');
-  if (!origin) {
-    // Same-origin POSTs from server actions / browsers without
-    // an Origin header (some older agents) still set Referer.
-    const referer = req.headers.get('referer');
-    if (!referer) return false;
+  if (origin) {
     try {
-      const refUrl = new URL(referer);
-      const expected = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
-      return refUrl.origin === new URL(expected).origin;
+      return new URL(origin).host === reqHost;
     } catch {
       return false;
     }
   }
-  const expected = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  // Older agents may omit Origin but still send Referer.
+  const referer = req.headers.get('referer');
+  if (!referer) return false;
   try {
-    return new URL(origin).origin === new URL(expected).origin;
+    return new URL(referer).host === reqHost;
   } catch {
     return false;
   }

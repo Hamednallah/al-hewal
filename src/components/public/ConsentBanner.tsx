@@ -57,7 +57,11 @@ export function ConsentBanner() {
           {t('body')}{' '}
           <Link
             href="/privacy"
-            className="text-brass-300 underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
+            // Always underlined — axe's `link-in-text-block` requires
+            // links inside paragraph text to be distinguishable
+            // without relying on color alone. Brass-on-teal contrast
+            // is fine, but the underline is the WCAG-required signal.
+            className="text-brass-300 underline underline-offset-4 hover:text-brass-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brass-300"
           >
             {t('privacyLink')}
           </Link>

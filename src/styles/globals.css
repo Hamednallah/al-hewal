@@ -89,6 +89,12 @@
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
     scroll-behavior: smooth;
+    /* Opt OUT of Android Chrome / Samsung Internet auto-dark.
+     * The site is already a deliberate single-theme dark-teal +
+     * brass design; algorithmic darkening turns the brass
+     * (#D4B982) into a muddy brown on phones in dark mode.
+     * Reported via WhatsApp screenshot on a Samsung KSA device. */
+    color-scheme: light;
   }
 
   body {
@@ -106,6 +112,19 @@
   :lang(ar) body {
     font-family: var(--font-arabic);
     line-height: 1.8;
+  }
+
+  /* Arabic is a cursive script — letters MUST stay joined. Tailwind's
+   * tracking-* utilities (used on every eyebrow + uppercase pill in
+   * the design system: e.g. `tracking-[0.2em]`, `tracking-widest`)
+   * apply non-zero letter-spacing. In Latin that produces the airy
+   * "small caps" feel the design wants. In Arabic it BREAKS the
+   * ligatures, turning `تطوير` into the disconnected `ت ط و ي ر`
+   * (reported on the al-hewal.vercel.app hero eyebrow from a KSA
+   * Samsung device). Force letter-spacing to normal for any
+   * Arabic-locale text so the joins are preserved everywhere. */
+  :lang(ar) {
+    letter-spacing: normal !important;
   }
 
   /* Focus styles are deliberately visible. Brass on teal is the accent;
