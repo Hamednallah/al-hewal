@@ -1,7 +1,7 @@
 {
   "public": {
     "brand": {
-      "name": "Al Hewal",
+      "name": "Al Haual",
       "tagline": "We build quality... and shape the future"
     },
     "nav": {
@@ -14,12 +14,12 @@
       "hero": {
         "eyebrow": "Saudi Real-Estate Development",
         "headline": "We build quality... and shape the future",
-        "subheadline": "Al Hewal: a leader in Saudi real-estate development and investment, crafting residential excellence with a full one-year maintenance warranty.",
+        "subheadline": "Al Haual: a leader in Saudi real-estate development and investment, crafting residential excellence with a full one-year maintenance warranty.",
         "ctaProjects": "Browse Projects",
         "ctaContact": "Contact via WhatsApp"
       },
       "valueProps": {
-        "sectionEyebrow": "Why Al Hewal",
+        "sectionEyebrow": "Why Al Haual",
         "sectionHeadline": "Solid engineering. Absolute commitment. Enduring trust.",
         "items": {
           "engineering": {
@@ -32,7 +32,7 @@
           },
           "maintenance": {
             "title": "One-year warranty and maintenance",
-            "body": "Every Al Hewal project ships with a full warranty on the workmanship and a free maintenance service for a full year post-handover."
+            "body": "Every Al Haual project ships with a full warranty on the workmanship and a free maintenance service for a full year post-handover."
           }
         }
       },
@@ -40,11 +40,11 @@
         "eyebrow": "Latest projects",
         "headline": "Our Featured Projects",
         "viewAll": "Browse all properties",
-        "empty": "We're launching new projects shortly. Contact us about what's available now."
+        "empty": "Selected projects will appear here as they're announced. Contact us to learn what's currently available."
       },
       "trustBanner": {
         "headline": "Full one-year maintenance warranty",
-        "body": "Our confidence in our work shows in our guarantees. Every Al Hewal project comes with a full warranty on the workmanship and one year of post-sale maintenance service.",
+        "body": "Our confidence in our work shows in our guarantees. Every Al Haual project comes with a full warranty on the workmanship and one year of post-sale maintenance service.",
         "cta": "Talk to our sales team"
       }
     },
@@ -154,7 +154,7 @@
         "call": "Call Now",
         "whatsappAria": "Open WhatsApp chat about {title}",
         "callAria": "Call sales about {title}",
-        "messageTemplate": "Hello Al Hewal, I'd like more information about {title} ({url})."
+        "messageTemplate": "Hello Al Haual, I'd like more information about {title} ({url})."
       },
       "map": {
         "title": "Location Overview",
@@ -162,18 +162,18 @@
         "openInMaps": "Open in Google Maps"
       },
       "metadata": {
-        "titleTemplate": "{title} | Al Hewal",
+        "titleTemplate": "{title} | Al Haual",
         "description": "{title} — {summary} Located in {location}. Starting price {price}."
       }
     },
     "about": {
-      "pageEyebrow": "About Al Hewal",
+      "pageEyebrow": "About Al Haual",
       "pageTitle": "Saudi real estate, built with discipline.",
-      "pageDescription": "Al Hewal Real Estate Development & Investment Company is a Saudi developer specialising in buying, developing, and investing in land and buildings to the highest standards of quality and craftsmanship — delivering modern residential and investment projects that match the ambitions of our clients and the Saudi market.",
+      "pageDescription": "Al Haual Real Estate Development & Investment Company is a Saudi developer specialising in buying, developing, and investing in land and buildings to the highest standards of quality and craftsmanship — delivering modern residential and investment projects that match the ambitions of our clients and the Saudi market.",
       "missionTitle": "What we build",
       "missionBody": "Integrated developments — villas, duplexes, apartments, and investment buildings — designed and executed with meticulous attention to detail. Premium materials, modern engineering standards, and finishes that age well.",
       "trustTitle": "What we promise",
-      "trustBody": "Client trust is the foundation of our work. Every Al Hewal project ships with full warranties on the workmanship and one year of post-handover maintenance — so the quality stays in place long after the keys change hands.",
+      "trustBody": "Client trust is the foundation of our work. Every Al Haual project ships with full warranties on the workmanship and one year of post-handover maintenance — so the quality stays in place long after the keys change hands.",
       "valuesTitle": "How we work",
       "values": {
         "modern": "Modern, high-quality engineering",
@@ -189,7 +189,7 @@
     },
     "contact": {
       "pageEyebrow": "Get in touch",
-      "pageTitle": "Talk to Al Hewal",
+      "pageTitle": "Talk to Al Haual",
       "pageDescription": "Tell us what you're looking for — investment, family home, or a specific district — and our sales advisors will reach out. Most enquiries get a reply within one business hour.",
       "directTitle": "Direct channels",
       "directBody": "Prefer instant reply? Tap WhatsApp for a one-tap chat in Arabic or English.",
@@ -258,7 +258,7 @@
     },
     "footer": {
       "tagline": "We build quality... and shape the future",
-      "about": "Al Hewal Real Estate Development and Investment Company — a Saudi developer crafting residential and investment projects to the highest quality standards, backed by a full one-year maintenance warranty.",
+      "about": "Al Haual Real Estate Development and Investment Company — a Saudi developer crafting residential and investment projects to the highest quality standards, backed by a full one-year maintenance warranty.",
       "sectionExplore": "Explore",
       "sectionCompany": "Company",
       "sectionContact": "Contact",
@@ -266,7 +266,7 @@
       "linkAbout": "About",
       "linkContact": "Contact",
       "whatsapp": "Contact via WhatsApp",
-      "rights": "© {year} Al Hewal Real Estate Development & Investment Company. All rights reserved."
+      "rights": "© {year} Al Haual Real Estate Development & Investment Company. All rights reserved."
     }
   },
   "admin": {
@@ -573,7 +573,7 @@
       },
       "properties": {
         "title": "Listing Management",
-        "subtitle": "Review, add, and update Al Hewal residential projects.",
+        "subtitle": "Review, add, and update Al Haual residential projects.",
         "subtitleWithCount": "Showing {filtered} of {total} properties.",
         "placeholder": "The full listings table — with server-side pagination, status filters, and the add/edit property wizard — lands in PR 3.3. Until then, properties are seeded locally and the public catalog reads them in read-only mode."
       },
@@ -727,7 +727,7 @@
           "invalidInput": "Please enter a valid email and a password of at least 6 characters.",
           "wrongCredentials": "Email or password is incorrect.",
           "supabase": "We couldn't sign you in right now. Please try again in a moment.",
-          "notAdmin": "This email isn't registered as an Al Hewal administrator. Contact your super admin if this is unexpected.",
+          "notAdmin": "This email isn't registered as an Al Haual administrator. Contact your super admin if this is unexpected.",
           "callbackInvalid": "That recovery link is no longer valid. Please request a new one.",
           "callbackExpired": "That recovery link has expired. Please request a new one.",
           "inviteExpired": "Your invitation link is no longer valid. Ask the admin who invited you to send a fresh invitation."
@@ -735,13 +735,13 @@
       },
       "forgot": {
         "title": "Reset your password",
-        "intro": "Enter the email registered as an Al Hewal administrator and we'll send you a reset link.",
+        "intro": "Enter the email registered as an Al Haual administrator and we'll send you a reset link.",
         "emailLabel": "Email address",
         "emailPlaceholder": "you@al-hewal.sa",
         "submit": "Email me a reset link",
         "submitting": "Sending…",
         "sentTitle": "Check your inbox",
-        "sentBody": "If {email} is registered as an Al Hewal administrator, a password reset link is on its way. The link is single-use and expires after a short while.",
+        "sentBody": "If {email} is registered as an Al Haual administrator, a password reset link is on its way. The link is single-use and expires after a short while.",
         "backToLogin": "Back to sign-in",
         "errors": {
           "invalidEmail": "Please enter a valid email address.",
@@ -750,7 +750,7 @@
       },
       "reset": {
         "title": "Set a new password",
-        "intro": "Choose a new password for your Al Hewal administrator account. Minimum 8 characters.",
+        "intro": "Choose a new password for your Al Haual administrator account. Minimum 8 characters.",
         "passwordLabel": "New password",
         "confirmLabel": "Confirm new password",
         "submit": "Save password",
@@ -760,13 +760,13 @@
           "invalidInput": "Please enter a password of at least 8 characters in both fields.",
           "mismatch": "The two passwords don't match.",
           "expiredSession": "Your reset session has expired. Request a new reset email.",
-          "notAdmin": "This account isn't registered as an Al Hewal administrator.",
+          "notAdmin": "This account isn't registered as an Al Haual administrator.",
           "samePassword": "Your new password must be different from your current one. Please choose a different password.",
           "supabase": "We couldn't save the new password. Please try again."
         }
       },
       "setPassword": {
-        "title": "Welcome to Al Hewal",
+        "title": "Welcome to Al Haual",
         "intro": "Pick a password to finish setting up your administrator account. Minimum 8 characters.",
         "passwordLabel": "Choose a password",
         "confirmLabel": "Confirm password",

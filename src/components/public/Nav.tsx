@@ -47,7 +47,7 @@ export async function Nav({ locale, className }: { locale: Locale; className?: s
       )}
     >
       <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-6 px-edge md:h-20">
-        {/* Brand mark — the official Al Hewal logo (PNG with transparent
+        {/* Brand mark — the official Al Haual logo (PNG with transparent
             background; the brass + green palette already harmonises with
             the teal Nav). Bilingual alt for screen readers. */}
         <Link

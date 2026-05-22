@@ -66,7 +66,7 @@ export async function PropertyCard({ property, className, priority = false }: Pr
             />
           ) : (
             <div className="bg-charcoal/5 flex h-full w-full items-center justify-center">
-              <span className="text-charcoal-muted text-xs uppercase tracking-[0.2em]">
+              <span className="text-charcoal-muted text-sm uppercase tracking-[0.2em]">
                 {t('noImage')}
               </span>
             </div>
@@ -74,7 +74,7 @@ export async function PropertyCard({ property, className, priority = false }: Pr
           <StatusBadge status={property.status} t={t} />
         </div>
         <div className="flex flex-grow flex-col gap-3 p-6">
-          <p className="text-charcoal-muted text-xs uppercase tracking-[0.25em]">
+          <p className="text-charcoal-muted text-sm uppercase tracking-[0.25em]">
             {t(`type.${property.type}`)} · {districtLabel}
           </p>
           <h3 className="text-charcoal text-xl font-semibold leading-tight md:text-2xl">{title}</h3>
@@ -108,7 +108,7 @@ function StatusBadge({ status, t }: { status: PropertySummary['status']; t: Tran
   return (
     <span
       className={cn(
-        'absolute end-4 top-4 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em]',
+        'absolute end-4 top-4 px-3 py-1.5 text-sm font-bold uppercase tracking-[0.2em]',
         palette[status],
       )}
     >

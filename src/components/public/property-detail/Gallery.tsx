@@ -115,7 +115,7 @@ export function Gallery({ images, locale }: GalleryProps) {
   if (total === 0) {
     return (
       <div className="border-outline-variant bg-canvas-sunken text-charcoal-muted flex aspect-[16/9] w-full items-center justify-center border">
-        <span className="text-xs tracking-[0.25em] uppercase">{t('noImages')}</span>
+        <span className="text-sm tracking-[0.25em] uppercase">{t('noImages')}</span>
       </div>
     );
   }
@@ -154,7 +154,7 @@ export function Gallery({ images, locale }: GalleryProps) {
               sizes="(min-width: 1024px) 80vw, 100vw"
               className="aspect-[16/10] w-full object-cover md:aspect-[16/9]"
             />
-            <span className="bg-teal-forest-900/70 text-canvas absolute end-3 top-3 px-2 py-1 text-xs font-semibold tracking-[0.2em] uppercase">
+            <span className="bg-teal-forest-900/70 text-canvas absolute end-3 top-3 px-2 py-1 text-sm font-semibold tracking-[0.2em] uppercase">
               {t('counter', { current: current + 1, total })}
             </span>
           </button>
@@ -232,7 +232,7 @@ export function Gallery({ images, locale }: GalleryProps) {
             )}
           >
             <div className="flex items-center justify-between gap-4 px-6 py-4 md:px-10">
-              <Dialog.Title className="text-canvas/80 text-xs tracking-[0.3em] uppercase">
+              <Dialog.Title className="text-canvas/80 text-sm tracking-[0.3em] uppercase">
                 {activeLightboxImage
                   ? t('counter', { current: (lightboxAt ?? 0) + 1, total })
                   : ''}

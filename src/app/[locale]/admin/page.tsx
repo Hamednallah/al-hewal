@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps) {
  *      everyone).
  *
  * Force-dynamic because the KPIs are live counts. Sub-millisecond
- * at Al Hewal's scale; we're already inside the admin route group
+ * at Al Haual's scale; we're already inside the admin route group
  * which is force-dynamic by default.
  */
 export default async function AdminDashboardPage({ params }: PageProps) {
@@ -94,7 +94,7 @@ export default async function AdminDashboardPage({ params }: PageProps) {
             </h2>
             <Link
               href="/admin/analytics"
-              className="text-brass-700 hover:text-teal-forest-700 text-xs font-semibold tracking-[0.15em] uppercase underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
+              className="text-brass-700 hover:text-teal-forest-700 text-sm font-semibold tracking-[0.15em] uppercase underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none"
             >
               {t('kpiViewAll')}
             </Link>
@@ -172,7 +172,7 @@ interface SummaryCardProps {
 function SummaryCard({ label, value, dir }: SummaryCardProps) {
   return (
     <div className="border-outline-variant/40 flex flex-col gap-2 border p-4">
-      <p className="text-brass-700 text-xs font-semibold tracking-[0.2em] uppercase">{label}</p>
+      <p className="text-brass-700 text-sm font-semibold tracking-[0.2em] uppercase">{label}</p>
       <p className="text-teal-forest-700 text-base font-semibold break-words" dir={dir}>
         {value.replace('_', ' ')}
       </p>
@@ -189,7 +189,7 @@ interface KpiTileProps {
 function KpiTile({ label, value, subtitle = null }: KpiTileProps) {
   return (
     <div className="border-outline-variant/40 flex flex-col gap-1 border p-3">
-      <dt className="text-brass-700 text-xs font-semibold tracking-[0.15em] uppercase">{label}</dt>
+      <dt className="text-brass-700 text-sm font-semibold tracking-[0.15em] uppercase">{label}</dt>
       <dd className="text-teal-forest-700 text-xl font-semibold break-words md:text-2xl">
         {value}
       </dd>

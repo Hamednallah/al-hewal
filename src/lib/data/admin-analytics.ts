@@ -13,7 +13,7 @@ import { LEAD_SOURCES, type LeadSource } from './admin-leads';
  *
  * **No `page_views_daily` rollup dependency.** The dashboard reads
  * raw `leads`, `whatsapp_clicks`, and `properties` directly. At
- * Al Hewal's volume those queries are sub-millisecond on the
+ * Al Haual's volume those queries are sub-millisecond on the
  * existing indexes. The original master-plan plan to roll
  * `page_views` into materialized views is deferred until traffic
  * meaningfully grows — see the Phase 4 analytics spec.
@@ -31,7 +31,7 @@ const ANALYTICS_QUERY_TIMEOUT_MS = 4000;
  * Hard cap on rows scanned by the property + city + per-day
  * aggregations. Keeps a runaway query (or someone seeding millions
  * of test leads) from blowing the function-timeout budget. At
- * Al Hewal's expected scale a 30-day window contains at most a few
+ * Al Haual's expected scale a 30-day window contains at most a few
  * hundred leads, well inside the cap.
  */
 const ANALYTICS_MAX_SCAN_ROWS = 50_000;
@@ -186,7 +186,7 @@ async function getTopPropertyByLeads(
  * Return exactly 30 points (today through 29 days ago, UTC),
  * zero-filled so the line chart renders a continuous axis even
  * when most days have no leads. The aggregation runs in JS — at
- * Al Hewal's volume the row scan stays small. A pg_cron
+ * Al Haual's volume the row scan stays small. A pg_cron
  * materialized view would beat this at 100k+ leads/day; we'll
  * cross that bridge if traffic ever justifies it.
  */

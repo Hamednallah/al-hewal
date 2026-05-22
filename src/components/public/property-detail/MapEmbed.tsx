@@ -46,7 +46,7 @@ export function MapEmbed({ lat, lng, label, locale, googleMapsUrl }: MapEmbedPro
             href={googleMapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-teal-forest-700 hover:text-brass-600 text-xs font-semibold tracking-[0.2em] uppercase"
+            className="text-teal-forest-700 hover:text-brass-600 text-sm font-semibold tracking-[0.2em] uppercase"
           >
             {t('openInMaps')} →
           </a>
@@ -79,7 +79,7 @@ export function MapEmbed({ lat, lng, label, locale, googleMapsUrl }: MapEmbedPro
             href={googleMapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-teal-forest-700 hover:text-brass-600 text-xs font-semibold tracking-[0.2em] uppercase"
+            className="text-teal-forest-700 hover:text-brass-600 text-sm font-semibold tracking-[0.2em] uppercase"
           >
             {t('openInMaps')} →
           </a>

@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 /**
- * Invite acceptance — "Welcome to Al Hewal, set your password" page.
+ * Invite acceptance — "Welcome to Al Haual, set your password" page.
  *
  * Separate from `/<locale>/auth/reset-password` so a newly-invited
  * admin sees welcoming first-time-login copy instead of recovery-tone
@@ -59,7 +59,7 @@ export default async function SetPasswordPage({ params, searchParams }: PageProp
           href={`/${locale}`}
           className="text-canvas/70 hover:text-brass mx-auto mb-8 block text-center text-sm"
         >
-          ← Al Hewal
+          ← Al Haual
         </Link>
         <div className="border-canvas/15 bg-teal-forest-800/50 border p-8 shadow-2xl">
           <PasswordForm locale={locale as Locale} namespace="admin.auth.setPassword" />

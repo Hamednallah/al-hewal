@@ -78,13 +78,13 @@ export async function AdminsTable({ locale, rows, selfId }: AdminsTableProps) {
 
             <dl className="text-charcoal grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
               <div className="flex flex-col gap-0.5">
-                <dt className="text-charcoal-muted text-[0.65rem] font-semibold tracking-[0.16em] uppercase">
+                <dt className="text-charcoal-muted text-sm font-semibold tracking-[0.16em] uppercase">
                   {t('field_lastLogin')}
                 </dt>
                 <dd className="text-sm">{lastLogin}</dd>
               </div>
               <div className="flex flex-col gap-0.5">
-                <dt className="text-charcoal-muted text-[0.65rem] font-semibold tracking-[0.16em] uppercase">
+                <dt className="text-charcoal-muted text-sm font-semibold tracking-[0.16em] uppercase">
                   {t('field_languagePref')}
                 </dt>
                 <dd className="text-sm">{row.language_pref === 'ar' ? 'العربية' : 'English'}</dd>

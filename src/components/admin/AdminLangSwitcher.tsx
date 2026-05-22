@@ -41,7 +41,7 @@ export function AdminLangSwitcher({ className }: AdminLangSwitcherProps) {
       locale={otherLocale}
       hrefLang={otherLocale}
       className={cn(
-        'text-canvas/80 hover:text-brass-400 inline-flex items-center text-xs font-bold tracking-[0.18em] uppercase transition-colors duration-200',
+        'text-canvas/80 hover:text-brass-400 inline-flex items-center text-sm font-bold tracking-[0.18em] uppercase transition-colors duration-200',
         className,
       )}
       aria-label={t('languageSwitch')}

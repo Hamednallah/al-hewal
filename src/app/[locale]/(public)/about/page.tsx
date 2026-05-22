@@ -63,7 +63,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
       {/* Header band — full-bleed teal, mirrors the catalog page header. */}
       <header className="bg-teal-forest-700 text-canvas">
         <div className="px-edge mx-auto max-w-[1440px] py-16 md:py-24">
-          <p className="text-brass-400 text-xs tracking-[0.4em] uppercase">{t('pageEyebrow')}</p>
+          <p className="text-brass-400 text-sm tracking-[0.4em] uppercase">{t('pageEyebrow')}</p>
           <h1 className="mt-4 max-w-3xl text-4xl leading-tight font-bold text-balance md:text-5xl lg:text-6xl">
             {t('pageTitle')}
           </h1>
@@ -104,7 +104,7 @@ export default async function AboutPage({ params }: { params: Promise<Params> })
           <ol className="bg-charcoal/10 grid grid-cols-1 gap-px md:grid-cols-5">
             {VALUE_KEYS.map((key, idx) => (
               <li key={key} className="bg-canvas-raised flex flex-col gap-3 p-6 md:p-8">
-                <p className="text-teal-forest-700 text-xs font-bold tracking-[0.3em] uppercase">
+                <p className="text-teal-forest-700 text-sm font-bold tracking-[0.3em] uppercase">
                   {String(idx + 1).padStart(2, '0')}
                 </p>
                 <p className="text-charcoal text-base leading-snug font-semibold md:text-lg">

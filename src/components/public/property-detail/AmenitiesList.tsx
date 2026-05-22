@@ -52,7 +52,7 @@ export async function AmenitiesList({ amenities, locale }: AmenitiesListProps) {
             <div key={cat}>
               {/* Category eyebrow — teal-forest on canvas (brass fails
                   AA contrast for text on the off-white background). */}
-              <h3 className="text-teal-forest-700/70 border-outline-variant/40 mb-4 border-b pb-2 text-[10px] font-semibold tracking-[0.32em] uppercase">
+              <h3 className="text-teal-forest-700/70 border-outline-variant/40 mb-4 border-b pb-2 text-sm font-semibold tracking-[0.32em] uppercase">
                 {t(`category.${cat}`)}
               </h3>
               <ul className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">

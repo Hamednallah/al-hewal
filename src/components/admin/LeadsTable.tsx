@@ -77,8 +77,8 @@ export async function LeadsTable({ locale, leads }: LeadsTableProps) {
                 aria-label={t('status')}
                 className={
                   isContacted
-                    ? 'bg-teal-forest-700/10 text-teal-forest-700 border-teal-forest-700/40 inline-flex items-center border px-2.5 py-1 text-[0.65rem] font-semibold tracking-[0.16em] uppercase'
-                    : 'bg-brass/15 text-brass-700 border-brass/40 inline-flex items-center border px-2.5 py-1 text-[0.65rem] font-semibold tracking-[0.16em] uppercase'
+                    ? 'bg-teal-forest-700/10 text-teal-forest-700 border-teal-forest-700/40 inline-flex items-center border px-2.5 py-1 text-sm font-semibold tracking-[0.16em] uppercase'
+                    : 'bg-brass/15 text-brass-700 border-brass/40 inline-flex items-center border px-2.5 py-1 text-sm font-semibold tracking-[0.16em] uppercase'
                 }
               >
                 {tState(isContacted ? 'contacted' : 'pending')}
@@ -131,7 +131,7 @@ export async function LeadsTable({ locale, leads }: LeadsTableProps) {
               </dl>
               {lead.message ? (
                 <div className="flex flex-col gap-1 pt-2">
-                  <p className="text-charcoal-muted text-[0.65rem] font-semibold tracking-[0.16em] uppercase">
+                  <p className="text-charcoal-muted text-sm font-semibold tracking-[0.16em] uppercase">
                     {t('message')}
                   </p>
                   <p className="text-charcoal text-sm leading-relaxed whitespace-pre-wrap">
@@ -175,7 +175,7 @@ function CardField({ label, value, ariaHideLabel }: CardFieldProps) {
         className={
           ariaHideLabel
             ? 'sr-only'
-            : 'text-charcoal-muted text-[0.65rem] font-semibold tracking-[0.16em] uppercase'
+            : 'text-charcoal-muted text-sm font-semibold tracking-[0.16em] uppercase'
         }
       >
         {label}

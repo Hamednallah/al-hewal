@@ -9,9 +9,9 @@ import type { MetadataRoute } from 'next';
  */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'Al Hewal — الحوال',
-    short_name: 'Al Hewal',
-    description: 'Al Hewal Real Estate Development and Investment — Saudi residential projects.',
+    name: 'Al Haual — الحوال',
+    short_name: 'Al Haual',
+    description: 'Al Haual Real Estate Development and Investment — Saudi residential projects.',
     start_url: '/',
     display: 'standalone',
     background_color: '#f9f9f9',

@@ -85,7 +85,7 @@ async function PageHeader({ locale }: { locale: Locale }) {
   return (
     <header className="bg-teal-forest-700 text-canvas">
       <div className="px-edge mx-auto max-w-[1440px] py-16 md:py-20">
-        <p className="text-brass-400 text-xs tracking-[0.4em] uppercase">{t('pageEyebrow')}</p>
+        <p className="text-brass-400 text-sm tracking-[0.4em] uppercase">{t('pageEyebrow')}</p>
         <h1 className="mt-3 text-4xl leading-tight font-bold md:text-5xl">{t('pageTitle')}</h1>
       </div>
     </header>

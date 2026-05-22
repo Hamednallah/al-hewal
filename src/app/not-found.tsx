@@ -25,7 +25,7 @@ import Link from 'next/link';
  */
 
 export const metadata: Metadata = {
-  title: 'الصفحة غير موجودة · Page not found · Al Hewal',
+  title: 'الصفحة غير موجودة · Page not found · Al Haual',
 };
 
 const COLOR = {
@@ -42,7 +42,7 @@ export default function GlobalNotFound() {
   return (
     <html lang="ar" dir="rtl">
       <head>
-        <title>الصفحة غير موجودة · Page not found · Al Hewal</title>
+        <title>الصفحة غير موجودة · Page not found · Al Haual</title>
         <meta name="viewport" content="width=device-width,initial-scale=1" />
       </head>
       <body
@@ -54,7 +54,7 @@ export default function GlobalNotFound() {
           backgroundColor: COLOR.teal,
           color: COLOR.canvas,
           fontFamily:
-            "'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, -apple-system, sans-serif",
+            "'Tajawal', 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, -apple-system, sans-serif",
         }}
       >
         {/* Brand bar — logo image; centered to honour the same "no
@@ -70,7 +70,7 @@ export default function GlobalNotFound() {
         >
           <Link
             href="/ar"
-            aria-label="Al Hewal · الحوال"
+            aria-label="Al Haual · الحوال"
             style={{ display: 'inline-block', lineHeight: 0 }}
           >
             {/* Plain <img>, not next/image — this route renders its own
@@ -78,7 +78,7 @@ export default function GlobalNotFound() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/brand/logo.png"
-              alt="Al Hewal · الحوال"
+              alt="Al Haual · الحوال"
               width={64}
               height={64}
               style={{ height: 56, width: 'auto', display: 'block', borderRadius: 8 }}
@@ -246,7 +246,7 @@ export default function GlobalNotFound() {
             color: COLOR.canvasMuted,
           }}
         >
-          © {new Date().getFullYear()} الحوال · Al Hewal Real Estate Development &amp; Investment
+          © {new Date().getFullYear()} الحوال · Al Haual Real Estate Development &amp; Investment
         </footer>
       </body>
     </html>

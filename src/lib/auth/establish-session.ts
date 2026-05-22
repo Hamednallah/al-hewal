@@ -42,7 +42,7 @@ import { getSupabaseAdminClient } from '@/lib/supabase/admin';
  *                            admin cannot resurrect themselves through
  *                            recovery.
  *   - missing row          → rejected with `notAdmin`. The Supabase
- *                            user is not an Al Hewal admin.
+ *                            user is not an Al Haual admin.
  *
  * Returns one of:
  *   - `{ ok: true, admin }`  — cookie was set, caller should redirect.

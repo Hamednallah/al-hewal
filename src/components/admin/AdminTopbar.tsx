@@ -17,7 +17,7 @@ export function AdminTopbar({ eyebrow, title, subtitle, actions }: AdminTopbarPr
     <header className="bg-canvas-raised border-outline-variant/30 sticky top-0 z-10 flex items-center justify-between gap-4 border-b px-6 py-6 md:px-10">
       <div className="space-y-1">
         {eyebrow ? (
-          <p className="text-brass-700 text-xs font-medium tracking-[0.2em] uppercase">{eyebrow}</p>
+          <p className="text-brass-700 text-sm font-medium tracking-[0.2em] uppercase">{eyebrow}</p>
         ) : null}
         <h1 className="text-teal-forest-700 text-2xl font-semibold md:text-3xl">{title}</h1>
         {subtitle ? <p className="text-charcoal-muted text-sm">{subtitle}</p> : null}

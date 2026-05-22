@@ -120,7 +120,7 @@ interface IdentityFieldProps {
 function IdentityField({ label, value, dir }: IdentityFieldProps) {
   return (
     <div className="flex flex-col gap-1">
-      <dt className="text-brass-700 text-xs font-semibold tracking-[0.2em] uppercase">{label}</dt>
+      <dt className="text-brass-700 text-sm font-semibold tracking-[0.2em] uppercase">{label}</dt>
       <dd className="text-charcoal text-base break-words" dir={dir}>
         {value}
       </dd>

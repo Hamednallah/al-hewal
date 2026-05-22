@@ -42,10 +42,10 @@ function buildMessage({ locale, propertyTitle, propertyUrl }: BuildOptions): str
     return 'السلام عليكم الحوال، أرغب بالاستفسار عن مشاريعكم العقارية.';
   }
   if (propertyTitle && propertyUrl) {
-    return `Hello Al Hewal, I'd like more information about ${propertyTitle} (${propertyUrl}).`;
+    return `Hello Al Haual, I'd like more information about ${propertyTitle} (${propertyUrl}).`;
   }
   if (propertyTitle) {
-    return `Hello Al Hewal, I'd like more information about ${propertyTitle}.`;
+    return `Hello Al Haual, I'd like more information about ${propertyTitle}.`;
   }
-  return 'Hello Al Hewal, I would like to enquire about your real-estate projects.';
+  return 'Hello Al Haual, I would like to enquire about your real-estate projects.';
 }

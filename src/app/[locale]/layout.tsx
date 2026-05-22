@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 
 import '@/styles/globals.css';
 
-import { ibmPlexSans, ibmPlexSansArabic } from '@/lib/fonts';
+import { ibmPlexSans, tajawalArabic } from '@/lib/fonts';
 import { getDirection, type Locale, routing } from '@/i18n/routing';
 
 export const dynamicParams = false;
@@ -101,7 +101,7 @@ export default async function LocaleLayout({
     <html
       lang={typedLocale}
       dir={dir}
-      className={`${ibmPlexSans.variable} ${ibmPlexSansArabic.variable}`}
+      className={`${ibmPlexSans.variable} ${tajawalArabic.variable}`}
       suppressHydrationWarning
     >
       <body>

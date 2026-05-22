@@ -125,7 +125,7 @@ function buildOrganizationJsonLd({
     '@context': 'https://schema.org',
     '@type': 'RealEstateAgent',
     name,
-    alternateName: locale === 'ar' ? 'Al Hewal' : 'الحوال',
+    alternateName: locale === 'ar' ? 'Al Haual' : 'الحوال',
     description,
     url: siteUrl,
     inLanguage: locale,

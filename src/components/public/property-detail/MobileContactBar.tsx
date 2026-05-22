@@ -42,7 +42,7 @@ export async function MobileContactBar({
       <a
         href={telHref}
         aria-label={t('callAria', { title })}
-        className="border-brass-400 text-brass-400 hover:bg-brass-400/10 focus-visible:ring-brass-400 focus-visible:ring-offset-teal-forest-700 inline-flex flex-1 items-center justify-center gap-2 border px-4 py-3 text-xs font-bold tracking-[0.2em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="border-brass-400 text-brass-400 hover:bg-brass-400/10 focus-visible:ring-brass-400 focus-visible:ring-offset-teal-forest-700 inline-flex flex-1 items-center justify-center gap-2 border px-4 py-3 text-sm font-bold tracking-[0.2em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         <CallIcon />
         {t('call')}
@@ -52,7 +52,7 @@ export async function MobileContactBar({
         aria-label={t('whatsappAria', { title })}
         rel="noopener noreferrer"
         data-event="whatsapp-click"
-        className="bg-brass-400 text-teal-forest-700 hover:bg-canvas focus-visible:ring-canvas focus-visible:ring-offset-teal-forest-700 inline-flex flex-[2] items-center justify-center gap-2 px-4 py-3 text-xs font-bold tracking-[0.2em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+        className="bg-brass-400 text-teal-forest-700 hover:bg-canvas focus-visible:ring-canvas focus-visible:ring-offset-teal-forest-700 inline-flex flex-[2] items-center justify-center gap-2 px-4 py-3 text-sm font-bold tracking-[0.2em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
       >
         <ChatIcon />
         {t('whatsapp')}

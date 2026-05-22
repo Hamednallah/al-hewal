@@ -31,7 +31,7 @@ import type { Metadata } from 'next';
  */
 
 export const metadata: Metadata = {
-  title: 'حدث خطأ · Something went wrong · Al Hewal',
+  title: 'حدث خطأ · Something went wrong · Al Haual',
 };
 
 const COLOR = {
@@ -52,7 +52,7 @@ export default function GlobalError({ reset }: GlobalErrorProps) {
   return (
     <html lang="ar" dir="rtl">
       <head>
-        <title>حدث خطأ · Something went wrong · Al Hewal</title>
+        <title>حدث خطأ · Something went wrong · Al Haual</title>
         <meta name="viewport" content="width=device-width,initial-scale=1" />
       </head>
       <body
@@ -64,7 +64,7 @@ export default function GlobalError({ reset }: GlobalErrorProps) {
           backgroundColor: COLOR.teal,
           color: COLOR.canvas,
           fontFamily:
-            "'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, -apple-system, sans-serif",
+            "'Tajawal', 'IBM Plex Sans Arabic', 'IBM Plex Sans', system-ui, -apple-system, sans-serif",
         }}
       >
         <header
@@ -79,7 +79,7 @@ export default function GlobalError({ reset }: GlobalErrorProps) {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/brand/logo.png"
-            alt="Al Hewal · الحوال"
+            alt="Al Haual · الحوال"
             width={64}
             height={64}
             style={{ height: 56, width: 'auto', display: 'block', borderRadius: 8 }}
@@ -268,7 +268,7 @@ export default function GlobalError({ reset }: GlobalErrorProps) {
             color: COLOR.canvasMuted,
           }}
         >
-          © {new Date().getFullYear()} الحوال · Al Hewal Real Estate Development &amp; Investment
+          © {new Date().getFullYear()} الحوال · Al Haual Real Estate Development &amp; Investment
         </footer>
       </body>
     </html>

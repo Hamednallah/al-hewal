@@ -137,6 +137,6 @@ test.describe('Bilingual 404', () => {
     await page.goto('/en/properties/this-slug-does-not-exist-9999', {
       waitUntil: 'domcontentloaded',
     });
-    await expect(page.getByRole('img', { name: /Al Hewal|الحوال/ })).toBeVisible();
+    await expect(page.getByRole('img', { name: /Al Haual|الحوال/ })).toBeVisible();
   });
 });

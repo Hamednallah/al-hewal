@@ -148,7 +148,7 @@ export default async function PropertyDetailPage({ params }: { params: Promise<P
       <article className="pb-24 md:pb-0">
         <div className="bg-canvas">
           <div className="px-edge mx-auto max-w-[1440px] py-10 md:py-16">
-            <nav className="mb-8 text-xs tracking-[0.25em] uppercase">
+            <nav className="mb-8 text-sm tracking-[0.25em] uppercase">
               <Link
                 href="/properties"
                 className="text-charcoal-muted hover:text-teal-forest-700 focus-visible:underline focus-visible:outline-none"
@@ -159,9 +159,6 @@ export default async function PropertyDetailPage({ params }: { params: Promise<P
 
             <header className="mb-10 flex flex-col gap-6 md:mb-12 md:flex-row md:items-end md:justify-between md:gap-10">
               <div className="max-w-2xl">
-                <span className="bg-brass-400 text-teal-forest-700 mb-4 inline-block px-3 py-1 text-[11px] font-bold tracking-[0.25em] uppercase">
-                  {tProperty(`status.${property.status}`)}
-                </span>
                 <h1 className="text-teal-forest-700 mb-3 text-4xl leading-tight font-bold md:text-5xl lg:text-6xl">
                   {title}
                 </h1>
@@ -171,11 +168,16 @@ export default async function PropertyDetailPage({ params }: { params: Promise<P
                 </p>
               </div>
               <div className="flex flex-col md:items-end">
-                <p className="text-teal-forest-700 text-2xl font-bold md:text-3xl">{price}</p>
-                <p className="text-charcoal-muted mt-1 text-xs tracking-[0.2em] uppercase">
+                <p className="text-charcoal-muted mb-1 text-sm tracking-[0.2em] uppercase">
                   {t('startingPrice')}
                   {property.price_negotiable ? ` · ${t('negotiable')}` : null}
                 </p>
+                <div className="flex flex-wrap items-center gap-3 md:justify-end">
+                  <p className="text-teal-forest-700 text-2xl font-bold md:text-3xl">{price}</p>
+                  <span className="bg-brass-400 text-teal-forest-700 inline-block px-3 py-1 text-sm font-bold tracking-[0.25em] uppercase">
+                    {tProperty(`status.${property.status}`)}
+                  </span>
+                </div>
               </div>
             </header>
 
@@ -361,7 +363,7 @@ function buildJsonLd({ property, title, description, url, locale }: JsonLdInput)
       priceCurrency: 'SAR',
       availability,
       url,
-      seller: { '@type': 'Organization', name: 'Al Hewal' },
+      seller: { '@type': 'Organization', name: 'Al Haual' },
     },
   };
 }

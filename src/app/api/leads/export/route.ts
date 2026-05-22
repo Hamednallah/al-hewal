@@ -71,7 +71,7 @@ export async function GET(req: NextRequest) {
   // Suggest a dated filename so multiple exports don't collide in the
   // owner's Downloads folder.
   const today = new Date().toISOString().slice(0, 10);
-  const filename = `al-hewal-leads-${today}.csv`;
+  const filename = `al-haual-leads-${today}.csv`;
 
   return new NextResponse(csv, {
     status: 200,

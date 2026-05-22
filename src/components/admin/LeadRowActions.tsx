@@ -173,7 +173,7 @@ export function LeadRowActions({
         </div>
       ) : null}
       {error ? (
-        <p role="status" className="text-[0.65rem] text-[#7d1c1c]">
+        <p role="status" className="text-xs text-[#7d1c1c]">
           {error}
         </p>
       ) : null}

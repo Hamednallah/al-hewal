@@ -48,7 +48,7 @@ export async function Pagination({ locale, filters, totalPages }: PaginationProp
         label={t('previous')}
         direction="prev"
       />
-      <p className="text-charcoal-muted text-xs uppercase tracking-[0.25em] md:text-sm">
+      <p className="text-charcoal-muted text-sm uppercase tracking-[0.25em] md:text-sm">
         {t('pageOf', { current: page, total: totalPages })}
       </p>
       <PaginationLink href={linkFor(page + 1)} enabled={hasNext} label={t('next')} direction="next" />
@@ -68,7 +68,7 @@ function PaginationLink({
   direction: 'prev' | 'next';
 }) {
   const className = cn(
-    'inline-flex items-center gap-2 border px-4 py-2 text-xs font-bold uppercase tracking-[0.2em] transition-colors md:text-sm',
+    'inline-flex items-center gap-2 border px-4 py-2 text-sm font-bold uppercase tracking-[0.2em] transition-colors md:text-sm',
     enabled
       ? 'border-teal-forest-500 text-teal-forest-700 hover:bg-teal-forest-700 hover:text-canvas'
       : 'border-outline-variant text-charcoal-muted/40 pointer-events-none',

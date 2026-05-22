@@ -103,7 +103,7 @@ export function PropertyAmenitiesEditor({
           <p className="text-charcoal-muted mt-1 text-xs">{t('hint')}</p>
         </div>
         <span
-          className="text-brass-700 text-xs font-semibold tracking-[0.15em] uppercase"
+          className="text-brass-700 text-sm font-semibold tracking-[0.15em] uppercase"
           aria-live="polite"
         >
           {pending ? t('saving') : t('savedBadge', { count: selectedIds.size })}
@@ -126,7 +126,7 @@ export function PropertyAmenitiesEditor({
           if (!items || items.length === 0) return null;
           return (
             <div key={category} className="flex flex-col gap-2">
-              <h3 className="text-charcoal text-xs font-semibold tracking-[0.18em] uppercase">
+              <h3 className="text-charcoal text-sm font-semibold tracking-[0.18em] uppercase">
                 {tCat(category)}
               </h3>
               <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">

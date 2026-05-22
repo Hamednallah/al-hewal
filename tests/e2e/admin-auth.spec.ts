@@ -42,7 +42,7 @@ test.describe('admin auth guard (PR 3.1, updated PR phase-3-auth-password)', () 
   test('login page surfaces the callback error from query string', async ({ page }) => {
     await page.goto('/en/auth/login?error=notAdmin');
     await expect(page.locator('main').getByRole('alert')).toContainText(
-      /registered as an al hewal administrator/i,
+      /registered as an al haual administrator/i,
     );
   });
 

@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 /* ============================================================================
- * Al Hewal — design tokens
+ * Al Haual — design tokens
  * ----------------------------------------------------------------------------
  * Tokens are authored as native CSS custom properties under Tailwind v4's
  * `@theme` block so they appear as Tailwind utility classes
@@ -62,8 +62,8 @@
     var(--font-sans-loaded, 'IBM Plex Sans'), ui-sans-serif, system-ui, -apple-system,
     BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-arabic:
-    var(--font-arabic-loaded, 'IBM Plex Sans Arabic'), 'IBM Plex Sans', ui-sans-serif, system-ui,
-    -apple-system, sans-serif;
+    var(--font-arabic-loaded, 'Tajawal'), 'IBM Plex Sans Arabic', 'IBM Plex Sans', ui-sans-serif,
+    system-ui, -apple-system, sans-serif;
 
   /* --- Layout system ----------------------------------------------------- */
   /* All radii are 0 — sharp architectural rectangles, no rounded corners. */
@@ -95,6 +95,17 @@
      * (#D4B982) into a muddy brown on phones in dark mode.
      * Reported via WhatsApp screenshot on a Samsung KSA device. */
     color-scheme: light;
+  }
+
+  /* Arabic glyphs sit slightly lower on the cap-height line than Latin
+   * at the same `font-size`, so labels that read fine in English look
+   * undersized in Arabic. Bump the root `font-size` by ~6 % when the
+   * page locale is `ar` so every rem-based class (all of Tailwind)
+   * scales proportionally without us touching individual utilities.
+   * Layout proportions are preserved because spacing is also
+   * rem-based. */
+  html[lang='ar'] {
+    font-size: 17px;
   }
 
   body {

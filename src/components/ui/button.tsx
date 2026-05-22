@@ -5,7 +5,7 @@ import type { ComponentProps } from 'react';
 import { cn } from '@/lib/utils';
 
 /**
- * Button — Al Hewal design system primitive.
+ * Button — Al Haual design system primitive.
  *
  * Sharp 0px corners (architectural rectangles). Three variants matched
  * to the Stitch mockups:

@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test.describe('Phase 1 smoke', () => {
   test('root always redirects to /ar regardless of browser language', async ({ browser }) => {
     // Two browsers: one advertising Arabic, one English. Both must land on
-    // /ar because Al Hewal is Arabic-first and localeDetection is disabled.
+    // /ar because Al Haual is Arabic-first and localeDetection is disabled.
     for (const acceptLanguage of ['ar-SA,ar;q=0.9', 'en-US,en;q=0.9']) {
       const context = await browser.newContext({ locale: acceptLanguage.split(',')[0] });
       const page = await context.newPage();
