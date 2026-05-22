@@ -16,8 +16,22 @@ inventory, leads, analytics, and team management.
 
 ## Project Status
 
-Phase 1 (Foundations) shipped as `v0.1.1`. Phase 2 (Public site) is
-in progress — 4 of 8 sub-PRs merged.
+**Build complete.** All five phases of the master plan have shipped
+and the site is live at `al-hewal.vercel.app`:
+
+| Phase | Scope                                                       | Tag      |
+| ----- | ----------------------------------------------------------- | -------- |
+| 1     | Foundations (Next 15, Supabase, Vercel, CI)                 | `v0.1.x` |
+| 2     | Public site (home, catalog, detail, contact, sitemap, RSS)  | `v0.2.x` |
+| 3     | Admin Command Center (auth, properties, images, leads CSV)  | `v0.3.x` |
+| 4     | Analytics dashboard + My Profile                            | `v0.4.x` |
+| 5     | PDPL banner, error pages, CSP, Carto→Google Maps, amenities | `v0.5.x` |
+
+Day-to-day work is operator-side: add properties via `/admin`, watch
+the leads journal, and once a real domain is purchased work through
+[`docs/POST_DEPLOY_CHECKLIST.md`](docs/POST_DEPLOY_CHECKLIST.md)
+start-to-finish (Search Console, GBP, Resend SMTP, Lighthouse, owner
+handover).
 
 **Resuming work in a new session?** Read
 [`docs/SESSION_HANDOFF.md`](docs/SESSION_HANDOFF.md) **first**. It's
@@ -40,7 +54,7 @@ or session.
 | Database      | Supabase Postgres with Row Level Security                                |
 | Auth          | Supabase Auth — magic-link admin invites only, no public signup          |
 | Image storage | Vercel Blob (raw) + `next/image` (AVIF / WebP transforms)                |
-| Maps          | Google Maps Embed API (lazy-loaded)                                      |
+| Maps          | Google Maps iframe embed (keyless `?output=embed`, no API key)           |
 | Charts        | Recharts                                                                 |
 | Forms         | React Hook Form + Zod                                                    |
 | Testing       | Vitest + React Testing Library + Playwright (E2E + axe-core)             |
