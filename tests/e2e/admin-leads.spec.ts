@@ -86,7 +86,7 @@ test.describe('GET /api/leads/export gates', () => {
     expect(res.status()).toBe(200);
     expect(res.headers()['content-type']).toContain('text/csv');
     expect(res.headers()['content-disposition']).toContain('attachment');
-    expect(res.headers()['content-disposition']).toMatch(/al-hewal-leads-\d{4}-\d{2}-\d{2}\.csv/);
+    expect(res.headers()['content-disposition']).toMatch(/al-haual-leads-\d{4}-\d{2}-\d{2}\.csv/);
     // Body starts with the UTF-8 BOM + the English header row.
     const body = await res.text();
     expect(body.startsWith('﻿')).toBe(true);
