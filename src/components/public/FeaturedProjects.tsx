@@ -21,8 +21,10 @@ import { getFeaturedProperties } from '@/lib/data/properties';
  * misconfigured env in CI / preview cannot crash the build.
  */
 export async function FeaturedProjects({ locale }: { locale: Locale }) {
+  // Limit 3 keeps the home page focused on the most recent highlights;
+  // visitors who want the full catalog click "Browse all properties".
   const [properties, t, tFooter] = await Promise.all([
-    getFeaturedProperties(6),
+    getFeaturedProperties(3),
     getTranslations({ locale, namespace: 'public.home.featured' }),
     getTranslations({ locale, namespace: 'public.footer' }),
   ]);
@@ -32,7 +34,7 @@ export async function FeaturedProjects({ locale }: { locale: Locale }) {
       <div className="mx-auto max-w-[1440px] px-edge">
         <div className="mb-12 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
           <div className="flex max-w-2xl flex-col gap-3">
-            <p className="text-teal-forest-500 text-xs uppercase tracking-[0.4em]">
+            <p className="text-teal-forest-500 text-sm uppercase tracking-[0.4em]">
               {t('eyebrow')}
             </p>
             <h2 className="text-charcoal text-balance text-3xl font-bold leading-tight md:text-5xl">

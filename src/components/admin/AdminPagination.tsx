@@ -48,7 +48,7 @@ export async function AdminPagination({
       aria-label={t('pageOf', { current: page, total: totalPages })}
       className="border-outline-variant/40 bg-canvas-raised flex items-center justify-between gap-4 border-t px-6 py-4 md:px-10"
     >
-      <p className="text-charcoal-muted text-xs tracking-[0.18em] uppercase">
+      <p className="text-charcoal-muted text-sm tracking-[0.18em] uppercase">
         {t('showing', { current: page, total: totalPages, rows: totalRows })}
       </p>
       <div className="flex items-center gap-2">

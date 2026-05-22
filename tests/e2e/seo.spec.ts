@@ -93,7 +93,7 @@ test.describe('SEO surfaces', () => {
       theme_color: string;
       icons: Array<{ src: string; sizes: string }>;
     };
-    expect(manifest.name).toContain('Al Hewal');
+    expect(manifest.name).toContain('Al Haual');
     expect(manifest.theme_color.toLowerCase()).toBe('#002b2b');
     expect(manifest.icons.some((icon) => icon.sizes === '512x512')).toBe(true);
   });

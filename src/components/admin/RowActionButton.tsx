@@ -96,7 +96,7 @@ export function RowActionButton({
         {label}
       </button>
       {error ? (
-        <span role="status" className="text-[0.65rem] leading-tight text-[#7d1c1c]">
+        <span role="status" className="text-xs leading-tight text-[#7d1c1c]">
           {error}
         </span>
       ) : null}

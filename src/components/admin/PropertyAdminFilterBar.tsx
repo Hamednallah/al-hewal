@@ -152,7 +152,7 @@ function FilterInput({
     <div className={`flex flex-col gap-1 ${className ?? ''}`}>
       <label
         htmlFor={id}
-        className="text-charcoal-muted text-xs font-semibold tracking-[0.18em] uppercase"
+        className="text-charcoal-muted text-sm font-semibold tracking-[0.18em] uppercase"
       >
         {label}
       </label>
@@ -182,7 +182,7 @@ function FilterSelect({ id, label, name, defaultValue, options }: FilterSelectPr
     <div className="flex flex-col gap-1">
       <label
         htmlFor={id}
-        className="text-charcoal-muted text-xs font-semibold tracking-[0.18em] uppercase"
+        className="text-charcoal-muted text-sm font-semibold tracking-[0.18em] uppercase"
       >
         {label}
       </label>

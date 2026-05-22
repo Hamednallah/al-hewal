@@ -1,7 +1,7 @@
 import { defineRouting } from 'next-intl/routing';
 
 /**
- * Locale routing for the Al Hewal platform.
+ * Locale routing for the Al Haual platform.
  *
  * - Default locale is Arabic (Saudi-first audience).
  * - `localePrefix: 'always'` means BOTH locales are URL-prefixed
@@ -10,7 +10,7 @@ import { defineRouting } from 'next-intl/routing';
  *   ambiguity of having one locale at the root and the other prefixed.
  * - `localeDetection: false` is INTENTIONAL — we ignore the browser's
  *   `Accept-Language` header so `/` always lands on `/ar` regardless of
- *   visitor language. Al Hewal's product owner wants the Arabic version
+ *   visitor language. Al Haual's product owner wants the Arabic version
  *   shown by default; visitors with English browsers opt in via the
  *   language switcher in the navbar. Setting this to `true` reintroduces
  *   the bug where an `en-US` browser silently lands on `/en` and never

@@ -22,7 +22,7 @@ export function AdminStatusBadge({ status, label }: AdminStatusBadgeProps) {
     <span
       data-testid={`admin-status-${status}`}
       className={cn(
-        'inline-block px-2 py-0.5 text-[0.65rem] font-semibold tracking-[0.16em] uppercase',
+        'inline-block px-2 py-0.5 text-sm font-semibold tracking-[0.16em] uppercase',
         tone[status],
       )}
     >

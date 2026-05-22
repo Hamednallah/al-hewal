@@ -16,7 +16,7 @@ export function AdminTierBadge({ tier, label }: AdminTierBadgeProps) {
     <span
       data-testid={`admin-tier-${tier}`}
       className={cn(
-        'inline-block px-2 py-0.5 text-[0.65rem] font-semibold tracking-[0.16em] uppercase',
+        'inline-block px-2 py-0.5 text-sm font-semibold tracking-[0.16em] uppercase',
         isSuper
           ? 'bg-teal-forest-700 text-brass-400'
           : 'bg-canvas-sunken text-charcoal-muted border-outline-variant border',

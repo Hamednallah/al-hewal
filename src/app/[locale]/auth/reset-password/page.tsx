@@ -61,7 +61,7 @@ export default async function ResetPasswordPage({ params, searchParams }: PagePr
           href={`/${locale}`}
           className="text-canvas/70 hover:text-brass mx-auto mb-8 block text-center text-sm"
         >
-          ← Al Hewal
+          ← Al Haual
         </Link>
         <div className="border-canvas/15 bg-teal-forest-800/50 border p-8 shadow-2xl">
           <PasswordForm locale={locale as Locale} namespace="admin.auth.reset" />

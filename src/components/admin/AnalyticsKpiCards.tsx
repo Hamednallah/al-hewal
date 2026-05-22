@@ -55,7 +55,7 @@ interface CardProps {
 function Card({ label, value, subtitle = null }: CardProps) {
   return (
     <div className="border-outline-variant/40 flex flex-col gap-2 border p-4">
-      <dt className="text-brass-700 text-xs font-semibold tracking-[0.2em] uppercase">{label}</dt>
+      <dt className="text-brass-700 text-sm font-semibold tracking-[0.2em] uppercase">{label}</dt>
       <dd className="text-teal-forest-700 text-2xl font-semibold break-words md:text-3xl">
         {value}
       </dd>

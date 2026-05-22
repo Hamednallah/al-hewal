@@ -21,7 +21,7 @@ describe('buildWhatsappUrl', () => {
 
   it('emits the EN generic message when no property is supplied', () => {
     const msg = extractMessage(buildWhatsappUrl({ locale: 'en' }));
-    expect(msg).toBe('Hello Al Hewal, I would like to enquire about your real-estate projects.');
+    expect(msg).toBe('Hello Al Haual, I would like to enquire about your real-estate projects.');
   });
 
   it('emits the AR generic message when no property is supplied', () => {

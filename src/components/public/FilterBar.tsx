@@ -44,7 +44,7 @@ export async function FilterBar({ locale, filters, cities }: FilterBarProps) {
           <div className="flex flex-grow flex-col gap-1">
             <label
               htmlFor="catalog-search"
-              className="text-charcoal-muted text-xs font-bold uppercase tracking-[0.2em]"
+              className="text-charcoal-muted text-sm font-bold uppercase tracking-[0.2em]"
             >
               {t('searchLabel')}
             </label>
@@ -123,7 +123,7 @@ function FilterSelect({ label, name, value, options }: SelectProps) {
   const id = `catalog-filter-${name}`;
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-charcoal-muted text-xs font-bold uppercase tracking-[0.2em]">
+      <label htmlFor={id} className="text-charcoal-muted text-sm font-bold uppercase tracking-[0.2em]">
         {label}
       </label>
       <select
@@ -152,7 +152,7 @@ function FilterNumber({ label, name, value }: NumberProps) {
   const id = `catalog-filter-${name}`;
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-charcoal-muted text-xs font-bold uppercase tracking-[0.2em]">
+      <label htmlFor={id} className="text-charcoal-muted text-sm font-bold uppercase tracking-[0.2em]">
         {label}
       </label>
       <input

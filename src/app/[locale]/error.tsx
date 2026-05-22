@@ -47,7 +47,7 @@ export default function LocaleErrorBoundary({ error, reset }: ErrorBoundaryProps
       className="bg-canvas text-charcoal flex min-h-[60vh] flex-col items-center justify-center px-6 py-16 text-center"
       dir={locale === 'ar' ? 'rtl' : 'ltr'}
     >
-      <p className="text-brass-700 mb-3 text-xs font-semibold tracking-[0.3em] uppercase">
+      <p className="text-brass-700 mb-3 text-sm font-semibold tracking-[0.3em] uppercase">
         {t('eyebrow')}
       </p>
       <h1 className="text-teal-forest-700 mb-4 text-3xl font-semibold md:text-4xl">{t('title')}</h1>

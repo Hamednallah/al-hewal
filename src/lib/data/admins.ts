@@ -32,7 +32,7 @@ export type AdminListRow = {
 /**
  * List every admin. Sorted by `status` (active first), then `created_at`
  * descending so newly-invited admins surface at the top. Pagination is
- * deferred — at the scale of an Al-Hewal-style org the table holds well
+ * deferred — at the scale of an Al-Haual-style org the table holds well
  * under 100 rows.
  *
  * Returns an empty list on Supabase failure rather than throwing, so the

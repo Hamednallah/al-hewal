@@ -30,7 +30,7 @@ export async function ValueGrid({ locale }: { locale: Locale }) {
     <section className="bg-canvas py-section">
       <div className="mx-auto max-w-[1440px] px-edge">
         <div className="mb-16 flex max-w-3xl flex-col gap-4">
-          <p className="text-teal-forest-500 text-xs uppercase tracking-[0.4em]">
+          <p className="text-teal-forest-500 text-sm uppercase tracking-[0.4em]">
             {t('sectionEyebrow')}
           </p>
           <h2 className="text-charcoal text-balance text-3xl font-bold leading-tight md:text-5xl">
@@ -43,7 +43,7 @@ export async function ValueGrid({ locale }: { locale: Locale }) {
               {/* CLAUDE.md rule: brass on light = banned (1.9:1 contrast).
                   Use teal-forest-700 (#002b2b on #f9f9f9 = 17:1) for the
                   numbered marker on the canvas card. */}
-              <p className="text-teal-forest-700 text-xs font-bold uppercase tracking-[0.3em]">
+              <p className="text-teal-forest-700 text-sm font-bold uppercase tracking-[0.3em]">
                 {marker}
               </p>
               <h3 className="text-charcoal text-xl font-semibold leading-snug md:text-2xl">

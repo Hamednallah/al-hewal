@@ -89,7 +89,7 @@ export async function PropertyTable({ locale, rows, basePath, admin }: PropertyT
             </dl>
 
             {row.featured ? (
-              <p className="text-brass-700 inline-flex items-center gap-1 text-xs font-semibold tracking-wide uppercase">
+              <p className="text-brass-700 inline-flex items-center gap-1 text-sm font-semibold tracking-wide uppercase">
                 ★ {t('featuredYes')}
               </p>
             ) : null}
@@ -168,7 +168,7 @@ interface CardFieldProps {
 function CardField({ label, value, emphasis }: CardFieldProps) {
   return (
     <div className="flex flex-col gap-0.5">
-      <dt className="text-charcoal-muted text-[0.65rem] font-semibold tracking-[0.16em] uppercase">
+      <dt className="text-charcoal-muted text-sm font-semibold tracking-[0.16em] uppercase">
         {label}
       </dt>
       <dd

@@ -31,7 +31,7 @@ export async function Footer({ locale }: { locale: Locale }) {
       {/* Brand block — full-width, centered. */}
       <div className="border-brass-400/10 border-b">
         <div className="mx-auto flex max-w-[1440px] flex-col items-center gap-4 px-edge py-12 text-center md:py-16">
-          <p className="text-brass-400 text-xs tracking-[0.4em] uppercase">{tBrand('name')}</p>
+          <p className="text-brass-400 text-sm tracking-[0.4em] uppercase">{tBrand('name')}</p>
           <p className="text-canvas max-w-2xl text-2xl font-semibold leading-tight md:text-3xl">
             {t('tagline')}
           </p>
@@ -46,7 +46,7 @@ export async function Footer({ locale }: { locale: Locale }) {
       <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-12 px-edge py-14 text-center md:grid-cols-3 md:gap-8 md:py-16">
         {/* Explore */}
         <nav aria-label={t('sectionExplore')} className="flex flex-col items-center gap-4">
-          <p className="text-brass-400 text-xs tracking-[0.3em] uppercase">
+          <p className="text-brass-400 text-sm tracking-[0.3em] uppercase">
             {t('sectionExplore')}
           </p>
           <ul className="flex flex-col items-center gap-3">
@@ -79,7 +79,7 @@ export async function Footer({ locale }: { locale: Locale }) {
 
         {/* Direct contact CTA */}
         <div className="flex flex-col items-center gap-4">
-          <p className="text-brass-400 text-xs tracking-[0.3em] uppercase">
+          <p className="text-brass-400 text-sm tracking-[0.3em] uppercase">
             {t('sectionContact')}
           </p>
           <a
@@ -96,7 +96,7 @@ export async function Footer({ locale }: { locale: Locale }) {
             lacked. Mirrors the "Explore" column visually so the grid
             stays balanced. */}
         <div className="flex flex-col items-center gap-4">
-          <p className="text-brass-400 text-xs tracking-[0.3em] uppercase">
+          <p className="text-brass-400 text-sm tracking-[0.3em] uppercase">
             {t('sectionCompany')}
           </p>
           <p className="text-canvas/80 max-w-xs text-sm leading-relaxed">{tBrand('name')}</p>

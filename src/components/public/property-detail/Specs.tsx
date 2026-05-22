@@ -91,7 +91,7 @@ export async function Specs({ property, locale }: SpecsProps) {
       <h2 id="specs-title" className="sr-only">
         {t('title')}
       </h2>
-      <ul className="border-outline-variant flex flex-wrap items-stretch gap-x-10 gap-y-6 border-y py-6">
+      <ul className="border-outline-variant grid grid-cols-2 gap-x-10 gap-y-6 border-y py-6 sm:grid-cols-3 lg:grid-cols-6">
         {items.map((item) => (
           <li key={item.key} className="flex items-center gap-3">
             <span className="text-teal-forest-700" aria-hidden="true">
@@ -101,7 +101,7 @@ export async function Specs({ property, locale }: SpecsProps) {
               <p className="text-teal-forest-700 text-xl leading-none font-bold md:text-2xl">
                 {item.value}
               </p>
-              <p className="text-charcoal-muted mt-1 text-[11px] tracking-[0.2em] uppercase">
+              <p className="text-charcoal-muted mt-1 text-sm tracking-[0.2em] uppercase">
                 {item.label}
               </p>
             </div>

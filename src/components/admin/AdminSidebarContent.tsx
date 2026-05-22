@@ -74,7 +74,7 @@ export async function AdminSidebarContent({ locale, admin }: AdminSidebarContent
             {displayName.charAt(0)}
           </div>
           <p className="text-canvas text-base font-semibold">{tShell('title')}</p>
-          <p className="text-canvas/60 text-xs tracking-[0.18em] uppercase">{tShell('subtitle')}</p>
+          <p className="text-canvas/60 text-sm tracking-[0.18em] uppercase">{tShell('subtitle')}</p>
         </header>
 
         <nav aria-label={tShell('navAriaLabel')}>

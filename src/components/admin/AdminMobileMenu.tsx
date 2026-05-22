@@ -68,7 +68,7 @@ export function AdminMobileMenu({ openLabel, closeLabel, title, children }: Admi
           )}
         >
           <div className="bg-teal-forest-700 flex items-center justify-between px-4 py-3">
-            <Dialog.Title className="text-brass text-xs tracking-[0.18em] uppercase">
+            <Dialog.Title className="text-brass text-sm tracking-[0.18em] uppercase">
               {title}
             </Dialog.Title>
             <Dialog.Close asChild>

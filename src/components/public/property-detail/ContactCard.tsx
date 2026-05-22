@@ -45,7 +45,7 @@ export async function ContactCard({
         className,
       )}
     >
-      <h3 className="text-brass-400 mb-4 text-xs tracking-[0.3em] uppercase">{t('title')}</h3>
+      <h3 className="text-brass-400 mb-4 text-sm tracking-[0.3em] uppercase">{t('title')}</h3>
       <p className="text-canvas/80 mb-8 text-sm leading-relaxed md:text-base">
         {t('body', { title })}
       </p>
@@ -55,7 +55,7 @@ export async function ContactCard({
           aria-label={t('whatsappAria', { title })}
           rel="noopener noreferrer"
           data-event="whatsapp-click"
-          className="bg-brass-400 text-teal-forest-700 hover:bg-canvas focus-visible:ring-canvas focus-visible:ring-offset-teal-forest-700 inline-flex items-center justify-center gap-2 px-6 py-3.5 text-xs font-bold tracking-[0.25em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="bg-brass-400 text-teal-forest-700 hover:bg-canvas focus-visible:ring-canvas focus-visible:ring-offset-teal-forest-700 inline-flex items-center justify-center gap-2 px-6 py-3.5 text-sm font-bold tracking-[0.25em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           <ChatIcon />
           {t('whatsapp')}
@@ -63,7 +63,7 @@ export async function ContactCard({
         <a
           href={telHref}
           aria-label={t('callAria', { title })}
-          className="border-brass-400 text-brass-400 hover:bg-brass-400/10 focus-visible:ring-brass-400 focus-visible:ring-offset-teal-forest-700 inline-flex items-center justify-center gap-2 border-2 px-6 py-3.5 text-xs font-bold tracking-[0.25em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+          className="border-brass-400 text-brass-400 hover:bg-brass-400/10 focus-visible:ring-brass-400 focus-visible:ring-offset-teal-forest-700 inline-flex items-center justify-center gap-2 border-2 px-6 py-3.5 text-sm font-bold tracking-[0.25em] uppercase transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
         >
           <CallIcon />
           {t('call')}

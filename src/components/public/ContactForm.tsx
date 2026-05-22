@@ -119,7 +119,7 @@ export function ContactForm({ locale }: ContactFormProps) {
         role="status"
         className="bg-teal-forest-700 text-canvas border-brass-400 border-t-4 p-8 md:p-10"
       >
-        <p className="text-brass-400 text-xs tracking-[0.3em] uppercase">{t('successTitle')}</p>
+        <p className="text-brass-400 text-sm tracking-[0.3em] uppercase">{t('successTitle')}</p>
         <p className="mt-3 text-lg leading-relaxed md:text-xl">{successBody}</p>
       </div>
     );

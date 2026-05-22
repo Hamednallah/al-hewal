@@ -23,8 +23,10 @@ import { LangSwitcher } from './LangSwitcher';
  * panel slides in from the inline-end side (right in LTR, left in RTL)
  * using logical-property animation classes so it mirrors automatically.
  */
+type NavHref = '/' | '/properties' | '/about' | '/contact';
+
 type NavLink = {
-  href: '/' | '/properties' | '/about' | '/contact';
+  href: NavHref;
   label: string;
 };
 
@@ -69,7 +71,7 @@ export function MobileDrawer({ links, locale: _locale }: MobileDrawerProps) {
           )}
         >
           <div className="flex items-center justify-between">
-            <Dialog.Title className="text-brass-400 text-xs uppercase tracking-[0.3em]">
+            <Dialog.Title className="text-brass-400 text-sm uppercase tracking-[0.3em]">
               {t('openMenu')}
             </Dialog.Title>
             <Dialog.Close asChild>
@@ -92,14 +94,17 @@ export function MobileDrawer({ links, locale: _locale }: MobileDrawerProps) {
                       <Link
                         href={link.href}
                         className={cn(
-                          'block border-s-2 ps-4 py-3 text-base uppercase tracking-[0.15em] transition-colors',
+                          'flex items-center gap-4 border-s-2 ps-4 py-3 text-base uppercase tracking-[0.15em] transition-colors',
                           isActive
                             ? 'border-brass-400 text-brass-400'
                             : 'border-transparent text-canvas/80 hover:border-brass-400 hover:text-brass-400',
                         )}
                         aria-current={isActive ? 'page' : undefined}
                       >
-                        {link.label}
+                        <span className="shrink-0 rtl:scale-x-[-1]">
+                          <NavIcon href={link.href} />
+                        </span>
+                        <span>{link.label}</span>
                       </Link>
                     </Dialog.Close>
                   </li>
@@ -115,6 +120,58 @@ export function MobileDrawer({ links, locale: _locale }: MobileDrawerProps) {
     </Dialog.Root>
   );
 }
+
+// Per-route glyph used next to each link label inside the drawer. The
+// desktop nav (Nav.tsx) intentionally renders text-only — icons here
+// just give the mobile drawer the same scannability the admin sidebar
+// already has.
+function NavIcon({ href }: { href: NavHref }) {
+  switch (href) {
+    case '/':
+      return (
+        <svg {...ICON_PROPS}>
+          <path d="M2 9 L9 2 L16 9" />
+          <path d="M4 8 V16 H14 V8" />
+        </svg>
+      );
+    case '/properties':
+      return (
+        <svg {...ICON_PROPS}>
+          <rect x="2" y="3" width="14" height="12" />
+          <path d="M2 7 H16" />
+          <path d="M7 7 V15" />
+          <path d="M11 7 V15" />
+        </svg>
+      );
+    case '/about':
+      return (
+        <svg {...ICON_PROPS}>
+          <circle cx="9" cy="9" r="7" />
+          <path d="M9 8 V13" />
+          <circle cx="9" cy="5.5" r="0.75" fill="currentColor" stroke="none" />
+        </svg>
+      );
+    case '/contact':
+      return (
+        <svg {...ICON_PROPS}>
+          <rect x="2" y="4" width="14" height="10" />
+          <path d="M2 5 L9 10 L16 5" />
+        </svg>
+      );
+  }
+}
+
+const ICON_PROPS = {
+  width: 18,
+  height: 18,
+  viewBox: '0 0 18 18',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 1.75,
+  strokeLinecap: 'square' as const,
+  strokeLinejoin: 'miter' as const,
+  'aria-hidden': true,
+};
 
 // Inline SVG icons keep the bundle small (no icon font load — see PR 2.0
 // commit message; Material Symbols defers until property detail page).

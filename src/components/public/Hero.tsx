@@ -8,7 +8,7 @@ import { type Locale } from '@/i18n/routing';
 /**
  * Home hero.
  *
- * Full-bleed brand photograph (the official Al Hewal logo wall, supplied
+ * Full-bleed brand photograph (the official Al Haual logo wall, supplied
  * by the owner). A teal-forest gradient overlay sits between the photo
  * and the text so the brand colours read consistently AND the headline
  * stays AA-contrast against the image. The gradient runs from
@@ -70,7 +70,9 @@ export async function Hero({ locale }: { locale: Locale }) {
 
       <div className="relative mx-auto flex min-h-[calc(100vh-4rem)] max-w-[1440px] flex-col items-start justify-center gap-8 px-edge py-24 md:min-h-[calc(100vh-5rem)] md:py-32">
         <div className="flex max-w-3xl flex-col gap-6">
-          <p className="text-brass-400 text-xs tracking-[0.4em] uppercase">{t('eyebrow')}</p>
+          <p className="text-brass-400 text-sm font-bold tracking-[0.4em] uppercase">
+            {t('eyebrow')}
+          </p>
           <h1 className="text-balance text-4xl font-bold leading-tight md:text-6xl lg:text-7xl">
             {t('headline')}
           </h1>
