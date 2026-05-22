@@ -127,6 +127,24 @@ export async function POST(request: NextRequest) {
     webpUrl = webpPut.url;
 
     const client = getSupabaseAdminClient();
+
+    // First image for the property → flag it as hero automatically.
+    // Without a hero image the featured-properties home query (inner
+    // join + `is_hero=true` filter) excludes the property entirely, so
+    // a freshly-published listing wouldn't appear in the featured rail
+    // until the admin remembered to tick "Set as hero" manually. The
+    // partial unique index `(property_id) where is_hero = true` keeps
+    // us safe if two uploads ever land concurrently — the second
+    // insert would error and the admin retry naturally.
+    const { count: existingCount, error: countErr } = await client
+      .from('property_images')
+      .select('id', { count: 'exact', head: true })
+      .eq('property_id', meta.propertyId);
+    if (countErr) {
+      throw countErr;
+    }
+    const isFirstImage = (existingCount ?? 0) === 0;
+
     const { data: row, error: insertErr } = await client
       .from('property_images')
       .insert({
@@ -141,6 +159,7 @@ export async function POST(request: NextRequest) {
         alt_en: meta.alt_en,
         position: meta.position,
         bytes: processed.avif.bytes,
+        is_hero: isFirstImage,
       } as never)
       .select('id')
       .single();
